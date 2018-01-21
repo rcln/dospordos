@@ -2,15 +2,14 @@
 
 import json
 import os
-import pandas as pd
 from queue import Queue
 
 
 class Environment:
 
     def __init__(self):
-        self.path = "~/dospordos/DATA/train_db/"
-        self.path_db = "~/dospordos/DATA/db_fer/"
+        self.path = "/dospordos/DATA/train_db/"
+        self.path_db = "/dospordos/DATA/db_fer/"
         self.queries = {}
         self.current_query = None
         self.current_data = {}
@@ -19,7 +18,7 @@ class Environment:
     def set_path_files(self, path):
         self.path = path
 
-    def set_path_data_db(self, path):
+    def set_path_train(self, path):
         self.path_db = path
 
     # start new episode
@@ -32,7 +31,7 @@ class Environment:
         self.queries.clear()
         self.current_data.clear()
         self.current_query = None
-        self._get_data_db()
+        self._get_data_db(id_person)
         for file in os.listdir(files):
             with open(files+file) as f:
                 data_raw = f.read()
@@ -72,10 +71,7 @@ class Environment:
     def get_state(self):
         state = []
 
-        # Todo get confidence scores
-        # self._get_confidence(state)
-
-        # Todo get tf-idf..?
+        self._get_confidence(state)
 
         # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
         data_db = self.data_db[1]
@@ -84,13 +80,44 @@ class Environment:
             state.extend([0]*6)
             return state
 
-        # Todo compare tuples efficiently
+        A = set(data_db)
+        B = set(data_cur)
+        set_uni_A = set()
+        set_ani_A = set()
+        set_uni_B = set()
+        set_ani_B = set()
+
+        for y1 in data_db:
+            set_uni_A.add(y1[0])
+            set_ani_A.add(y1[1])
+
+        for y2 in data_cur:
+            set_uni_B.add(y2[0])
+            set_ani_B.add(y2[1])
+
+        total = len(A.union(B))
+        common = len(A.intersection(B))
+        commonU = len(set_uni_A.intersection(set_uni_B))
+        commonA = len(set_ani_A.intersection(set_ani_B))
+
+        state.append(commonU)
+        state.append(commonA)
+        state.append(common)
+        state.append(total)
 
         return state
 
-    def _get_data_db(self):
-        # todo do a query or search in fer data..?
-        self.data_db = {0: 'name', 1: [('univ', 'anio')]}
+    def _get_data_db(self, id_person):
+        if not os.path.exists(self.path_db):
+            raise ValueError('path given doesn\'t exits:\n' + self.path_db)
+
+        with open(self.path_db) as f:
+            data_raw = f.read()
+            tmp = json.loads(data_raw)
+            tmp = tmp['_default']
+        grid = [tmp[str(id_person)]['institution'], tmp[str(id_person)]['year_finish']]
+
+        self.data_db = grid
 
     def _check_grid(self):
         empty = False
@@ -101,26 +128,36 @@ class Environment:
                 break
         return empty
 
+    # Todo familias de equivalencia semántica
     def _get_reward(self):
-        reward = self._get_jaccard_distance()
+        data_db = self.data_db[1]
+        data_cur = self.current_data.get(1, [])
+        a = set(data_db)
+        b = set(data_cur)
 
-        # todo add penalties due to size of data
+        # Jaccard index - symmetric difference (penalty)
+        reward = (len(a.intersection(b))/len(a.union(b))) - len(a.symmetric_difference(b))
 
         return reward
 
-    def _get_jaccard_distance(self):
-        # dj(A,B) = 1 - J(A,B)
-        # J(A,B) = |A^B| / |AvB|
-        # Todo take consideration of semantic similarities
-        # Todo duda intersección y union de tuplas
-        dist = 0
-        return dist
+    def _get_reward_soft(self):
+        data_db = self.data_db[1]
+        data_cur = self.current_data.get(1, [])
+
+        a = set()
+        b = set()
+        for y1 in data_db:
+            a.add(y1[0])
+
+        for y2 in data_cur:
+            b.add(y2[0])
+
+        # Jaccard index - symmetric difference (penalty)
+        reward = (len(a.intersection(b)) / len(a.union(b))) - len(a.symmetric_difference(b))
+
+        return reward
 
     @staticmethod
-    def _get_confidence(state): # Todo Theo's working on this
-        state.append(1)
-
-
-
-
+    def _get_confidence(state):
+        state.extend([1]*2)
 
