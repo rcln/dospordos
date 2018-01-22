@@ -4,6 +4,8 @@ import json
 import os
 from queue import Queue
 
+import spacy
+from collections import defaultdict
 
 class Environment:
 
@@ -158,6 +160,26 @@ class Environment:
         return reward
 
     @staticmethod
-    def _get_confidence(state):
-        state.extend([1]*2)
+    def _get_confidence(text):
+        nlp = spacy.load('en')
+        ner_org = ('', u'ORG', -1.0)
+        ner_gpe = ('', u'GPE', -1.0)
+        with nlp.disable_pipes('ner'):
+            doc = nlp(text)
+
+        (beams, something_else_not_used) = nlp.entity.beam_parse([doc], beam_width=16, beam_density=0.0001)
+
+        entity_scores = defaultdict(float)
+        for beam in beams:
+            for score, ents in nlp.entity.moves.get_beam_parses(beam):
+                for start, end, label in ents:
+                    entity_scores[(start, end, label)] += score
+
+        for key in entity_scores:
+            start, end, label = key
+            if label == 'ORG' and entity_scores[key] > ner_org[2]:
+                ner_org = (doc[start:end], label, entity_scores[key])
+            elif label == 'GPE' and entity_scores[key] > ner_gpe[2]:
+                ner_gpe = (doc[start:end], label, entity_scores[key])
+        return ner_org, ner_gpe
 
