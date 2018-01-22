@@ -2,25 +2,27 @@
 
 import json
 import os
-from queue import Queue
-
 import spacy
+from queue import Queue
 from collections import defaultdict
+
 
 class Environment:
 
     def __init__(self):
         self.path = "/dospordos/DATA/train_db/"
         self.path_db = "/dospordos/DATA/db_fer/"
-        self.queries = {}
-        self.current_query = None
-        self.current_data = {}
+        self.queues = {}
+        self.current_queue = None
+        self.current_text = ""
+        self.current_data = None
+        self.current_db = []
         self.data_db = None
 
-    def set_path_files(self, path):
+    def set_path_train(self, path):
         self.path = path
 
-    def set_path_train(self, path):
+    def set_path_files(self, path):
         self.path_db = path
 
     # start new episode
@@ -30,9 +32,9 @@ class Environment:
         if not os.path.exists(files):
             raise ValueError('path given doesn\'t exits:\n'+files)
 
-        self.queries.clear()
-        self.current_data.clear()
-        self.current_query = None
+        self.queues.clear()
+        self.current_db.clear()
+        self.current_queue = None
         self._get_data_db(id_person)
         for file in os.listdir(files):
             with open(files+file) as f:
@@ -45,17 +47,19 @@ class Environment:
             num_snippet = sorted(num_snippet)
             for i in num_snippet:
                 q.put(data[str(i)])
-            if self.current_query is None:
-                self.current_query = 0
-            self.queries[len(self.queries)] = q
+            if self.current_queue is None:
+                self.current_queue = 0
+            self.queues[len(self.queues)] = q
+
+        self.current_data = self.queues[self.current_queue].get()
 
         initial_state = self.get_state()
 
         return initial_state
 
-    def step(self, action_query, action_db):
+    def step(self, action_query, action_db, *args):
 
-        action_query()
+        action_query(*args)
         action_db()
 
         next_state = self.get_state()
@@ -66,21 +70,18 @@ class Environment:
 
     def get_queries(self):
         queries = []
-        for k in self.queries.keys():
+        for k in self.queues.keys():
             queries.append(k)
         return queries
 
     def get_state(self):
         state = []
 
-        self._get_confidence(state)
+        self.current_text = self.current_data['title']+" "+self.current_data['text']
 
         # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
-        data_db = self.data_db[1]
-        data_cur = self.current_data.get(1, None)
-        if data_cur is None:
-            state.extend([0]*6)
-            return state
+        data_db = self.data_db
+        data_cur = self.current_db
 
         A = set(data_db)
         B = set(data_cur)
@@ -102,10 +103,18 @@ class Environment:
         commonU = len(set_uni_A.intersection(set_uni_B))
         commonA = len(set_ani_A.intersection(set_ani_B))
 
+        state.append(self.current_queue)
+        state.append(int(self.current_data['number_snippet']))
+        state.append(int(self.current_data['engine_search']))
         state.append(commonU)
         state.append(commonA)
         state.append(common)
         state.append(total)
+
+        text = self.current_text
+        tmp_vec = self._get_confidence(text)
+        for v in tmp_vec:
+            state.append(v[2])
 
         return state
 
@@ -113,27 +122,31 @@ class Environment:
         if not os.path.exists(self.path_db):
             raise ValueError('path given doesn\'t exits:\n' + self.path_db)
 
+        tags = ['institution', 'year_finish']
         with open(self.path_db) as f:
             data_raw = f.read()
             tmp = json.loads(data_raw)
-            tmp = tmp['_default']
-        grid = [tmp[str(id_person)]['institution'], tmp[str(id_person)]['year_finish']]
+            grid = tmp['_default']
 
-        self.data_db = grid
+        tmp = []
+        for tag in tags:
+            tmp.append(grid[str(id_person)][tag])
+
+        self.data_db = [tuple(tmp)]
 
     def _check_grid(self):
         empty = False
 
-        for k in self.queries.keys():
-            if self.queries[k].qsize() == 0:
+        for k in self.queues.keys():
+            if self.queues[k].qsize() == 0:
                 empty = True
                 break
         return empty
 
     # Todo familias de equivalencia semántica
     def _get_reward(self):
-        data_db = self.data_db[1]
-        data_cur = self.current_data.get(1, [])
+        data_db = self.data_db
+        data_cur = self.current_db
         a = set(data_db)
         b = set(data_cur)
 
@@ -143,8 +156,8 @@ class Environment:
         return reward
 
     def _get_reward_soft(self):
-        data_db = self.data_db[1]
-        data_cur = self.current_data.get(1, [])
+        data_db = self.data_db
+        data_cur = self.current_db
 
         a = set()
         b = set()

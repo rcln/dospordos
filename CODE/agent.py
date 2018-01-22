@@ -8,18 +8,24 @@ from keras.layers import Input, Dense, Dropout
 
 class Agent:
 
-    def __init__(self, queries, current_query):
-        self.queries = queries
-        self.current_query = current_query
-        self.current_snippet = None
+    def __init__(self, env):
+        self.env = env
 
     def next_snippet(self):
-        self.current_snippet = self.queries[self.current_query].get()
+        self.env.current_data = self.env.queues[self.env.current_queue].get()
 
-    def change_query(self, query):
-        self.current_query = query
-
-
+    def change_queue(self, queue=None):
+        if queue is None:
+            tmp = self.env.current_queue + 1
+            if tmp >= len(self.env.queues):
+                self.env.current_queue = 0
+            else:
+                self.env.current_queue = tmp
+        else:
+            if queue >= len(self.env.queues):
+                self.env.current_queue = 0
+            else:
+                self.env.current_queue = queue
 
     @staticmethod
     def stop():
@@ -33,6 +39,9 @@ class Agent:
     def update_db():
         pass
 
+    @staticmethod
+    def keep_db():
+        pass
 
 # todo duda con el modelo para las 2 salidas, función de perdida
 class Model:

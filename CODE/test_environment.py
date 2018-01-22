@@ -3,81 +3,55 @@
 from CODE.environment import Environment
 from CODE.agent import Agent
 
-# Todo, leer excel de Fernando para calcular accuracy..Reward.  JORGE
 """
-ESTADO
-Nombre: _extraido del query_
-Bio: [(U,A), (U2,A2), ... ,(Un, An)]
-
-6 positions  para  confidence 1cU, 1cA, 2cU, 2cA, 3cU, 3cA     curConf
-newConf ==
-common, Total  (U),   common, Total(A),  common, Total(U-A)
-tf-idf  ..? del snippet
-
-Reward=
-Jaccard distance conjunto // overlap
-* mejora. Expansión 
-
-Entre más valores penalizar el  Parcel-BD
-
--NeuroNet y LSTM-Ner
-
-[snippet,base] -> red -> acción
-
 Problems:
 * cuando detenerse
 * familias semanticas 
 
 ** TODO: 
-    -Theo confidence score function with spacy
     -Implementar la red neuronal. [keras]
     -Implementar el TD-Gammon
+    -Completar funciones del Agente
+    
+    - Revisar porque es tan lento y optimizarlo
 
 """
 
 
 def main():
     env = Environment()
-    env.set_path_files('/home/urb/PycharmProjects/dospordos/DATA/train_db/')
-    env.set_path_train('/home/urb/PycharmProjects/dospordos/DATA/db_fer/train.json')
-
+    env.set_path_files('/home/urb/PycharmProjects/dospordos/DATA/db_fer/train.json')
+    env.set_path_train('/home/urb/PycharmProjects/dospordos/DATA/train_db/')
     # start new episode
     env.reset(1)
 
-    # data init
-    # Test in environment of data
-    print('data env', env.queries)
-    print('env current queue size', env.queries[env.current_query].qsize())
-    agent = Agent(env.queries, env.current_query)
+    # test of environment data
+    print('data env', env.queues)
+    print('data current queue env', env.current_queue)
+    print('data size env current queue', env.queues[env.current_queue].qsize())
 
-    # current query
-    print('agent current queue size', agent.current_query)
+    agent = Agent(env)
 
-    # agent taking the action alone
-    agent.next_snippet()
-    # test of synchronization
-    print('sync=?', agent.queries[agent.current_query].qsize(), env.queries[env.current_query].qsize())
-
-    # getting the queries of episode
-    queries = env.get_queries()
-    print('queries', queries)
-
-    # changing query in agent and checking size of queue
-    # NOTE, is not synchronized with environment in this form
-    agent.change_query(queries[0])
-    print('agent change queue', agent.queries[agent.current_query].qsize())
-    env.current_query = agent.current_query
-
-    # using the enviroment in order to get reward, next_state and done
-    # passing functions as argument
-    # test current queue size
-    print('env change queue', env.queries[env.current_query].qsize())
+    # action sending to environment by agent
 
     reward, state, done = env.step(agent.next_snippet, agent.change_db)
+    # checking queue
+    print('after size', env.queues[env.current_queue].qsize())
+    print('current data', env.current_data)
+    print('current text', env.current_text)
+    print('reward', reward)
+    print('state', state)
+    print('done?', done)
 
-    print('env queue after step', env.queries[env.current_query].qsize())
-    print('agent same queue?', agent.queries[agent.current_query].qsize())
+    # changing to queue # 2
+    env.step(agent.change_queue, agent.keep_db, 2)
+    print('data size env current queue', env.queues[env.current_queue].qsize())
+    print('env current queue', env.current_queue)
 
+    # changing to next queue
+    env.step(agent.change_queue, agent.keep_db)
+    print('data size env current queue', env.queues[env.current_queue].qsize())
+    print('env current queue', env.current_queue)
 
 if __name__ == "__main__":
     main()
