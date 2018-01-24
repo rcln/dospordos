@@ -20,7 +20,7 @@ Problems:
 
 def main():
     env = Environment()
-    env.set_path_files('/home/urb/PycharmProjects/dospordos/DATA/db_fer/train.json')
+    env.set_path_files('/home/urb/PycharmProjects/dospordos/DATA/fer_db/train.json')
     env.set_path_train('/home/urb/PycharmProjects/dospordos/DATA/train_db/')
     # start new episode
     env.reset(1)

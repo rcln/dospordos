@@ -28,19 +28,21 @@ class Agent:
                 self.env.current_queue = queue
 
     @staticmethod
-    def stop():
+    def stop(): #finish the current user
+        pass
+
+    # actualizo
+
+    @staticmethod
+    def change_current_db(i=None):
         pass
 
     @staticmethod
-    def change_db():
+    def update_current_db(i=None): #
         pass
 
     @staticmethod
-    def update_db():
-        pass
-
-    @staticmethod
-    def keep_db():
+    def keep_current_db(): #
         pass
 
 # todo duda con el modelo para las 2 salidas, función de perdida

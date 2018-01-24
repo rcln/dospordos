@@ -11,7 +11,7 @@ class Environment:
 
     def __init__(self):
         self.path = "/dospordos/DATA/train_db/"
-        self.path_db = "/dospordos/DATA/db_fer/"
+        self.path_db = "/dospordos/DATA/fer_db/"
         self.queues = {}
         self.current_queue = None
         self.current_text = ""
@@ -57,10 +57,10 @@ class Environment:
 
         return initial_state
 
-    def step(self, action_query, action_db, *args):
+    def step(self, action_query, action_current_db, *args):
 
         action_query(*args)
-        action_db()
+        action_current_db()
 
         next_state = self.get_state()
         reward = self._get_reward()
