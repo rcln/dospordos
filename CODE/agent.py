@@ -37,14 +37,14 @@ class Agent:
     def keep_current_db(): #
         pass
 
-    #TODO no idea
+    #TODO  theo if de 6 casos todas las combinaciones
     def actions_to_take(self,action_activation_vector):
         #example
         #return self.delete_current_db, self.next_snippet
         pass
 
-# todo duda con el modelo para las 2 salidas, función de perdida
-class Model:
+
+class Network:
 
     def __init__(self, tensor_shape):
         self.model = self._create_model(tensor_shape)
@@ -54,10 +54,12 @@ class Model:
 
     @staticmethod
     def _create_model(tensor_shape):
-        x = Input(tensor_shape)
-        h = Dropout(0.25)(x)
+        x = Input(shape=tensor_shape)
+        h = Dense(units=10, activation='relu')(x)
+        h = Dropout(0.25)(h)
         h = Dense(units=10, activation='relu')(h)
-        o = Dense(units=5, activation='softmax')(h)
+        h = Dropout(0.25)(h)
+        o = Dense(units=1, activation='linear')(h)
         return Model(inputs=x, outputs=o)
 
     def fit(self, x_train, y_train, epochs, batch_size):
