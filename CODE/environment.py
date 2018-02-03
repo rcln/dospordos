@@ -6,7 +6,6 @@ import spacy
 from queue import Queue
 from collections import defaultdict
 
-
 class Environment:
 
     def __init__(self):
@@ -19,7 +18,6 @@ class Environment:
         self.current_db = []
         self.golden_standard_db = None
         self.info_snippet = None
-
 
     def set_path_train(self, path):
         self.path = path
@@ -108,12 +106,9 @@ class Environment:
         common = len(A.intersection(B))
         commonU = len(set_uni_A.intersection(set_uni_B))
         commonA = len(set_ani_A.intersection(set_ani_B))
-        #state.append(self.current_queue)
-        state = state + self._int_to_onehot(7,self.current_queue)
-        #TODO normalize this Theo (1 - normilized)
-        state.append(int(self.current_data['number_snippet']))
-        #state.append(int(self.current_data['engine_search']))
-        state = state + self._int_to_onehot(4, self.current_queue)
+        state = state + self._int_to_onehot(7,self.current_queue)         #state.append(self.current_queue)
+        state.append(self._normalize_snippet_number(float(self.current_data['number_snippet'])))
+        state = state + self._int_to_onehot(4, self.current_queue)       #state.append(int(self.current_data['engine_search']))
         state.append(commonU)
         state.append(commonA)
         state.append(common)
@@ -125,6 +120,8 @@ class Environment:
             state.append(v[2])
 
         return state
+
+
 
     def _get_golden_standard_db(self, id_person):
         if not os.path.exists(self.path_db):
@@ -190,9 +187,32 @@ class Environment:
         else:
             return maches
 
-    # TODO fill this function theo
     def _get_location(text):
-        return "Mexico"
+        nlp = spacy.load('en_core_web_sm')
+        ner_org = ('', u'ORG', -1.0)
+        ner_gpe = ('', u'GPE', -1.0)
+        with nlp.disable_pipes('ner'):
+            doc = nlp(text)
+
+        (beams, something_else_not_used) = nlp.entity.beam_parse([doc], beam_width=16, beam_density=0.0001)
+
+        entity_scores = defaultdict(float)
+        for beam in beams:
+            for score, ents in nlp.entity.moves.get_beam_parses(beam):
+                for start, end, label in ents:
+                    entity_scores[(start, end, label)] += score
+
+        for key in entity_scores:
+            start, end, label = key
+            if label == 'ORG' and entity_scores[key] > ner_org[2]:
+                ner_org = (doc[start:end], label, entity_scores[key])
+            elif label == 'GPE' and entity_scores[key] > ner_gpe[2]:
+                ner_gpe = (doc[start:end], label, entity_scores[key])
+
+        if (ner_gpe[2] >= ner_org[2]):
+            return ner_gpe[0]
+        else:
+            return ner_org[0]
 
     @staticmethod
     def _get_confidence(text):
@@ -221,9 +241,13 @@ class Environment:
     def _fill_info_snippet(self,text):
         date = self._get_date(text,True)
         location = self._get_location(text,True)
+        return (location, date)
 
     @staticmethod
     def _int_to_onehot(length,number):
         l = [0] * length
         l.__setitem__(number-1, 1)
         return l
+
+    def _normalize_snippet_number(self, snippet_number):
+        return 1 - (snippet_number / float(len(self.queues[self.current_queue])))
