@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
-from CODE.environment import Environment
-from CODE.agent import Agent
+from environment import Environment
+from agent import Agent
 
 """
 Problems:
@@ -20,8 +20,8 @@ Problems:
 
 def main():
     env = Environment()
-    env.set_path_files('/home/urb/PycharmProjects/dospordos/DATA/fer_db/train.json')
-    env.set_path_train('/home/urb/PycharmProjects/dospordos/DATA/train_db/')
+    env.set_path_files('/home/tuxedo21/PycharmProjects/dospordos/DATA/fer_db/train.json')
+    env.set_path_train('/home/tuxedo21/PycharmProjects/dospordos/DATA/train_db/')
     # start new episode
     env.reset(1)
 
@@ -34,7 +34,7 @@ def main():
 
     # action sending to environment by agent
 
-    reward, state, done = env.step(agent.next_snippet, agent.change_db)
+    reward, state, done = env.step(agent.next_snippet, agent.add_current_db)
     # checking queue
     print('after size', env.queues[env.current_queue].qsize())
     print('current data', env.current_data)

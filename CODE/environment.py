@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-import os
+import os,re
 import spacy
 from queue import Queue
 from collections import defaultdict
@@ -17,7 +17,9 @@ class Environment:
         self.current_text = ""
         self.current_data = None
         self.current_db = []
-        self.data_db = None
+        self.golden_standard_db = None
+        self.info_snippet = None
+
 
     def set_path_train(self, path):
         self.path = path
@@ -35,7 +37,7 @@ class Environment:
         self.queues.clear()
         self.current_db.clear()
         self.current_queue = None
-        self._get_data_db(id_person)
+        self._get_golden_standard_db(id_person)
         for file in os.listdir(files):
             with open(files+file) as f:
                 data_raw = f.read()
@@ -77,20 +79,24 @@ class Environment:
     def get_state(self):
         state = []
 
+
         self.current_text = self.current_data['title']+" "+self.current_data['text']
 
-        # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
-        data_db = self.data_db
-        data_cur = self.current_db
+        text = self.current_text
+        self._fill_info_snippet()
 
-        A = set(data_db)
+        # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
+        golden_standard_db = self.golden_standard_db
+        data_cur = self.info_snippet
+
+        A = set(golden_standard_db)
         B = set(data_cur)
         set_uni_A = set()
         set_ani_A = set()
         set_uni_B = set()
         set_ani_B = set()
 
-        for y1 in data_db:
+        for y1 in golden_standard_db:
             set_uni_A.add(y1[0])
             set_ani_A.add(y1[1])
 
@@ -102,23 +108,25 @@ class Environment:
         common = len(A.intersection(B))
         commonU = len(set_uni_A.intersection(set_uni_B))
         commonA = len(set_ani_A.intersection(set_ani_B))
-
-        state.append(self.current_queue)
+        #state.append(self.current_queue)
+        state = state + self._int_to_onehot(7,self.current_queue)
+        #TODO normalize this Theo (1 - normilized)
         state.append(int(self.current_data['number_snippet']))
-        state.append(int(self.current_data['engine_search']))
+        #state.append(int(self.current_data['engine_search']))
+        state = state + self._int_to_onehot(4, self.current_queue)
         state.append(commonU)
         state.append(commonA)
         state.append(common)
         state.append(total)
 
-        text = self.current_text
+
         tmp_vec = self._get_confidence(text)
         for v in tmp_vec:
             state.append(v[2])
 
         return state
 
-    def _get_data_db(self, id_person):
+    def _get_golden_standard_db(self, id_person):
         if not os.path.exists(self.path_db):
             raise ValueError('path given doesn\'t exits:\n' + self.path_db)
 
@@ -132,7 +140,7 @@ class Environment:
         for tag in tags:
             tmp.append(grid[str(id_person)][tag])
 
-        self.data_db = [tuple(tmp)]
+        self.golden_standard_db = [tuple(tmp)]
 
     def _check_grid(self):
         empty = False
@@ -145,9 +153,9 @@ class Environment:
 
     # Todo familias de equivalencia semántica
     def _get_reward(self):
-        data_db = self.data_db
+        golden_standard_db = self.golden_standard_db
         data_cur = self.current_db
-        a = set(data_db)
+        a = set(golden_standard_db)
         b = set(data_cur)
 
         # Jaccard index - symmetric difference (penalty)
@@ -155,13 +163,15 @@ class Environment:
 
         return reward
 
+
+
     def _get_reward_soft(self):
-        data_db = self.data_db
+        golden_standard_db = self.golden_standard_db
         data_cur = self.current_db
 
         a = set()
         b = set()
-        for y1 in data_db:
+        for y1 in golden_standard_db:
             a.add(y1[0])
 
         for y2 in data_cur:
@@ -173,8 +183,20 @@ class Environment:
         return reward
 
     @staticmethod
+    def _get_date(text, first=False):
+        maches = re.findall(r'\d{4}', text)
+        if first and len(maches) > 0:
+            return [maches[0]]
+        else:
+            return maches
+
+    # TODO fill this function theo
+    def _get_location(text):
+        return "Mexico"
+
+    @staticmethod
     def _get_confidence(text):
-        nlp = spacy.load('en')
+        nlp = spacy.load('en_core_web_sm')
         ner_org = ('', u'ORG', -1.0)
         ner_gpe = ('', u'GPE', -1.0)
         with nlp.disable_pipes('ner'):
@@ -196,3 +218,12 @@ class Environment:
                 ner_gpe = (doc[start:end], label, entity_scores[key])
         return ner_org, ner_gpe
 
+    def _fill_info_snippet(self,text):
+        date = self._get_date(text,True)
+        location = self._get_location(text,True)
+
+    @staticmethod
+    def _int_to_onehot(length,number):
+        l = [0] * length
+        l.__setitem__(number-1, 1)
+        return l

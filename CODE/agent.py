@@ -27,22 +27,20 @@ class Agent:
             else:
                 self.env.current_queue = queue
 
-    @staticmethod
-    def stop(): #finish the current user
-        pass
+    def delete_current_db(self,i=None):
+        self.env.current_db.pop()
 
-    # actualizo
-
-    @staticmethod
-    def change_current_db(i=None):
-        pass
-
-    @staticmethod
-    def update_current_db(i=None): #
-        pass
+    def add_current_db(self,i=None): #
+        self.env.current_db.append(self.env.info_snippet)
 
     @staticmethod
     def keep_current_db(): #
+        pass
+
+    #TODO no idea
+    def actions_to_take(self,action_activation_vector):
+        #example
+        #return self.delete_current_db, self.next_snippet
         pass
 
 # todo duda con el modelo para las 2 salidas, función de perdida
