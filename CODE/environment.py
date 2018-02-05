@@ -65,9 +65,13 @@ class Environment:
 
         next_state = self.get_state()
         reward = self._get_reward()
-        done = self._check_grid()
+        done = self._check_grid() or self._is_finished()
 
         return reward, next_state, done
+
+    def _is_finished(self):
+        return self.current_db == self.golden_standard_db
+
 
     def get_queries(self):
         queries = []

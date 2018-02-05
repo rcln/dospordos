@@ -4,13 +4,16 @@
 import keras
 from keras.models import Model
 from keras.layers import Input, Dense, Dropout
+from keras.utils import plot_model
 
 
 class Agent:
 
     def __init__(self, env):
         self.env = env
+        self.network = Network((27,))
 
+    # grid functions
     def next_snippet(self):
         self.env.current_data = self.env.queues[self.env.current_queue].get()
 
@@ -27,22 +30,34 @@ class Agent:
             else:
                 self.env.current_queue = queue
 
+    # db functions
     def delete_current_db(self,i=None):
         self.env.current_db.pop()
 
-    def add_current_db(self,i=None): #
+    def add_current_db(self,i=None):
         self.env.current_db.append(self.env.info_snippet)
 
     @staticmethod
-    def keep_current_db(): #
+    def keep_current_db():
         pass
 
-    #TODO  theo if de 6 casos todas las combinaciones
+
     def actions_to_take(self,action_activation_vector):
-        #example
-        #return self.delete_current_db, self.next_snippet
-        pass
+        if action_activation_vector[0]:
+            return self.next_snippet, self.delete_current_db
+        elif action_activation_vector[1]:
+            return self.next_snippet, self.add_current_db
+        elif action_activation_vector[2]:
+            return self.next_snippet, self.keep_current_db
+        elif action_activation_vector[3]:
+            return self.change_queue, self.delete_current_db
+        elif action_activation_vector[4]:
+            return self.change_queue, self.add_current_db
+        elif action_activation_vector[5]:
+            return self.change_queue, self.keep_current_db
 
+    def print_model(self):
+        plot_model(self.network, to_file='model.png')
 
 class Network:
 

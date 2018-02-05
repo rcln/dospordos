@@ -1,13 +1,13 @@
 import os
 from environment import Environment
 from agent import Agent
-
-"""
-Our Vector:
-"""
+import numpy as np
 
 
 def main():
+
+    eps = 0.1
+
     data_path = "".join(s+"/" for s in (os.getcwd().split('/')[:-1])) + "DATA/"
     data_train = data_path+"train_db/"
     data_db = data_path+"fer_db/train.json"
@@ -21,21 +21,30 @@ def main():
     env.set_path_train(data_train)
     env.set_path_files(data_db)
 
+    agent.print_model()
+
     # episodes
     for us in list_users:
         # reset episode with new user and get initial state
+        # TODO fucntion to make this random
+        replay_memory = []
 
-        # Todo initialize arbitrary
-        # Q[num_states, num_actions]
-
+        # initial state
         state = env.reset(us)
         done = False
-        # Todo finish. check https://github.com/dennybritz/reinforcement-learning/tree/master/DQN
         # DQN with experience replace
-        # check test_environment for usage
         while not done:
-
-            # Todo select an action a
+            """
+            Select an action with an epsilon 
+            """
+            action_vector = None
+            p = np.random.random()
+            if p < eps:
+                # TODO make a real random vector theo
+                action_vector = [1,0,0,0,0,0]
+            else:
+                # a = argmaxQ(s,a)
+                pass
 
             # Observe reward and new state
             # example
@@ -43,6 +52,7 @@ def main():
 
             # Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
             # state = next_state
+        break
 
 if __name__ == "__main__":
     main()
