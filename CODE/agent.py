@@ -64,8 +64,9 @@ class Network:
     def __init__(self, tensor_shape):
         self.model = self._create_model(tensor_shape)
         self.model.compile(loss=keras.losses.mean_squared_error,
-                           optimizer=keras.optimizers.Adadelta(),
+                           optimizer=keras.optimizers.adam(),
                            metrics=['accuracy'])
+        print( self.model.summary() )
 
     @staticmethod
     def _create_model(tensor_shape):

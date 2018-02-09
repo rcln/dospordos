@@ -93,8 +93,8 @@ class Environment:
 
         data_cur = self.info_snippet
 
-        print(golden_standard_db)
-        print(data_cur)
+        # print(golden_standard_db)
+        # print(data_cur)
 
         A = set(golden_standard_db)
         B = set(data_cur)
