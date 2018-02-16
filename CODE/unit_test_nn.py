@@ -17,19 +17,21 @@ def main():
     list_users = sorted(list(map(int, os.listdir(data_train))))
 
     env = Environment()
-    agent = Agent(env)
+    #agent = Agent(env)
 
     env.set_path_train(data_train)
     env.set_path_files(data_db)
 
     state = env.reset(1)
-    action_vector = [1,0,0,0,0,0]
-    input_vector = [state+action_vector]
-    input_vector = np.array(input_vector)
-    print(input_vector)
-    print(input_vector.shape)
-    # print(agent.network.summary())
-    print(agent.network.predict(input_vector))
+    print(state)
+    # action_vector = [1,0,0,0,0,0]
+    # input_vector = [state+action_vector]
+    # input_vector = np.array(input_vector)
+    # print(input_vector)
+    # print(input_vector)
+    # print(input_vector.shape)
+    # # print(agent.network.summary())
+    # print(agent.network.predict(input_vector))
 
 if __name__ == "__main__":
     main()

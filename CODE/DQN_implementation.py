@@ -4,6 +4,36 @@ from agent import Agent
 import numpy as np
 
 
+def get_random_action_vector(size):
+    action_vector = np.zeros(size)
+    action_vector[np.random.randint(0,size)] = 1
+    return action_vector
+
+
+def get_random_sars():
+    A = np.random.uniform(0.0, 10.0)
+    B = np.random.uniform(0.0, 10.0)
+    a = get_random_action_vector(6)
+    r = np.array([np.random.uniform(-20.0, 0.0)])
+    s = np.concatenate((get_random_action_vector(7),
+                        np.array([np.random.uniform(0.0, 1.0)]),
+                        get_random_action_vector(4),
+                        np.array([np.random.uniform(0.0, 1.0),np.random.uniform(0.0, 1.0),np.random.uniform(0.0, 1.0)]),
+                        np.array((A, B, A+B)),
+                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
+                        np.array([np.random.randint(0, 2)])))
+    A = np.random.uniform(0.0, 10.0)
+    B = np.random.uniform(0.0, 10.0)
+    s_prime = np.concatenate((get_random_action_vector(7),
+                        np.array([np.random.uniform(0.0, 1.0)]),
+                        get_random_action_vector(4),
+                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0),np.random.uniform(0.0, 1.0)]),
+                        np.array((A, B, A+B)),
+                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
+                        np.array([np.random.randint(0, 2)])))
+    return s, a, r, s_prime
+
+
 def main():
 
     eps = 0.1
@@ -40,8 +70,7 @@ def main():
 
             p = np.random.random()
             if p < eps:
-                # TODO make a real random vector theo
-                action_vector = [1, 0, 0, 0, 0, 0]
+                action_vector = get_random_action_vector(6)
             else:
                 # a = argmaxQ(s,a)
                 arg_max = []

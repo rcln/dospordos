@@ -202,3 +202,5 @@ class Environment:
 
     def _normalize_snippet_number(self, snippet_number):
         return 1 - (snippet_number / float((self.queues[self.current_queue]).qsize()))
+
+

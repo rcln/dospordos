@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-# Todo implement the actions
 import keras
 from keras.models import Model
 from keras.layers import Input, Dense, Dropout
