@@ -30,7 +30,8 @@ class Agent:
 
     # db functions
     def delete_current_db(self,i=None):
-        self.env.current_db.pop()
+        if len(self.env.current_db) > 0:
+            self.env.current_db.pop()
 
     def add_current_db(self,i=None):
         self.env.current_db.append(self.env.info_snippet)
@@ -79,7 +80,7 @@ class Network:
     def fit(self, x_train, y_train, epochs, batch_size):
         self.model.fit(x_train, y_train, batch_size=batch_size,
                        epochs=epochs,
-                       verbose=0)
+                       verbose=1)
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,

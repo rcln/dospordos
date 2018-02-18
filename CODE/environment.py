@@ -58,11 +58,12 @@ class Environment:
 
         return initial_state
 
-    def step(self, action_query, action_current_db, *args):
+    def step(self, action_tuple, *args):
+        # action_query(*args)
+        # action_current_db()
 
-        action_query(*args)
-        action_current_db()
-
+        action_tuple[0]()
+        action_tuple[1]()
         next_state = self.get_state()
         reward = self._get_reward()
         done = self._check_grid() or self._is_finished()
@@ -123,7 +124,7 @@ class Environment:
         state.append(commonA)
         state.append(common)
         state.append(len(A))
-        state.append(len(B))
+        state.append(len(B)) # -6
         state.append(total)
         tmp_vec = utils.get_confidence(text)
 
@@ -158,11 +159,11 @@ class Environment:
         self.golden_standard_db = [tuple(tmp)]
 
     def _check_grid(self):
-        empty = False
+        empty = True
 
         for k in self.queues.keys():
-            if self.queues[k].qsize() == 0:
-                empty = True
+            if self.queues[k].qsize() != 0:
+                empty = False
                 break
         return empty
 
