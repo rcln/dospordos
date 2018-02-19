@@ -89,7 +89,7 @@ def main():
                     action_vector[i] = 1
                     in_vector = [state + action_vector]
                     in_vector = np.array(in_vector)
-                    print(in_vector.shape)
+                    # print(in_vector.shape)
                     arg_max.append(agent.network.predict(in_vector))
 
                 action_vector = [0]*6
@@ -98,9 +98,11 @@ def main():
             # Observe reward and new state
             # example
             reward, next_state, done = env.step(agent.actions_to_take(action_vector))
-            print(reward)
-            print(next_state)
-            print(done)
+            print("reward", reward)
+            print("current_db in agent", agent.env.current_db)
+            print("ACTION TAKEN ", action_vector)
+            # print(next_state)
+            # print(done)
 
             if len(replay_memory) < 40:
                 replay_memory.append((state, action_vector, reward, next_state))
@@ -109,7 +111,6 @@ def main():
                 replay_memory.append((state, action_vector, reward, next_state))
 
             # Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
-            # TODO cal the target with all actions
             for sample in get_random_elements(replay_memory, 10):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
                 if env._check_grid() or (sample[3][-6] == sample[3][-5] == sample[3][-4]):
@@ -125,10 +126,10 @@ def main():
                     t = sample[2] + gamma*max(target_ar)
                 x_train = np.concatenate((sample[0], sample[1]))
                 x_train = np.array([x_train])
-                agent.network.fit(x_train, np.array([t]), 1, 1)
+                agent.network.fit(x_train, np.array(t), 1, 1)
 
             state = next_state
-            done = True
+
         break
 
 if __name__ == "__main__":
