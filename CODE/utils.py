@@ -389,6 +389,7 @@ class NominalFilter:
 
     def filter(self, snippet):
 
+        # replace all alpahbets with accent from the snippet with without accent alphabet versions
         snippet = Cleaner.remove_accent(Cleaner(), snippet)
         snippet = Cleaner.clean_reserved_xml(snippet)
 
@@ -425,6 +426,7 @@ class Cleaner:
         self._re_C = re.compile(u'[Ç]')
         self._re_S = re.compile(u'[Š]')
 
+    # replace all alpahbets with accent from the snippet with without accent alphabet versions
     def remove_accent(self, line_u):
         line_u = self._re_a.subn('a', line_u)[0]
         line_u = self._re_e.subn('e', line_u)[0]
@@ -464,11 +466,20 @@ def int_to_onehot(length,number,zero_based=False):
     return l
 
 
+
 def get_confidence(text):
+    """
+
+    :param text:gets text as an input
+    :return: gives back the organization name or geopolitical name such as countery, cities etc. The Spacy library extracts
+     these name entities with various confidence scores. The function output is (confident score for ORG, confident score for GPE)
+    using SPacy library have different
+    """
     nlp = spacy.load('en_core_web_sm')
-    ner_org = ('', u'ORG', 0.0)
-    ner_gpe = ('', u'GPE', 0.0)
+    ner_org = ('', u'ORG', 0.0) # ORG: Companies, agencies, institutions.
+    ner_gpe = ('', u'GPE', 0.0) # GPE: Geopolitical entity, i.e. countries, cities, states.
     with nlp.disable_pipes('ner'):
+        "convert text to spacy.tokens.doc.Doc type"
         doc = nlp(text)
 
     (beams, something_else_not_used) = nlp.entity.beam_parse([doc], beam_width=16, beam_density=0.0001)

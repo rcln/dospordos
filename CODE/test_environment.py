@@ -2,6 +2,7 @@
 
 from environment import Environment
 from agent import Agent
+import tensorflow as tf
 
 """
 Problems:
@@ -20,8 +21,8 @@ Problems:
 
 def main():
     env = Environment()
-    env.set_path_files('/home/tuxedo21/PycharmProjects/dospordos/DATA/fer_db/train.json')
-    env.set_path_train('/home/tuxedo21/PycharmProjects/dospordos/DATA/train_db/')
+    env.set_path_files('../DATA/fer_db/train.json')
+    env.set_path_train('../DATA/train_db/')
     # start new episode
     env.reset(1)
 
@@ -55,3 +56,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
