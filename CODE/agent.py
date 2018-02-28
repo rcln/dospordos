@@ -65,7 +65,7 @@ class Network:
         self.model.compile(loss=keras.losses.mean_squared_error,
                            optimizer=keras.optimizers.adam(),
                            metrics=['accuracy'])
-        print( self.model.summary() )
+        print(self.model.summary())
 
     @staticmethod
     def _create_model(tensor_shape):

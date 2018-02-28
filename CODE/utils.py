@@ -465,12 +465,9 @@ def int_to_onehot(length,number,zero_based=False):
     l.__setitem__(number, 1)
     return l
 
-
-
 def get_confidence(text):
     """
-
-    :param text:gets text as an input
+    :param text:gets snippet as an input
     :return: gives back the organization name or geopolitical name such as countery, cities etc. The Spacy library extracts
      these name entities with various confidence scores. The function output is (confident score for ORG, confident score for GPE)
     using SPacy library have different
@@ -499,7 +496,7 @@ def get_confidence(text):
     return ner_org, ner_gpe
 
 
-
+#there is no need to use get_location.
 def get_location(text):
     nlp = spacy.load('en_core_web_sm')
     ner_org = ('', u'ORG', -1.0)
@@ -526,7 +523,6 @@ def get_location(text):
         return ner_gpe[0]
     else:
         return ner_org[0]
-
 
 
 def get_date(text, first=False):

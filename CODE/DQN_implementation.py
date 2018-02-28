@@ -46,18 +46,11 @@ def main():
 
     eps = 0.5
 
-    data_path = "".join(s+"/" for s in (os.getcwd().split('/')[:-1])) + "DATA/"
-    data_train = data_path+"train_db/"
-    data_db = data_path+"fer_db/train.json"
-
-    # loading users
-    list_users = sorted(list(map(int, os.listdir(data_train))))
-
     env = Environment()
     agent = Agent(env)
 
-    env.set_path_train(data_train)
-    env.set_path_files(data_db)
+    # loading users
+    list_users = sorted(list(map(int, os.listdir(env.path))))
 
     # agent.print_model()
 

@@ -33,5 +33,36 @@ def main():
     # # print(agent.network.summary())
     # print(agent.network.predict(input_vector))
 
+def test():
+
+    data_train = "../DATA/train_db/"
+
+    # loading users
+    #list_users = sorted(list(map(int, os.listdir(data_train))))
+
+    env = Environment()
+    state = env.reset(1)
+    print('rewar', env._get_reward(), env._get_reward_soft())
+
+
+    agent = Agent(env)
+
+    # state = env.reset(1)
+    # print('state',state)
+    # action_vector = [1,0,0,0,0,0]
+    # print('action_vector', action_vector)
+    # input_vector = [state+action_vector]
+    # input_vector = np.array(input_vector)
+    # print('input shape', input_vector.shape)
+    # print('input_vector', input_vector)
+    #
+    # # print(agent.network.summary())
+    # print(agent.network.predict(input_vector))
+
+    pass
+
 if __name__ == "__main__":
-    main()
+
+    #main()
+    test()
+

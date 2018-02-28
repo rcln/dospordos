@@ -18,13 +18,13 @@ Problems:
 
 """
 
-
 def main():
-    env = Environment()
-    env.set_path_files('../DATA/fer_db/train.json')
-    env.set_path_train('../DATA/train_db/')
-    # start new episode
-    env.reset(1)
+
+    # env = Environment()
+    # env.set_path_files('../DATA/fer_db/train.json')
+    # env.set_path_train('../DATA/train_db/')
+    # # start new episode
+    # env.reset(1)
 
     # test of environment data
     # print('data env', env.queues)
@@ -54,6 +54,20 @@ def main():
     # print('data size env current queue', env.queues[env.current_queue].qsize())
     # print('env current queue', env.current_queue)
 
+    pass
+
+def test():
+    env = Environment()
+    agent = Agent(env)
+
+    print('next_snippet', agent.next_snippet)
+    print('add_current_db', agent.add_current_db)
+
+    #reward, state, done = env.step(agent.next_snippet, agent.add_current_db)
+
+    pass
+
 if __name__ == "__main__":
-    main()
+    #main()
+    test()
 

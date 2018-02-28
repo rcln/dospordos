@@ -9,8 +9,8 @@ from utils import FeatureFilter
 class Environment:
 
     def __init__(self):
-        self.path = "/dospordos/DATA/train_db/"
-        self.path_db = "/dospordos/DATA/fer_db/"
+        self.path = "../DATA/train_db/"
+        self.path_db = "../DATA/fer_db/train.json"
         self.queues = {}
         self.current_queue = None
         self.current_text = ""
@@ -82,14 +82,32 @@ class Environment:
         return queries
 
     def get_state(self):
+        """
+        this function returns back the current state which is a vector consisting of
+        :return: 7 dimension vector with one 1 and the rest are zeros: indicates which query result is considered in the current state
+                 the poped up snippet order from the query results w.r.t the rest of unpoped snippents in query result s.t. 0 <= the normalized value <= 1
+                 another 4 dimensional e_i vector indicating which research engine is used w.r.t the four utilized research engines
+                 number of common university names or organisations between goal standards and extracted NE in snippet
+                 number of common dates between goal standards and extracted NE in snippet
+                 number of common extracted NER in snippet and all goal standards
+                 number of all goal standards
+                 number of all extrcated NER from the anippet
+                 number of union of goal standards and NER in snippet
+                 confident score for estrcated ORG and GPE by Spacy from the snippet
+                 if a person name given by "goal standards" is a valid person name or not
+                 #TODO PA: checking the person name coming from Fernando DB as a person name sounds strange. It makes more sence checking the person name coming from the snippet as a person name.
+        """
         state = []
 
         self.current_text = self.current_data['title']+" "+self.current_data['text']
 
         text = self.current_text
         self.info_snippet = []
+
+        location_confident =  utils.get_confidence(text)
+
         #for a provided text in snippet result, we get date and organization of text if there exist any.
-        self.info_snippet.append(self._fill_info_snippet(text))
+        self.info_snippet.append(self._fill_info_snippet(text, location_confident[0], location_confident[1]))
 
         # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
         golden_standard_db = self.golden_standard_db
@@ -99,7 +117,9 @@ class Environment:
         # print(golden_standard_db)
         # print(data_cur)
 
+        #university name and date coming from goal standards (fernando database)
         A = set(golden_standard_db)
+        #B includes date and location (ORG and GPE) extracted from the given snippet
         B = set(data_cur)
         set_uni_A = set()
         set_ani_A = set()
@@ -139,16 +159,18 @@ class Environment:
         #total number of universities names and dates in union of goal standards and the given snippet
         state.append(total)
 
-        tmp_vec = utils.get_confidence(text)
+        # TODO: PA (Question) this is a confident score for extracted entities (ORG and GPE) from the given text.
+        # this entities get extracted again inside the get_confidence function
+        tmp_vec = location_confident #utils.get_confidence(text)
 
         # get the confidence score for NER with Spacy on GPE (    ner_gpe = (GPE: Geopolitical entity, i.e. countries, cities, states)
-        #TODO: PA (Question) this is a confident score for extracted entities (ORG and GPE) of given text
         for v in tmp_vec:
             state.append(v[2])
 
         #checks if the person name is valid or not.
         state.append(self._valid_name())
 
+        #print('state', state)
         return state
 
     def _valid_name(self):
@@ -186,17 +208,21 @@ class Environment:
         return empty
 
     # Todo familias de equivalencia semántica
+    #TODO: PA: why are rewards defined in this way? this is completely depends on the goal standards and not the improvement on one state w.r.t the previosu visited state.
     def _get_reward(self):
         golden_standard_db = self.golden_standard_db
         data_cur = self.current_db
         a = set(golden_standard_db)
-        print(data_cur, "data_cur")
+        #TODO: PA: it shouldn't be the extrcated NER from the snippet in self.current_data ?
         b = set(data_cur)
+
+        print('current_data', self.current_data)
+        print('golden_standard_db', golden_standard_db)
+        print("data_cur", data_cur)
         print(b, "b")
 
         # Jaccard index - symmetric difference (penalty)
         reward = (len(a.intersection(b))/len(a.union(b))) - len(a.symmetric_difference(b))
-
         return reward
 
     def _get_reward_soft(self):
@@ -216,10 +242,16 @@ class Environment:
 
         return reward
 
-    def _fill_info_snippet(self,text):
+    def _fill_info_snippet(self,text, ner_org, ner_gpe):
         date = utils.get_date(text,True)
-        location = utils.get_location(text)
-        return (location, date)
+        # location = utils.get_location(text)
+
+        if (ner_gpe[2] >= ner_org[2]):
+            location = ner_gpe[0]
+        else:
+            location = ner_org[0]
+
+        return ((location, date))
 
     def _normalize_snippet_number(self, snippet_number):
         return 1 - (snippet_number / float((self.queues[self.current_queue]).qsize()))
