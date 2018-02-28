@@ -190,7 +190,9 @@ class Environment:
         golden_standard_db = self.golden_standard_db
         data_cur = self.current_db
         a = set(golden_standard_db)
+        print(data_cur, "data_cur")
         b = set(data_cur)
+        print(b, "b")
 
         # Jaccard index - symmetric difference (penalty)
         reward = (len(a.intersection(b))/len(a.union(b))) - len(a.symmetric_difference(b))

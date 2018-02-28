@@ -44,7 +44,7 @@ def get_random_sars():
 
 def main():
 
-    eps = 0.1
+    eps = 0.5
 
     data_path = "".join(s+"/" for s in (os.getcwd().split('/')[:-1])) + "DATA/"
     data_train = data_path+"train_db/"
@@ -94,13 +94,15 @@ def main():
 
                 action_vector = [0]*6
                 action_vector[arg_max.index(max(arg_max))] = 1
-
+                print(arg_max, "Q(s,a)")
             # Observe reward and new state
             # example
             reward, next_state, done = env.step(agent.actions_to_take(action_vector))
             print("reward", reward)
             print("current_db in agent", agent.env.current_db)
             print("ACTION TAKEN ", action_vector)
+            print("State =", env.get_state())
+            print("Gold standard ", env.golden_standard_db)
             # print(next_state)
             # print(done)
 
@@ -126,6 +128,8 @@ def main():
                     t = sample[2] + gamma*max(target_ar)
                 x_train = np.concatenate((sample[0], sample[1]))
                 x_train = np.array([x_train])
+                # print(x_train, "x_train")
+                # print(t, "target")
                 agent.network.fit(x_train, np.array(t), 1, 1)
 
             state = next_state

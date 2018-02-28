@@ -34,7 +34,7 @@ class Agent:
             self.env.current_db.pop()
 
     def add_current_db(self,i=None):
-        self.env.current_db.append(self.env.info_snippet)
+        self.env.current_db.append(tuple(self.env.info_snippet))
 
     @staticmethod
     def keep_current_db():
