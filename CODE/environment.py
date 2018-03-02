@@ -11,6 +11,7 @@ class Environment:
     def __init__(self):
         self.path = "../DATA/train_db/"
         self.path_db = "../DATA/fer_db/train.json"
+        self.path_weights = "../DATA/model_w.h5"
         self.queues = {}
         self.current_queue = None
         self.current_text = ""
@@ -67,7 +68,10 @@ class Environment:
         action_tuple[0]()
         action_tuple[1]()
         next_state = self.get_state()
-        reward = self._get_reward()
+
+        # Todo Find the optimal reward
+        reward = self._get_reward_soft()
+
         done = self._check_grid() or self._is_finished()
 
         return reward, next_state, done
@@ -234,9 +238,10 @@ class Environment:
         reward = (len(a.intersection(b))/len(a.union(b))) - len(a.symmetric_difference(b))
         return reward
 
-    def _get_reward_soft(self):
+    def _get_reward_soft(self, tolerance=3):
         golden_standard_db = self.golden_standard_db
         data_cur = self.current_db
+
 
         a = set()
         b = set()
@@ -246,8 +251,13 @@ class Environment:
         for y2 in data_cur:
             b.add(y2[0])
 
+        tolerance = len(b) - tolerance
+        if tolerance < 0:
+            tolerance = 0
+
         # Jaccard index - symmetric difference (penalty)
-        reward = (len(a.intersection(b)) / len(a.union(b))) - len(a.symmetric_difference(b))
+        reward = (len(a.intersection(b)) / len(a.union(b))) - \
+                 len(a.symmetric_difference(b))
 
         return reward
 

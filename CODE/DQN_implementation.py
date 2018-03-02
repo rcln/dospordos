@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 from environment import Environment
 from agent import Agent
 import numpy as np
@@ -52,15 +53,16 @@ def interpret_action(action_vector):
     print("Actions:: ", actions_grid[int(num / 3)], ";;", actions_db[num % 3])
 
 
-def main():
+def main(env, agent):
 
     eps = 0.5
 
-    env = Environment()
-    agent = Agent(env)
-
     # loading users
     list_users = sorted(list(map(int, os.listdir(env.path))))
+
+    # loading weights
+    if os.path.exists(env.path_weights):
+        agent.network.load_weights(env.path_weights)
 
     # agent.print_model()
 
@@ -119,6 +121,9 @@ def main():
                   "total both, confidence ORG, confidence GPE, valid name variation ")
 
             print("Gold standard:: ", env.golden_standard_db)
+            print("Current queue:: ", env.current_queue)
+            print("Current snippet:: ", env.current_text)
+
 
             if len(replay_memory) < 40:
                 replay_memory.append((state, action_vector, reward, next_state))
@@ -148,7 +153,19 @@ def main():
 
             state = next_state
 
+        agent.network.save_weights(env.path_weights)
         break
 
 if __name__ == "__main__":
-    main()
+    try:
+        env = Environment()
+        agent = Agent(env)
+        main(env, agent)
+    except KeyboardInterrupt:
+        print("\n\n-----Interruption-----\nSaving weights")
+        agent.network.save_weights(env.path_weights)
+        print("Weights saved")
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
