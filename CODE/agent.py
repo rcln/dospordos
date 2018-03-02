@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 import keras
 from keras.models import Model
 from keras.layers import Input, Dense, Dropout
@@ -29,34 +30,28 @@ class Agent:
                 self.env.current_queue = queue
 
     # db functions
-    def delete_current_db(self,i=None):
+    def delete_current_db(self, i=None):
         if len(self.env.current_db) > 0:
             self.env.current_db.pop()
 
-    def add_current_db(self,i=None):
+    def add_current_db(self, i=None):
         self.env.current_db.append(tuple(self.env.info_snippet))
 
     @staticmethod
     def keep_current_db():
         pass
 
+    def actions_to_take(self, action_activation_vector):
+        num_l = np.nonzero(action_activation_vector)
+        num = num_l[0][0]
+        actions_db = (self.delete_current_db, self.add_current_db, self.keep_current_db)
+        actions_grid = (self.next_snippet, self.change_queue)
 
-    def actions_to_take(self,action_activation_vector):
-        if action_activation_vector[0]:
-            return self.next_snippet, self.delete_current_db
-        elif action_activation_vector[1]:
-            return self.next_snippet, self.add_current_db
-        elif action_activation_vector[2]:
-            return self.next_snippet, self.keep_current_db
-        elif action_activation_vector[3]:
-            return self.change_queue, self.delete_current_db
-        elif action_activation_vector[4]:
-            return self.change_queue, self.add_current_db
-        elif action_activation_vector[5]:
-            return self.change_queue, self.keep_current_db
+        return actions_grid[int(num/3)], actions_db[num % 3]
 
     def print_model(self):
         plot_model(self.network, to_file='model.png')
+
 
 class Network:
 

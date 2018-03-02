@@ -96,6 +96,10 @@ class Environment:
                  confident score for estrcated ORG and GPE by Spacy from the snippet
                  if a person name given by "goal standards" is a valid person name or not
                  #TODO PA: checking the person name coming from Fernando DB as a person name sounds strange. It makes more sence checking the person name coming from the snippet as a person name.
+                    # Answer:
+                        It verifies whether a valid variation of the name exists in the snippet or not.
+                        The class is initialized with the name in order to make the valid variations.
+                        Then the method search a valid name variation in the text passed 
         """
         state = []
 
@@ -104,7 +108,7 @@ class Environment:
         text = self.current_text
         self.info_snippet = []
 
-        location_confident =  utils.get_confidence(text)
+        location_confident = utils.get_confidence(text)
 
         #for a provided text in snippet result, we get date and organization of text if there exist any.
         self.info_snippet.append(self._fill_info_snippet(text, location_confident[0], location_confident[1]))
@@ -143,6 +147,11 @@ class Environment:
         state = state + utils.int_to_onehot(7, self.current_queue)         #state.append(self.current_queue)
         #We normalize the taken snippet number of query results w.r.t rest of query snippents results
         #PA: I do not know the reason yet.
+        """ Answer: The number of the current snippet have values between 0 and approximately 40, 
+                since we believe the more important information in the beginning of the search, we decided
+                to realize a normalization and pass a value between 0 and 1. Where 1 is the beginning of the
+                snippets in the queue 
+        """
         state.append(self._normalize_snippet_number(float(self.current_data['number_snippet'])))
         # shows the selcted engine search. There are 4 enigine searches in total.
         state = state + utils.int_to_onehot(4, int(self.current_data['engine_search']),True)       #state.append(int(self.current_data['engine_search']))
@@ -216,10 +225,10 @@ class Environment:
         #TODO: PA: it shouldn't be the extrcated NER from the snippet in self.current_data ?
         b = set(data_cur)
 
-        print('current_data', self.current_data)
-        print('golden_standard_db', golden_standard_db)
-        print("data_cur", data_cur)
-        print(b, "b")
+        # print('current_data', self.current_data)
+        # print('golden_standard_db', golden_standard_db)
+        # print("data_cur", data_cur)
+        # print(b, "b")
 
         # Jaccard index - symmetric difference (penalty)
         reward = (len(a.intersection(b))/len(a.union(b))) - len(a.symmetric_difference(b))
@@ -243,15 +252,15 @@ class Environment:
         return reward
 
     def _fill_info_snippet(self,text, ner_org, ner_gpe):
-        date = utils.get_date(text,True)
+        date = utils.get_date(text, True)
         # location = utils.get_location(text)
 
-        if (ner_gpe[2] >= ner_org[2]):
+        if ner_gpe[2] >= ner_org[2]:
             location = ner_gpe[0]
         else:
             location = ner_org[0]
 
-        return ((location, date))
+        return location, date
 
     def _normalize_snippet_number(self, snippet_number):
         return 1 - (snippet_number / float((self.queues[self.current_queue]).qsize()))

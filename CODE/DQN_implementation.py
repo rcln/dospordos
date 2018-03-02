@@ -4,17 +4,18 @@ from environment import Environment
 from agent import Agent
 import numpy as np
 
+
 # TODO can we have repeatables
-def get_random_elements(ar: list,number):
+def get_random_elements(ar: list, number):
     element_list = []
-    for i in range(0,number):
-        element_list.append(ar[np.random.randint(0,len(ar))])
+    for i in range(0, number):
+        element_list.append(ar[np.random.randint(0, len(ar))])
     return element_list
 
 
 def get_random_action_vector(size):
     action_vector = np.zeros(size)
-    action_vector[np.random.randint(0,size)] = 1
+    action_vector[np.random.randint(0, size)] = 1
     return action_vector
 
 
@@ -26,7 +27,7 @@ def get_random_sars():
     s = np.concatenate((get_random_action_vector(7),
                         np.array([np.random.uniform(0.0, 1.0)]),
                         get_random_action_vector(4),
-                        np.array([np.random.uniform(0.0, 1.0),np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
+                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
                         np.array((A, B, A+B)),
                         np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
                         np.array([np.random.randint(0, 2)])))
@@ -40,6 +41,15 @@ def get_random_sars():
                         np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
                         np.array([np.random.randint(0, 2)])))
     return s, a, r, s_prime
+
+
+def interpret_action(action_vector):
+    num_l = np.nonzero(action_vector)
+    num = num_l[0][0]
+    actions_db = ("delete current_db", "add current_db", "keep current_db")
+    actions_grid = ("next_snippet", "change_queue")
+
+    print("Actions:: ", actions_grid[int(num / 3)], ";;", actions_db[num % 3])
 
 
 def main():
@@ -72,6 +82,9 @@ def main():
             """
 
             p = np.random.random()
+
+            print("\nProbability for exploring: ", p, " vs epsilon: ", eps)
+
             if p < eps:
                 action_vector = get_random_action_vector(6)
             else:
@@ -87,17 +100,25 @@ def main():
 
                 action_vector = [0]*6
                 action_vector[arg_max.index(max(arg_max))] = 1
-                print(arg_max, "Q(s,a)")
+
+                print("Q(s,a'), arg_max:: ", end="")
+                interpret_action(action_vector)
+                print("Q(s,a'), probability:: ", max(arg_max))
             # Observe reward and new state
             # example
             reward, next_state, done = env.step(agent.actions_to_take(action_vector))
-            print("reward", reward)
-            print("current_db in agent", agent.env.current_db)
-            print("ACTION TAKEN ", action_vector)
-            print("State =", env.get_state())
-            print("Gold standard ", env.golden_standard_db)
-            # print(next_state)
-            # print(done)
+
+            print("reward:: ", reward)
+            print("current_db in agent:: ", agent.env.current_db)
+            print("ACTION TAKEN:: ", end="")
+            interpret_action(action_vector)
+            print("State:: ", env.get_state())
+            print("State::  ( 7 dim vector for actual queue~ query result, "
+                  "actual snippet normalized, 4 dim vector engine search, "
+                  "common univ, common years, common, total gold_stand, total current, "
+                  "total both, confidence ORG, confidence GPE, valid name variation ")
+
+            print("Gold standard:: ", env.golden_standard_db)
 
             if len(replay_memory) < 40:
                 replay_memory.append((state, action_vector, reward, next_state))
