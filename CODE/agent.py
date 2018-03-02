@@ -73,14 +73,14 @@ class Network:
         return Model(inputs=x, outputs=o)
 
     def fit(self, x_train, y_train, epochs, batch_size):
-        self.model.fit(x_train, y_train, batch_size=batch_size,
+        self.model.fit(x_train, y_train, # batch_size=batch_size,
                        epochs=epochs,
                        verbose=1)
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,
-                                 steps_per_epoch=steps_per_epoch,
-                                 epochs=epochs,
+                                 # steps_per_epoch=steps_per_epoch,
+                                 # epochs=epochs,
                                  verbose=0)
 
     # (loss, accuracy)

@@ -66,6 +66,8 @@ def main(env, agent):
 
     # agent.print_model()
 
+    # Todo random users
+
     # episodes
     for us in list_users:
         # reset episode with new user and get initial state
@@ -124,15 +126,17 @@ def main(env, agent):
             print("Current queue:: ", env.current_queue)
             print("Current snippet:: ", env.current_text)
 
-
-            if len(replay_memory) < 40:
+            # Todo Ask Pegah about replay memory
+            if len(replay_memory) < 500:
                 replay_memory.append((state, action_vector, reward, next_state))
             else:
                 del replay_memory[0]
                 replay_memory.append((state, action_vector, reward, next_state))
 
             # Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
-            for sample in get_random_elements(replay_memory, 10):
+            X_train = []
+            Y_train = []
+            for sample in get_random_elements(replay_memory, 30):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
                 if env._check_grid() or (sample[3][-6] == sample[3][-5] == sample[3][-4]):
                     t = sample[2]
@@ -146,10 +150,14 @@ def main(env, agent):
                         target_ar.append(agent.network.predict(t_vector))
                     t = sample[2] + gamma*max(target_ar)
                 x_train = np.concatenate((sample[0], sample[1]))
-                x_train = np.array([x_train])
-                # print(x_train, "x_train")
-                # print(t, "target")
-                agent.network.fit(x_train, np.array(t), 1, 1)
+                x_train = np.array(x_train)
+                X_train.append(x_train)
+                Y_train.append(t[0])
+
+            X_train = np.array(X_train)
+            Y_train = np.array(Y_train)
+
+            agent.network.fit(X_train, Y_train, 1, len(x_train))
 
             state = next_state
 
