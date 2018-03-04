@@ -4,44 +4,15 @@ import sys
 from environment import Environment
 from agent import Agent
 import numpy as np
+from Sars import Sars
 
 
-# TODO can we have repeatables
+# TODO can we have repeatables, ask Pegah
 def get_random_elements(ar: list, number):
     element_list = []
     for i in range(0, number):
         element_list.append(ar[np.random.randint(0, len(ar))])
     return element_list
-
-
-def get_random_action_vector(size):
-    action_vector = np.zeros(size)
-    action_vector[np.random.randint(0, size)] = 1
-    return action_vector
-
-
-def get_random_sars():
-    A = np.random.uniform(0.0, 10.0)
-    B = np.random.uniform(0.0, 10.0)
-    a = get_random_action_vector(6)
-    r = np.array([np.random.uniform(-20.0, 0.0)])
-    s = np.concatenate((get_random_action_vector(7),
-                        np.array([np.random.uniform(0.0, 1.0)]),
-                        get_random_action_vector(4),
-                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                        np.array((A, B, A+B)),
-                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                        np.array([np.random.randint(0, 2)])))
-    A = np.random.uniform(0.0, 10.0)
-    B = np.random.uniform(0.0, 10.0)
-    s_prime = np.concatenate((get_random_action_vector(7),
-                        np.array([np.random.uniform(0.0, 1.0)]),
-                        get_random_action_vector(4),
-                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                        np.array((A, B, A+B)),
-                        np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                        np.array([np.random.randint(0, 2)])))
-    return s, a, r, s_prime
 
 
 def interpret_action(action_vector):
@@ -73,8 +44,8 @@ def main(env, agent):
         # reset episode with new user and get initial state
         replay_memory = []
         gamma = 0.1
-        for x in range(0,1000):
-            replay_memory.append(get_random_sars())
+        for x in range(0, 1000):
+            replay_memory.append(Sars(0, 0, 0, 0, True))
 
         # initial state
         state = env.reset(us)
@@ -90,7 +61,7 @@ def main(env, agent):
             print("\nProbability for exploring: ", p, " vs epsilon: ", eps)
 
             if p < eps:
-                action_vector = get_random_action_vector(6)
+                action_vector = Sars.get_random_action_vector(6)
             else:
                 # a = argmaxQ(s,a)
                 arg_max = []
@@ -127,29 +98,29 @@ def main(env, agent):
             print("Current snippet:: ", env.current_text)
 
             # Todo Ask Pegah about replay memory
-            if len(replay_memory) < 500:
-                replay_memory.append((state, action_vector, reward, next_state))
+            if len(replay_memory) < 1500:
+                replay_memory.append(Sars(state, action_vector, reward, next_state))
             else:
                 del replay_memory[0]
-                replay_memory.append((state, action_vector, reward, next_state))
+                replay_memory.append(Sars(state, action_vector, reward, next_state))
 
             # Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
             X_train = []
             Y_train = []
             for sample in get_random_elements(replay_memory, 30):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
-                if env._check_grid() or (sample[3][-6] == sample[3][-5] == sample[3][-4]):
-                    t = sample[2]
+                if env._check_grid() or (sample.s_prime[-6] == sample.s_prime[-5] == sample.s_prime[-4]):
+                    t = sample.r
                 else:
                     target_ar = []
                     for i in range(6):
                         action_vector = [0] * 6
                         action_vector[i] = 1
-                        t_vector = np.concatenate((sample[3], np.array(action_vector)))
+                        t_vector = np.concatenate((sample.s_prime, np.array(action_vector)))
                         t_vector = np.array([t_vector])
                         target_ar.append(agent.network.predict(t_vector))
-                    t = sample[2] + gamma*max(target_ar)
-                x_train = np.concatenate((sample[0], sample[1]))
+                    t = sample.r + gamma*max(target_ar)
+                x_train = np.concatenate((sample.s, sample.a))
                 x_train = np.array(x_train)
                 X_train.append(x_train)
                 Y_train.append(t[0])

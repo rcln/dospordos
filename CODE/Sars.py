@@ -3,16 +3,17 @@ import numpy as np
 
 
 class Sars:
-    def __init__(self, s: np.array, a: np.array, r: np.array, s_prime: np.array):
-        self.s = s
-        self.a = a
-        self.r = r
-        self.s_prime = s_prime
+    def __init__(self, s=None, a=None, r=None, s_prime=None, random=False):
+        if random:
+            self.s, self.a, self.r, self.s_prime = self.get_random_sars()
+        else:
+            self.s = s
+            self.a = a
+            self.r = np.array(r)
+            self.s_prime = s_prime
 
-    def __init__(self):
-        self.s, self.a, self.r, self.s_prime, = self.get_random_sars()
-
-    def get_random_action_vector(self, size: int):
+    @staticmethod
+    def get_random_action_vector(size: int):
         action_vector = np.zeros(size)
         action_vector[np.random.randint(0, size)] = 1
         return action_vector
