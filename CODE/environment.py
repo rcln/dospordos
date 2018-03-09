@@ -224,15 +224,16 @@ class Environment:
     #TODO: PA: why are rewards defined in this way? this is completely depends on the goal standards and not the improvement on one state w.r.t the previosu visited state.
     def _get_reward(self):
         golden_standard_db = self.golden_standard_db
-        data_cur = self.current_db
+        data_cur = []
+
+        golden_standard_db = [(golden_standard_db[0][0].lower().replace(' ', ''), golden_standard_db[0][1])]
+
+        for tup in self.current_db:
+            data_cur.append((tup[0][0].lower().replace(' ', ''), tup[0][1]))
+
         a = set(golden_standard_db)
         #TODO: PA: it shouldn't be the extrcated NER from the snippet in self.current_data ?
         b = set(data_cur)
-
-        # print('current_data', self.current_data)
-        # print('golden_standard_db', golden_standard_db)
-        # print("data_cur", data_cur)
-        # print(b, "b")
 
         # Jaccard index - symmetric difference (penalty)
         reward = (len(a.intersection(b))/len(a.union(b))) - len(a.symmetric_difference(b))
@@ -241,7 +242,6 @@ class Environment:
     def _get_reward_soft(self, tolerance=3):
         golden_standard_db = self.golden_standard_db
         data_cur = self.current_db
-
 
         a = set()
         b = set()
