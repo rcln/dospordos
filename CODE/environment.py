@@ -4,6 +4,7 @@ import utils
 import json, os
 from queue import Queue
 from utils import FeatureFilter
+import pickle
 
 
 class Environment:

@@ -26,13 +26,13 @@ def save_object(obj, filename):
 
 
 def list_to_pickle_count_vectorizer():
-    tf_vectorizer = CountVectorizer(stop_words='english')
+    tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
     tf = tf_vectorizer.fit(snippets_to_list())
     save_object(tf, 'count_vectorizer.pkl')
 
 
 def list_to_pickle_tfidf_vectorizer():
-    tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
     tf = tfidf_vectorizer.fit(snippets_to_list())
     save_object(tf, 'tfidf_vectorizer.pkl')
 
