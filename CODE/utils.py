@@ -533,3 +533,53 @@ def get_date(text, first=False):
         return ""
     else:
         return matches
+
+
+def step(x):
+    return 1 * (x > 0)
+
+
+def edit_distance(a, b):
+
+    print(a, b)
+
+    dist = []
+    for e_a in a:
+        str_a = e_a[0]
+        for e_b in b:
+            str_b = e_b[0]
+            dist.append(_edit_distance(str_a, str_b))
+
+    if len(dist) == 0:
+        for e_a in a:
+            str_a = e_a[0]
+            dist.append(_edit_distance(str_a, ""))
+
+    if len(dist) == 0:
+        dist.append(0)
+
+    return dist
+
+
+def _edit_distance(str1, str2):
+    s1 = sorted(str1)
+    s2 = sorted(str2)
+
+    l = abs(len(s1) - len(s2))
+    m_len = min(len(s1), len(s2))
+
+    c = 0
+    for i in range(m_len):
+        if s1[i] != s2[i]:
+            c = c+1
+
+    return l+c
+
+
+def len_content(a):
+    num_content = 0
+
+    for e in a:
+        tmp = len(e[0])
+        num_content = max(num_content, tmp)
+    return num_content

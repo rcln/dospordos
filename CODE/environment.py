@@ -2,6 +2,7 @@
 
 import utils
 import json, os
+import math as m
 from queue import Queue
 from utils import FeatureFilter
 import pickle
@@ -21,6 +22,8 @@ class Environment:
         self.current_db = []
         self.golden_standard_db = None
         self.info_snippet = None
+        self.reward_prev = 0
+        self.alpha_reward = 0.5
 
     def set_path_train(self, path):
         self.path = path
@@ -40,6 +43,7 @@ class Environment:
         self.current_db.clear()
         self.current_queue = None
         self._get_golden_standard_db(id_person)
+        self.reward_prev = 0
 
         for file in os.listdir(files):
             with open(files+file) as f:
@@ -71,7 +75,7 @@ class Environment:
         next_state = self.get_state()
 
         # Todo Find the optimal reward
-        reward = self._get_reward_soft()
+        reward = self._get_reward()
 
         done = self._check_grid() or self._is_finished()
 
@@ -222,8 +226,9 @@ class Environment:
         return empty
 
     # Todo familias de equivalencia semántica
-    #TODO: PA: why are rewards defined in this way? this is completely depends on the goal standards and not the improvement on one state w.r.t the previosu visited state.
-    def _get_reward(self):
+    # TODO: PA: why are rewards defined in this way? this is completely depends on the goal standards
+    # and not the improvement on one state w.r.t the previosu visited state.
+    def _get_reward(self, offset=3):
         golden_standard_db = self.golden_standard_db
         data_cur = []
 
@@ -233,13 +238,22 @@ class Environment:
             data_cur.append((tup[0][0].lower().replace(' ', ''), tup[0][1]))
 
         a = set(golden_standard_db)
-        #TODO: PA: it shouldn't be the extrcated NER from the snippet in self.current_data ?
+        # TODO: PA: it shouldn't be the extracted NER from the snippet in self.current_data ?
         b = set(data_cur)
 
-        # Jaccard index - symmetric difference (penalty)
-        reward = (len(a.intersection(b))/len(a.union(b))) - len(a.symmetric_difference(b))
+        # Jaccard index - penalty
+        # penalty =  e^(alpha * len(b)) * u(len(b)-offset) + min (edit_distance(A,B)) / len(A_content)
+
+        penalty = m.pow(m.e, self.alpha_reward * len(b))*utils.step(len(b) - offset)
+        penalty += min(utils.edit_distance(a, b)) / utils.len_content(a)
+        reward_cur = (len(a.intersection(b))/len(a.union(b))) - penalty
+
+        reward = reward_cur - self.reward_prev
+        self.reward_prev = reward_cur
+
         return reward
 
+    # Todo rewrite this function so is similar to the normal reward but only with the universities
     def _get_reward_soft(self, tolerance=3):
         golden_standard_db = self.golden_standard_db
         data_cur = self.current_db

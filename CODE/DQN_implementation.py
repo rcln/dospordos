@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import numpy as np
+from random import shuffle
 from environment import Environment
 from agent import Agent
-import numpy as np
 from Sars import Sars
 
 
@@ -36,8 +37,7 @@ def main(env, agent):
         agent.network.load_weights(env.path_weights)
 
     # agent.print_model()
-
-    # Todo random users
+    shuffle(list_users)
 
     # episodes
     for us in list_users:
@@ -97,7 +97,7 @@ def main(env, agent):
             print("Current queue:: ", env.current_queue)
             print("Current snippet:: ", env.current_text)
 
-            # Todo Ask Pegah about replay memory
+            # Todo Ask Pegah about replay memory ask her opinion...?
             if len(replay_memory) < 1500:
                 replay_memory.append(Sars(state, action_vector, reward, next_state))
             else:
@@ -136,9 +136,9 @@ def main(env, agent):
         break
 
 if __name__ == "__main__":
+    env = Environment()
+    agent = Agent(env)
     try:
-        env = Environment()
-        agent = Agent(env)
         main(env, agent)
     except KeyboardInterrupt:
         print("\n\n-----Interruption-----\nSaving weights")
