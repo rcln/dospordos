@@ -8,9 +8,9 @@ from keras.utils import plot_model
 
 class Agent:
 
-    def __init__(self, env):
+    def __init__(self, env, shape=(27,)):
         self.env = env
-        self.network = Network((27,))
+        self.network = Network(shape)
 
     # grid functions
     def next_snippet(self):

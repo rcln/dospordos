@@ -465,6 +465,7 @@ def int_to_onehot(length,number,zero_based=False):
     l.__setitem__(number, 1)
     return l
 
+
 def get_confidence(text):
     """
     :param text:gets snippet as an input
@@ -519,7 +520,7 @@ def get_location(text):
         elif label == 'GPE' and entity_scores[key] > ner_gpe[2]:
             ner_gpe = (doc[start:end], label, entity_scores[key])
 
-    if (ner_gpe[2] >= ner_org[2]):
+    if ner_gpe[2] >= ner_org[2]:
         return ner_gpe[0]
     else:
         return ner_org[0]
@@ -541,7 +542,7 @@ def step(x):
 
 def edit_distance(a, b):
 
-    print(a, b)
+    # print(a, b)
 
     dist = []
     for e_a in a:

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import utils
-import json, os
+import json
+import os
 import math as m
 from queue import Queue
 from utils import FeatureFilter
-import pickle
+from sklearn.externals import joblib
 
 
 class Environment:
@@ -14,6 +15,8 @@ class Environment:
         self.path = "../DATA/train_db/"
         self.path_db = "../DATA/fer_db/train.json"
         self.path_weights = "../DATA/model_w.h5"
+        self.path_count_vect = "../DATA/count_vectorizer.pkl"
+        self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
         self.queues = {}
         self.current_queue = None
         self.current_text = ""
@@ -24,6 +27,11 @@ class Environment:
         self.info_snippet = None
         self.reward_prev = 0
         self.alpha_reward = 0.5
+
+        # tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
+        # tf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
+
+        self.tf_vectorizer = joblib.load(self.path_tfidf_vect)
 
     def set_path_train(self, path):
         self.path = path
@@ -188,6 +196,18 @@ class Environment:
         #checks if the person name is valid or not.
         state.append(self._valid_name())
 
+
+        print("DEBUGGING::", type(state))
+        # TODO THEO & ME
+        """
+            - append or concatenate the transformation of the current text using
+            self.tf_vectorizer
+            
+            - modify SARS
+            - modify all places where the state is affected
+        """
+
+
         #print('state', state)
         return state
 
@@ -234,8 +254,14 @@ class Environment:
 
         golden_standard_db = [(golden_standard_db[0][0].lower().replace(' ', ''), golden_standard_db[0][1])]
 
+
+        """
+        data_cur.append((tup[0][0].lower().replace(' ', ''), tup[0][1]))
+AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
+        """
+
         for tup in self.current_db:
-            data_cur.append((tup[0][0].lower().replace(' ', ''), tup[0][1]))
+            data_cur.append((str(tup[0][0]).lower().replace(' ', ''), tup[0][1]))
 
         a = set(golden_standard_db)
         # TODO: PA: it shouldn't be the extracted NER from the snippet in self.current_data ?
@@ -249,6 +275,11 @@ class Environment:
         reward_cur = (len(a.intersection(b))/len(a.union(b))) - penalty
 
         reward = reward_cur - self.reward_prev
+
+        print("Current reward", reward_cur)
+        print("Previous reward", self.reward_prev)
+        print("Reward", reward)
+
         self.reward_prev = reward_cur
 
         return reward

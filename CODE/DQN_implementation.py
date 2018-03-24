@@ -2,6 +2,7 @@
 import os
 import sys
 import numpy as np
+import preprocessing as prep
 from random import shuffle
 from environment import Environment
 from agent import Agent
@@ -83,7 +84,7 @@ def main(env, agent):
             # example
             reward, next_state, done = env.step(agent.actions_to_take(action_vector))
 
-            print("reward:: ", reward)
+            print("reward step:: ", reward)
             print("current_db in agent:: ", agent.env.current_db)
             print("ACTION TAKEN:: ", end="")
             interpret_action(action_vector)
@@ -137,7 +138,15 @@ def main(env, agent):
 
 if __name__ == "__main__":
     env = Environment()
-    agent = Agent(env)
+
+    if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
+        print("Training BOW vectors")
+        prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+        print("---FIT COMPLETED----")
+
+    # TODO get the second number automatically ... env.tf_vectorizer.shape[0]
+    agent = Agent(env, (27 + 27386,))
+
     try:
         main(env, agent)
     except KeyboardInterrupt:
