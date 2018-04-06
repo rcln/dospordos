@@ -45,6 +45,13 @@ def main(env, agent):
         # reset episode with new user and get initial state
         replay_memory = []
         gamma = 0.1
+
+        # Todo change the way we create replay_memory
+        # instead of being random, run the project with users and random actions
+        # and recollect the experience.
+        # doubt- keep it store?
+        # doubt- do it just once?
+
         for x in range(0, 1000):
             replay_memory.append(Sars(0, 0, 0, 0, True))
 
@@ -69,8 +76,12 @@ def main(env, agent):
                 for i in range(6):
                     action_vector = [0]*6
                     action_vector[i] = 1
-                    in_vector = [state + action_vector]
-                    in_vector = np.array(in_vector)
+                    action_vector = np.array([action_vector])
+
+                    # in_vector = [state + action_vector]
+                    # in_vector = np.array(in_vector)
+                    in_vector = np.concatenate([state, action_vector], axis=1)
+
                     # print(in_vector.shape)
                     arg_max.append(agent.network.predict(in_vector))
 
@@ -110,7 +121,7 @@ def main(env, agent):
             Y_train = []
             for sample in get_random_elements(replay_memory, 30):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
-                if env._check_grid() or (sample.s_prime[-6] == sample.s_prime[-5] == sample.s_prime[-4]):
+                if env._check_grid() or (sample.s_prime[15] == sample.s_prime[16] == sample.s_prime[17]):
                     t = sample.r
                 else:
                     target_ar = []
@@ -122,6 +133,12 @@ def main(env, agent):
                         target_ar.append(agent.network.predict(t_vector))
                     t = sample.r + gamma*max(target_ar)
                 x_train = np.concatenate((sample.s, sample.a))
+
+                # TODO ERROR HERE
+                """
+                TypeError: 'NoneType' object is not callable
+                """
+
                 x_train = np.array(x_train)
                 X_train.append(x_train)
                 Y_train.append(t[0])

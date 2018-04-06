@@ -30,7 +30,8 @@ class Sars:
                                       np.random.uniform(0.0, 1.0)]),
                             np.array((A, B, A + B)),
                             np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                            np.array([np.random.randint(0, 2)])))
+                            np.array([np.random.randint(0, 2)]),
+                            np.zeros(shape=(27386, ))))
         A = np.random.uniform(0.0, 10.0)
         B = np.random.uniform(0.0, 10.0)
         s_prime = np.concatenate((self.get_random_action_vector(7),
@@ -40,7 +41,8 @@ class Sars:
                                             np.random.uniform(0.0, 1.0)]),
                                   np.array((A, B, A + B)),
                                   np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                                  np.array([np.random.randint(0, 2)])))
+                                  np.array([np.random.randint(0, 2)]),
+                                  np.zeros(shape=(27386, ))))
         return s, a, r, s_prime
 
 

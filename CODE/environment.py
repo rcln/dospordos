@@ -4,6 +4,7 @@ import utils
 import json
 import os
 import math as m
+import numpy as np
 from queue import Queue
 from utils import FeatureFilter
 from sklearn.externals import joblib
@@ -182,33 +183,25 @@ class Environment:
         state.append(len(A))
         # number of total university name and dates extracted from the given snippet
         state.append(len(B)) # -6
-        #total number of universities names and dates in union of goal standards and the given snippet
+        # total number of universities names and dates in union of goal standards and the given snippet
         state.append(total)
 
         # TODO: PA (Question) this is a confident score for extracted entities (ORG and GPE) from the given text.
         # this entities get extracted again inside the get_confidence function
         tmp_vec = location_confident #utils.get_confidence(text)
 
-        # get the confidence score for NER with Spacy on GPE (    ner_gpe = (GPE: Geopolitical entity, i.e. countries, cities, states)
+        # get the confidence score for NER with Spacy on GPE (ner_gpe = (GPE: Geopolitical entity, i.e. countries, cities, states)
         for v in tmp_vec:
             state.append(v[2])
 
-        #checks if the person name is valid or not.
+        # checks if the person name is valid or not.
         state.append(self._valid_name())
 
+        vect_tf = self.tf_vectorizer.transform([text]).toarray()
 
-        print("DEBUGGING::", type(state))
-        # TODO THEO & ME
-        """
-            - append or concatenate the transformation of the current text using
-            self.tf_vectorizer
-            
-            - modify SARS
-            - modify all places where the state is affected
-        """
+        state = np.array([state])
+        state = np.concatenate([state, vect_tf], axis=1)
 
-
-        #print('state', state)
         return state
 
     def _valid_name(self):
