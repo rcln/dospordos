@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import nltk, re, spacy
 import numpy as np
+import editdistance
 from collections import defaultdict
 
 
@@ -563,19 +564,19 @@ def edit_distance(a, b):
 
 
 def _edit_distance(str1, str2):
-    s1 = sorted(str1)
-    s2 = sorted(str2)
+    # s1 = sorted(str1)
+    # s2 = sorted(str2)
+    #
+    # l = abs(len(s1) - len(s2))
+    # m_len = min(len(s1), len(s2))
+    #
+    # c = 0
+    # for i in range(m_len):
+    #     if s1[i] != s2[i]:
+    #         c = c+1
 
-    l = abs(len(s1) - len(s2))
-    m_len = min(len(s1), len(s2))
-
-    c = 0
-    for i in range(m_len):
-        if s1[i] != s2[i]:
-            c = c+1
-
-    return l+c
-
+    # return l+c
+    return editdistance.eval(str1, str2)
 
 def len_content(a):
     num_content = 0

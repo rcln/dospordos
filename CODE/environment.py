@@ -5,6 +5,7 @@ import json
 import os
 import math as m
 import numpy as np
+import preprocessing as prep
 from queue import Queue
 from utils import FeatureFilter
 from sklearn.externals import joblib
@@ -31,6 +32,11 @@ class Environment:
 
         # tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
         # tf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
+
+        if not os.path.exists(self.path_count_vect) or not os.path.exists(self.path_tfidf_vect):
+            print("Training BOW vectors")
+            prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+            print("---FIT COMPLETED----")
 
         self.tf_vectorizer = joblib.load(self.path_tfidf_vect)
 
@@ -262,9 +268,10 @@ AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
 
         # Jaccard index - penalty
         # penalty =  e^(alpha * len(b)) * u(len(b)-offset) + min (edit_distance(A,B)) / len(A_content)
+        edit_vect = np.array(utils.edit_distance(a, b))
 
         penalty = m.pow(m.e, self.alpha_reward * len(b))*utils.step(len(b) - offset)
-        penalty += min(utils.edit_distance(a, b)) / utils.len_content(a)
+        penalty += edit_vect.mean() / utils.len_content(a)
         reward_cur = (len(a.intersection(b))/len(a.union(b))) - penalty
 
         reward = reward_cur - self.reward_prev
@@ -272,6 +279,7 @@ AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
         print("Current reward", reward_cur)
         print("Previous reward", self.reward_prev)
         print("Reward", reward)
+        print("min Edit_distance", utils.edit_distance(a, b))
 
         self.reward_prev = reward_cur
 
@@ -300,7 +308,7 @@ AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
 
         return reward
 
-    def _fill_info_snippet(self,text, ner_org, ner_gpe):
+    def _fill_info_snippet(self, text, ner_org, ner_gpe):
         date = utils.get_date(text, True)
         # location = utils.get_location(text)
 
@@ -308,6 +316,8 @@ AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
             location = ner_gpe[0]
         else:
             location = ner_org[0]
+
+        print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
 
         return location, date
 
