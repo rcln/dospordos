@@ -152,7 +152,7 @@ def main(env, agent):
 
                 # TODO ERROR HERE
                 """
-                TypeError: 'NoneType' object is not callable
+                Typ.eError: 'NoneType' object is not callable
                 """
 
                 x_train = np.array(x_train)
