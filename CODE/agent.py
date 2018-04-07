@@ -42,7 +42,7 @@ class Agent:
         pass
 
     def actions_to_take(self, action_activation_vector):
-        num_l = np.nonzero(action_activation_vector)
+        num_l = np.nonzero(action_activation_vector[0])
         num = num_l[0][0]
         actions_db = (self.delete_current_db, self.add_current_db, self.keep_current_db)
         actions_grid = (self.next_snippet, self.change_queue)

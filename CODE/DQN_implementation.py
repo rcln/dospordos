@@ -9,9 +9,11 @@ from agent import Agent
 from Sars import Sars
 from sklearn.externals import joblib
 
-path_replay_memory = "../DATA/replay_memory.pkl"
+path_replay_memory = "/../DATA/replay_memory.pkl"
+
 
 # TODO can we have repeatables, ask Pegah
+
 def get_random_elements(ar: list, number):
     element_list = []
     for i in range(0, number):
@@ -29,7 +31,6 @@ def interpret_action(action_vector):
 
 
 def main(env, agent):
-
     eps = 0.5
 
     # loading users
@@ -43,36 +44,28 @@ def main(env, agent):
     shuffle(list_users)
     len_list_user = len(list_users)
 
-    if os.path.exists(path_replay_memory):
+    if os.path.exists(os.getcwd() + path_replay_memory):
         replay_memory = joblib.load(os.getcwd() + path_replay_memory)
-    else: #generate first replay memory
+    else:  # generate first replay memory
         replay_memory_ar = []
-        while len(replay_memory_ar) <= 30:
+        while len(replay_memory_ar) <= 59:
             print("len: ", len(replay_memory_ar))
             random_user = list_users[randint(0, len_list_user)]
             s = env.reset(random_user)
             for x in range(0, 30):
                 a = Sars.get_random_action_vector(6)
                 r, s_prime, done = env.step(agent.actions_to_take(a))
+                print("s.shape: ", s.shape)
                 replay_memory_ar.append(Sars(s, a, r, s_prime, False))
                 s = s_prime
         print("Saving replay memory")
         joblib.dump(replay_memory_ar, os.getcwd() + path_replay_memory)
         print("Saved replay memory")
+        replay_memory = replay_memory_ar
     # episodes
     for us in list_users:
         # reset episode with new user and get initial state
-        # replay_memory = []
         gamma = 0.1
-
-        # Todo change the way we create replay_memory
-        # instead of being random, run the project with users and random actions
-        # and recollect the experience.
-        # doubt- keep it store?
-        # doubt- do it just once?
-
-        # for x in range(0, 1000):
-        #     replay_memory.append(Sars(0, 0, 0, 0, True))
 
         # initial state
         state = env.reset(us)
@@ -93,7 +86,7 @@ def main(env, agent):
                 # a = argmaxQ(s,a)
                 arg_max = []
                 for i in range(6):
-                    action_vector = [0]*6
+                    action_vector = [0] * 6
                     action_vector[i] = 1
                     action_vector = np.array([action_vector])
 
@@ -104,7 +97,7 @@ def main(env, agent):
                     # print(in_vector.shape)
                     arg_max.append(agent.network.predict(in_vector))
 
-                action_vector = [0]*6
+                action_vector = [0] * 6
                 action_vector[arg_max.index(max(arg_max))] = 1
 
                 print("Q(s,a'), arg_max:: ", end="")
@@ -140,20 +133,22 @@ def main(env, agent):
             for sample in get_random_elements(replay_memory, 30):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
                 # sample.s_prime = sample.s_prime.T
-                # sample.s = sample.T
+                # sample.s = sample.s.T
 
-                if env._check_grid() or (sample.s_prime[15] == sample.s_prime[16] == sample.s_prime[17]):
+                if env._check_grid() or (sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
                     t = sample.r
                 else:
                     target_ar = []
                     for i in range(6):
                         action_vector = [0] * 6
                         action_vector[i] = 1
-                        t_vector = np.concatenate((sample.s_prime, np.array(action_vector)))
-                        t_vector = np.array([t_vector])
+                        action_vector = np.array([action_vector])
+                        t_vector = np.concatenate((sample.s_prime, action_vector), axis=1)
+                        # t_vector = np.array([t_vector])
                         target_ar.append(agent.network.predict(t_vector))
-                    t = sample.r + gamma*max(target_ar)
-                x_train = np.concatenate((sample.s, sample.a))
+                    t = sample.r + gamma * max(target_ar)
+
+                x_train = np.concatenate((sample.s, sample.a), axis=1)
 
                 # TODO ERROR HERE
                 """
@@ -174,6 +169,7 @@ def main(env, agent):
         agent.network.save_weights(env.path_weights)
         break
 
+
 if __name__ == "__main__":
     env = Environment()
 
@@ -183,8 +179,9 @@ if __name__ == "__main__":
         print("---FIT COMPLETED----")
 
     # TODO get the second number automatically ... env.tf_vectorizer.shape[0]
-    agent = Agent(env, (27 + 27386,))
-
+    # agent = Agent(env, (27 + 27386,))
+    len_vect = env.tf_vectorizer.transform([""]).toarray()
+    agent = Agent(env, (27 + len_vect.shape[1],)) # the comma is very important
     try:
         main(env, agent)
     except KeyboardInterrupt:

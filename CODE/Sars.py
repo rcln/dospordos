@@ -14,8 +14,8 @@ class Sars:
 
     @staticmethod
     def get_random_action_vector(size: int):
-        action_vector = np.zeros(size)
-        action_vector[np.random.randint(0, size)] = 1
+        action_vector = np.zeros([1, size])
+        action_vector[0, np.random.randint(0, size)] = 1
         return action_vector
 
     def get_random_sars(self):
