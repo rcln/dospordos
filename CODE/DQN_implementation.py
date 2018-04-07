@@ -41,22 +41,24 @@ def main(env, agent):
 
     # agent.print_model()
     shuffle(list_users)
-    len_list_user =  len(list_users)
+    len_list_user = len(list_users)
 
     if os.path.exists(path_replay_memory):
         replay_memory = joblib.load(os.getcwd() + path_replay_memory)
     else: #generate first replay memory
         replay_memory_ar = []
-        while len(replay_memory_ar) <= 1000:
+        while len(replay_memory_ar) <= 30:
+            print("len: ", len(replay_memory_ar))
             random_user = list_users[randint(0, len_list_user)]
             s = env.reset(random_user)
-            for x in range(0, 100):
+            for x in range(0, 30):
                 a = Sars.get_random_action_vector(6)
                 r, s_prime, done = env.step(agent.actions_to_take(a))
                 replay_memory_ar.append(Sars(s, a, r, s_prime, False))
                 s = s_prime
+        print("Saving replay memory")
         joblib.dump(replay_memory_ar, os.getcwd() + path_replay_memory)
-
+        print("Saved replay memory")
     # episodes
     for us in list_users:
         # reset episode with new user and get initial state
