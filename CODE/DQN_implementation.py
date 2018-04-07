@@ -3,11 +3,13 @@ import os
 import sys
 import numpy as np
 import preprocessing as prep
-from random import shuffle
+from random import shuffle, randint
 from environment import Environment
 from agent import Agent
 from Sars import Sars
+from sklearn.externals import joblib
 
+path_replay_memory = "../DATA/replay_memory.pkl"
 
 # TODO can we have repeatables, ask Pegah
 def get_random_elements(ar: list, number):
@@ -39,11 +41,26 @@ def main(env, agent):
 
     # agent.print_model()
     shuffle(list_users)
+    len_list_user =  len(list_users)
+
+    if os.path.exists(path_replay_memory):
+        replay_memory = joblib.load(os.getcwd() + path_replay_memory)
+    else: #generate first replay memory
+        replay_memory_ar = []
+        while len(replay_memory_ar) <= 1000:
+            random_user = list_users[randint(0, len_list_user)]
+            s = env.reset(random_user)
+            for x in range(0, 100):
+                a = Sars.get_random_action_vector(6)
+                r, s_prime, done = env.step(agent.actions_to_take(a))
+                replay_memory_ar.append(Sars(s, a, r, s_prime, False))
+                s = s_prime
+        joblib.dump(replay_memory_ar, os.getcwd() + path_replay_memory)
 
     # episodes
     for us in list_users:
         # reset episode with new user and get initial state
-        replay_memory = []
+        # replay_memory = []
         gamma = 0.1
 
         # Todo change the way we create replay_memory
@@ -52,8 +69,8 @@ def main(env, agent):
         # doubt- keep it store?
         # doubt- do it just once?
 
-        for x in range(0, 1000):
-            replay_memory.append(Sars(0, 0, 0, 0, True))
+        # for x in range(0, 1000):
+        #     replay_memory.append(Sars(0, 0, 0, 0, True))
 
         # initial state
         state = env.reset(us)
@@ -92,7 +109,6 @@ def main(env, agent):
                 interpret_action(action_vector)
                 print("Q(s,a'), probability:: ", max(arg_max))
             # Observe reward and new state
-            # example
             reward, next_state, done = env.step(agent.actions_to_take(action_vector))
 
             print("reward step:: ", reward)
@@ -121,6 +137,9 @@ def main(env, agent):
             Y_train = []
             for sample in get_random_elements(replay_memory, 30):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
+                # sample.s_prime = sample.s_prime.T
+                # sample.s = sample.T
+
                 if env._check_grid() or (sample.s_prime[15] == sample.s_prime[16] == sample.s_prime[17]):
                     t = sample.r
                 else:

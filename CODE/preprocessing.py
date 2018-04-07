@@ -56,6 +56,6 @@ if __name__ == "__main__":
     # print(len(snippets_to_list()))
     # list_to_pickle_count_vectorizer()
     # list_to_pickle_tfidf_vectorizer()
-    list_to_pickle_vectorizer("/../DATA/")
+    list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
 
 
