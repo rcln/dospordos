@@ -154,12 +154,16 @@ def main(env, agent):
                 """
                 Typ.eError: 'NoneType' object is not callable
                 """
-
-                x_train = np.array(x_train)
-                X_train.append(x_train)
+                if len(X_train) == 0:
+                    X_train = x_train
+                else:
+                    X_train = np.concatenate((X_train, x_train))
+                # x_train = np.array(x_train)
+                # X_train.append(x_train)
+                # X_train = np.concatenate((X_train,x_train))
                 Y_train.append(t[0])
 
-            X_train = np.array(X_train)
+            # X_train = np.array(X_train)
             Y_train = np.array(Y_train)
 
             agent.network.fit(X_train, Y_train, 1, len(x_train))
