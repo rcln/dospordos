@@ -33,29 +33,27 @@ def interpret_action(action_vector):
 def main(env, agent):
     eps = 0.5
 
-    # loading users
+    # Desc: loading users
     list_users = sorted(list(map(int, os.listdir(env.path))))
 
-    # loading weights
+    # Desc: loading weights
     if os.path.exists(env.path_weights):
         agent.network.load_weights(env.path_weights)
 
-    # agent.print_model()
+    # Desc: agent.print_model()
     shuffle(list_users)
     len_list_user = len(list_users)
 
     if os.path.exists(os.getcwd() + path_replay_memory):
         replay_memory = joblib.load(os.getcwd() + path_replay_memory)
-    else:  # generate first replay memory
+    else:  # Desc: generate first replay memory
         replay_memory_ar = []
         while len(replay_memory_ar) <= 59:
-            print("len: ", len(replay_memory_ar))
             random_user = list_users[randint(0, len_list_user)]
             s = env.reset(random_user)
             for x in range(0, 30):
                 a = Sars.get_random_action_vector(6)
                 r, s_prime, done = env.step(agent.actions_to_take(a))
-                print("s.shape: ", s.shape)
                 replay_memory_ar.append(Sars(s, a, r, s_prime, False))
                 s = s_prime
         print("Saving replay memory")
@@ -83,15 +81,12 @@ def main(env, agent):
             if p < eps:
                 action_vector = Sars.get_random_action_vector(6)
             else:
-                # a = argmaxQ(s,a)
+                # Desc: a = argmaxQ(s,a)
                 arg_max = []
                 for i in range(6):
                     action_vector = [0] * 6
                     action_vector[i] = 1
                     action_vector = np.array([action_vector])
-
-                    # in_vector = [state + action_vector]
-                    # in_vector = np.array(in_vector)
                     in_vector = np.concatenate([state, action_vector], axis=1)
 
                     # print(in_vector.shape)
@@ -99,6 +94,7 @@ def main(env, agent):
 
                 action_vector = [0] * 6
                 action_vector[arg_max.index(max(arg_max))] = 1
+                action_vector = np.array([action_vector])
 
                 print("Q(s,a'), arg_max:: ", end="")
                 interpret_action(action_vector)
@@ -127,7 +123,7 @@ def main(env, agent):
                 del replay_memory[0]
                 replay_memory.append(Sars(state, action_vector, reward, next_state))
 
-            # Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
+            # Desc: Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
             X_train = []
             Y_train = []
             for sample in get_random_elements(replay_memory, 30):
@@ -144,7 +140,6 @@ def main(env, agent):
                         action_vector[i] = 1
                         action_vector = np.array([action_vector])
                         t_vector = np.concatenate((sample.s_prime, action_vector), axis=1)
-                        # t_vector = np.array([t_vector])
                         target_ar.append(agent.network.predict(t_vector))
                     t = sample.r + gamma * max(target_ar)
 
@@ -152,18 +147,15 @@ def main(env, agent):
 
                 # TODO ERROR HERE
                 """
-                Typ.eError: 'NoneType' object is not callable
+                TypeError: 'NoneType' object is not callable
                 """
                 if len(X_train) == 0:
                     X_train = x_train
                 else:
                     X_train = np.concatenate((X_train, x_train))
-                # x_train = np.array(x_train)
-                # X_train.append(x_train)
-                # X_train = np.concatenate((X_train,x_train))
+
                 Y_train.append(t[0])
 
-            # X_train = np.array(X_train)
             Y_train = np.array(Y_train)
 
             agent.network.fit(X_train, Y_train, 1, len(x_train))
@@ -183,7 +175,7 @@ if __name__ == "__main__":
         print("---FIT COMPLETED----")
 
     # TODO get the second number automatically ... env.tf_vectorizer.shape[0]
-    # agent = Agent(env, (27 + 27386,))
+    # Desc: agent = Agent(env, (27 + 27386,))
     len_vect = env.tf_vectorizer.transform([""]).toarray()
     agent = Agent(env, (27 + len_vect.shape[1],)) # the comma is very important
     try:

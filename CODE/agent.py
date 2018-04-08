@@ -43,15 +43,9 @@ class Agent:
 
     def actions_to_take(self, action_activation_vector):
         num_l = np.nonzero(action_activation_vector[0])
-
-        print("DEBUGGING...", action_activation_vector)
-        print("DEBUGGING...", action_activation_vector.shape)
-
         num = num_l[0][0]
         actions_db = (self.delete_current_db, self.add_current_db, self.keep_current_db)
         actions_grid = (self.next_snippet, self.change_queue)
-
-        print(num)
         return actions_grid[int(num/3)], actions_db[num % 3]
 
     def print_model(self):
@@ -88,7 +82,7 @@ class Network:
                                  # epochs=epochs,
                                  verbose=0)
 
-    # (loss, accuracy)
+    # Desc: (loss, accuracy)
     def evaluate(self, x_test, y_test):
         return self.model.evaluate(x_test, y_test, verbose=0)
 
