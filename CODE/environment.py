@@ -251,8 +251,10 @@ class Environment:
         golden_standard_db = self.golden_standard_db
         data_cur = []
 
-        golden_standard_db = [(golden_standard_db[0][0].lower().replace(' ', ''), golden_standard_db[0][1])]
-
+        tmp = golden_standard_db[0][0].lower().replace(' ', '')
+        if tmp is None:
+            tmp = ""
+        golden_standard_db = [(tmp, golden_standard_db[0][1])]
 
         """
         data_cur.append((tup[0][0].lower().replace(' ', ''), tup[0][1]))
