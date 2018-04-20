@@ -178,7 +178,7 @@ class Environment:
         """
         state.append(self._normalize_snippet_number(float(self.current_data['number_snippet'])))
         # shows the selcted engine search. There are 4 enigine searches in total.
-        state = state + utils.int_to_onehot(4, int(self.current_data['engine_search']),True)       #state.append(int(self.current_data['engine_search']))
+        state = state + utils.int_to_onehot(4, int(self.current_data['engine_search']), True)       #state.append(int(self.current_data['engine_search']))
         # number of common university names between goal standards and extracted university names from the given snippet
         state.append(commonU)
         # number of common dates between goal standards and extracted dates from the given snippet

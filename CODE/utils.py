@@ -459,10 +459,14 @@ class Cleaner:
         return r
 
 
-def int_to_onehot(length,number,zero_based=False):
+def int_to_onehot(length, number, zero_based=False):
+
+    if number < 0:
+        return [0] * length
+
     l = [0] * length
     if zero_based:
-        number-=1
+        number -= 1
     l.__setitem__(number, 1)
     return l
 
