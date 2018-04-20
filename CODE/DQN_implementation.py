@@ -48,7 +48,7 @@ def main(env, agent):
         replay_memory = joblib.load(os.getcwd() + path_replay_memory)
     else:  # Desc: generate first replay memory
         replay_memory_ar = []
-        while len(replay_memory_ar) <= 59:
+        while len(replay_memory_ar) <= 999:
             random_user = list_users[randint(0, len_list_user)]
             s = env.reset(random_user)
             for x in range(0, 30):
@@ -117,7 +117,7 @@ def main(env, agent):
             print("Current snippet:: ", env.current_text)
 
             # Todo Ask Pegah about replay memory ask her opinion...?
-            if len(replay_memory) < 1500:
+            if len(replay_memory) < 4000:
                 replay_memory.append(Sars(state, action_vector, reward, next_state))
             else:
                 del replay_memory[0]
@@ -126,7 +126,7 @@ def main(env, agent):
             # Desc: Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
             X_train = []
             Y_train = []
-            for sample in get_random_elements(replay_memory, 30):
+            for sample in get_random_elements(replay_memory, 1000):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
                 # sample.s_prime = sample.s_prime.T
                 # sample.s = sample.s.T
