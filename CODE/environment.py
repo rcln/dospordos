@@ -251,7 +251,7 @@ class Environment:
         golden_standard_db = self.golden_standard_db
         data_cur = []
 
-        if golden_standard_db[0] or golden_standard_db[0][0] is None:
+        if golden_standard_db[0] is None or golden_standard_db[0][0] is None:
             tmp = ""
         else:
             tmp = golden_standard_db[0][0].lower().replace(' ', '')
