@@ -251,9 +251,11 @@ class Environment:
         golden_standard_db = self.golden_standard_db
         data_cur = []
 
-        tmp = golden_standard_db[0][0].lower().replace(' ', '')
-        if tmp is None:
+        if golden_standard_db[0] or golden_standard_db[0][0] is None:
             tmp = ""
+        else:
+            tmp = golden_standard_db[0][0].lower().replace(' ', '')
+
         golden_standard_db = [(tmp, golden_standard_db[0][1])]
 
         """
