@@ -12,7 +12,7 @@ from sklearn.externals import joblib
 path_replay_memory = "/../DATA/replay_memory.pkl"
 
 
-# TODO can we have repeatables, ask Pegah
+# TODO can we have repeatables, ask Pegah ta daaaa
 
 def get_random_elements(ar: list, number):
     element_list = []
