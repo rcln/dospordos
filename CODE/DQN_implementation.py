@@ -154,6 +154,7 @@ def main(env, agent):
                 else:
                     X_train = np.concatenate((X_train, x_train))
 
+                print("This is the T", t, " With type: ", type(t))
                 Y_train.append(t[0])
 
             Y_train = np.array(Y_train)
