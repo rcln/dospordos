@@ -130,6 +130,8 @@ def main(env, agent):
                 # sample.s_prime = sample.s_prime.T
                 # sample.s = sample.s.T
 
+
+
                 if env._check_grid() or (sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
                     t = sample.r
                 else:
@@ -153,7 +155,7 @@ def main(env, agent):
                 else:
                     X_train = np.concatenate((X_train, x_train))
 
-                print("This is the T", t, " With type: ", type(t), " With shape: ", t.shape, " For user: ", us)
+                print("This is the T", t, " With type: ", type(t), " With shape: ", t.shape, " For user: ", us, " sample.r is: ", sample.r)
                 Y_train.append(t[0])
 
             Y_train = np.array(Y_train)
