@@ -75,7 +75,7 @@ def main(env, agent):
             """
 
             p = np.random.random()
-
+            print("User id: ", us)
             print("\nProbability for exploring: ", p, " vs epsilon: ", eps)
 
             if p < eps:
