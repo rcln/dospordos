@@ -75,7 +75,6 @@ def main(env, agent):
             """
 
             p = np.random.random()
-            print("User id: ", us)
             print("\nProbability for exploring: ", p, " vs epsilon: ", eps)
 
             if p < eps:
@@ -154,7 +153,7 @@ def main(env, agent):
                 else:
                     X_train = np.concatenate((X_train, x_train))
 
-                print("This is the T", t, " With type: ", type(t))
+                print("This is the T", t, " With type: ", type(t), " With shape: ", t.shape, " For user: ", us)
                 Y_train.append(t[0])
 
             Y_train = np.array(Y_train)
