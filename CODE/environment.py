@@ -3,6 +3,7 @@
 import utils
 import json
 import os
+import sys
 import math as m
 import numpy as np
 import preprocessing as prep
@@ -252,7 +253,15 @@ class Environment:
         data_cur = []
 
         if golden_standard_db[0][0] is None:
-            tmp = "ana"
+            print("THE GOLD STANDARD IS MORE LIKE SILVER...[?] HMMM")
+            print(self.current_data)
+
+            try:
+                sys.exit(-1)
+            except SystemExit:
+                os._exit(-2)
+
+
         else:
             tmp = golden_standard_db[0][0].lower().replace(' ', '')
 
