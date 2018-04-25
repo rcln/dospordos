@@ -255,6 +255,7 @@ class Environment:
         if golden_standard_db[0][0] is None:
             print("THE GOLD STANDARD IS MORE LIKE SILVER...[?] HMMM")
             print(self.current_data)
+            print(self.golden_standard_db)
 
             try:
                 sys.exit(-1)
