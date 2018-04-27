@@ -66,7 +66,11 @@ def main(env, agent):
         gamma = 0.1
 
         # initial state
-        state = env.reset(us)
+        state, err = env.reset(us)
+
+        if err:
+            continue
+
         done = False
         # DQN with experience replace
         while not done:
@@ -129,8 +133,6 @@ def main(env, agent):
                 # s_prime.A = s_prime.B = s_prime.common in length or no more data(queues)
                 # sample.s_prime = sample.s_prime.T
                 # sample.s = sample.s.T
-
-
 
                 if env._check_grid() or (sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
                     t = sample.r

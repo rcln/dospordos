@@ -61,6 +61,9 @@ class Environment:
         self._get_golden_standard_db(id_person)
         self.reward_prev = 0
 
+        if self.golden_standard_db[0][0] is None:
+            return 0, True
+
         for file in os.listdir(files):
             with open(files+file) as f:
                 data_raw = f.read()
@@ -80,7 +83,7 @@ class Environment:
         # The input vector for our NN
         initial_state = self.get_state()
 
-        return initial_state
+        return initial_state, False
 
     def step(self, action_tuple, *args):
         # action_query(*args)
