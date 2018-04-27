@@ -3,6 +3,7 @@ import os
 import sys
 import numpy as np
 import preprocessing as prep
+import pickle
 from random import shuffle, randint
 from environment import Environment
 from agent import Agent
@@ -10,6 +11,7 @@ from Sars import Sars
 from sklearn.externals import joblib
 
 path_replay_memory = "/../DATA/replay_memory.pkl"
+path_history = "/../DATA/history"
 
 
 # TODO can we have repeatables, ask Pegah ta daaaa
@@ -32,6 +34,7 @@ def interpret_action(action_vector):
 
 def main(env, agent):
     eps = 0.5
+    history = []
 
     # Desc: loading users
     list_users = sorted(list(map(int, os.listdir(env.path))))
@@ -67,9 +70,10 @@ def main(env, agent):
 
         # initial state
         state, err = env.reset(us)
-
+        episode = {}
         if err:
             continue
+        episode[len(history)] = []
 
         done = False
         # DQN with experience replace
@@ -104,6 +108,8 @@ def main(env, agent):
                 print("Q(s,a'), probability:: ", max(arg_max))
             # Observe reward and new state
             reward, next_state, done = env.step(agent.actions_to_take(action_vector))
+
+            episode[len(history)].append(reward)
 
             print("reward step:: ", reward)
             print("current_db in agent:: ", agent.env.current_db)
@@ -167,7 +173,8 @@ def main(env, agent):
             state = next_state
 
         agent.network.save_weights(env.path_weights)
-        break
+        history.append(episode)
+        pickle.dump(history, open(path_history, 'wb'))
 
 
 if __name__ == "__main__":
@@ -188,6 +195,7 @@ if __name__ == "__main__":
         print("\n\n-----Interruption-----\nSaving weights")
         agent.network.save_weights(env.path_weights)
         print("Weights saved")
+
         try:
             sys.exit(0)
         except SystemExit:
