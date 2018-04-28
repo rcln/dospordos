@@ -31,7 +31,10 @@ def interpret_action(action_vector):
 
     print("Actions:: ", actions_grid[int(num / 3)], ";;", actions_db[num % 3])
 
+def bad_franky(ar):
+    return np.isnan(ar).any() or np.isinf(ar).any()
 
+# TODO too big for it's own good, break into funcs
 def main(env, agent):
     eps = 0.5
     history = []
@@ -97,7 +100,12 @@ def main(env, agent):
                     in_vector = np.concatenate([state, action_vector], axis=1)
 
                     # print(in_vector.shape)
+                    if bad_franky(in_vector):
+                        print("The project is in danger :(, in_vector ", in_vector)
                     arg_max.append(agent.network.predict(in_vector))
+                if bad_franky(arg_max):
+                    print("The project is in danger :(, out_vector ", arg_max)
+
 
                 action_vector = [0] * 6
                 action_vector[arg_max.index(max(arg_max))] = 1
@@ -150,14 +158,13 @@ def main(env, agent):
                         action_vector = np.array([action_vector])
                         t_vector = np.concatenate((sample.s_prime, action_vector), axis=1)
                         target_ar.append(agent.network.predict(t_vector))
-                    t = sample.r + gamma * max(target_ar)
+                    if bad_franky(target_ar):
+                        print("Target_ar that is in training is bad, target_ar", target_ar)
+                    t = sample.r + gamma * (max(target_ar))
 
                 x_train = np.concatenate((sample.s, sample.a), axis=1)
 
-                # TODO ERROR HERE
-                """
-                TypeError: 'NoneType' object is not callable
-                """
+                # TODO ERROR HERE TypeError: 'NoneType' object is not callable
                 if len(X_train) == 0:
                     X_train = x_train
                 else:
@@ -203,7 +210,6 @@ if __name__ == "__main__":
         print("\n\n-----Interruption-----\nSaving weights")
         agent.network.save_weights(env.path_weights)
         print("Weights saved")
-
         try:
             sys.exit(0)
         except SystemExit:

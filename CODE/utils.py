@@ -568,23 +568,11 @@ def edit_distance(a, b):
 
 
 def _edit_distance(str1, str2):
-    # s1 = sorted(str1)
-    # s2 = sorted(str2)
-    #
-    # l = abs(len(s1) - len(s2))
-    # m_len = min(len(s1), len(s2))
-    #
-    # c = 0
-    # for i in range(m_len):
-    #     if s1[i] != s2[i]:
-    #         c = c+1
-
-    # return l+c
     return editdistance.eval(str1, str2)
+
 
 def len_content(a):
     num_content = 0
-
     for e in a:
         tmp = len(e[0])
         num_content = max(num_content, tmp)

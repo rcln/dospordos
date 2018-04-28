@@ -113,7 +113,7 @@ class Environment:
         """
         this function returns back the current state which is a vector consisting of
         :return: 7 dimension vector with one 1 and the rest are zeros: indicates which query result is considered in the current state
-                 the poped up snippet order from the query results w.r.t the rest of unpoped snippents in query result s.t. 0 <= the normalized value <= 1
+                 the popped up snippet order from the query results w.r.t the rest of unpopped snippents in query result s.t. 0 <= the normalized value <= 1
                  another 4 dimensional e_i vector indicating which research engine is used w.r.t the four utilized research engines
                  number of common university names or organisations between goal standards and extracted NE in snippet
                  number of common dates between goal standards and extracted NE in snippet
@@ -138,7 +138,7 @@ class Environment:
 
         location_confident = utils.get_confidence(text)
 
-        #for a provided text in snippet result, we get date and organization of text if there exist any.
+        # for a provided text in snippet result, we get date and organization of text if there exist any.
         self.info_snippet.append(self._fill_info_snippet(text, location_confident[0], location_confident[1]))
 
         # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
@@ -149,9 +149,9 @@ class Environment:
         # print(golden_standard_db)
         # print(data_cur)
 
-        #university name and date coming from goal standards (fernando database)
+        # university name and date coming from goal standards (fernando database)
         A = set(golden_standard_db)
-        #B includes date and location (ORG and GPE) extracted from the given snippet
+        # B includes date and location (ORG and GPE) extracted from the given snippet
         B = set(data_cur)
         set_uni_A = set()
         set_ani_A = set()
@@ -171,17 +171,17 @@ class Environment:
         commonU = len(set_uni_A.intersection(set_uni_B))
         commonA = len(set_ani_A.intersection(set_ani_B))
 
-        #it defines which query result is taken for this state. We have 7 query types in total.
-        state = state + utils.int_to_onehot(7, self.current_queue)         #state.append(self.current_queue)
-        #We normalize the taken snippet number of query results w.r.t rest of query snippents results
-        #PA: I do not know the reason yet.
+        # it defines which query result is taken for this state. We have 7 query types in total.
+        state = state + utils.int_to_onehot(7, self.current_queue)         # state.append(self.current_queue)
+        # We normalize the taken snippet number of query results w.r.t rest of query snippets results
+        # PA: I do not know the reason yet.
         """ Answer: The number of the current snippet have values between 0 and approximately 40, 
                 since we believe the more important information in the beginning of the search, we decided
                 to realize a normalization and pass a value between 0 and 1. Where 1 is the beginning of the
                 snippets in the queue 
         """
         state.append(self._normalize_snippet_number(float(self.current_data['number_snippet'])))
-        # shows the selcted engine search. There are 4 enigine searches in total.
+        # shows the selceted engine search. There are 4 enigine searches in total.
         state = state + utils.int_to_onehot(4, int(self.current_data['engine_search']), True)       #state.append(int(self.current_data['engine_search']))
         # number of common university names between goal standards and extracted university names from the given snippet
         state.append(commonU)
@@ -259,33 +259,37 @@ class Environment:
             print("THE GOLD STANDARD IS MORE LIKE SILVER...[?] HMMM")
             print(self.current_data)
             print(self.golden_standard_db)
-
             try:
                 sys.exit(-1)
             except SystemExit:
                 os._exit(-2)
-
-
         else:
             tmp = golden_standard_db[0][0].lower().replace(' ', '')
 
         golden_standard_db = [(tmp, golden_standard_db[0][1])]
 
         """
-        data_cur.append((tup[0][0].lower().replace(' ', ''), tup[0][1]))
-AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
+        data_cur.append((tup[0][0].lower().replace(' ', ''), tup[0][1]))AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
         """
 
         for tup in self.current_db:
             data_cur.append((str(tup[0][0]).lower().replace(' ', ''), tup[0][1]))
 
         a = set(golden_standard_db)
+
+        if len(a) == 0:
+            print("Well josue, the world is weird")
+            try:
+                sys.exit(-1)
+            except SystemExit:
+                os._exit(-2)
+
         # TODO: PA: it shouldn't be the extracted NER from the snippet in self.current_data ?
         b = set(data_cur)
 
         # Jaccard index - penalty
         # penalty =  e^(alpha * len(b)) * u(len(b)-offset) + min (edit_distance(A,B)) / len(A_content)
-        edit_vect = np.array(utils.edit_distance(a, b))
+        edit_vect = np.array(utils.edit_distance(a, b))  # Range: [0, inf)
 
         penalty = m.pow(m.e, self.alpha_reward * len(b))*utils.step(len(b) - offset)
         penalty += edit_vect.mean() / utils.len_content(a)
@@ -303,7 +307,15 @@ AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
         return reward
 
     # Todo rewrite this function so is similar to the normal reward but only with the universities
-    def _get_reward_soft(self, tolerance=3):
+
+
+    def _get_soft_reward(self, tolerance=3):
+        """
+        Only for experiential use, not used in DQN
+        :param tolerance: 
+        :return: 
+        """
+
         golden_standard_db = self.golden_standard_db
         data_cur = self.current_db
 
@@ -322,20 +334,17 @@ AttributeError: 'spacy.tokens.span.Span' object has no attribute 'lower'
         # Jaccard index - symmetric difference (penalty)
         reward = (len(a.intersection(b)) / len(a.union(b))) - \
                  len(a.symmetric_difference(b))
-
         return reward
 
     def _fill_info_snippet(self, text, ner_org, ner_gpe):
         date = utils.get_date(text, True)
         # location = utils.get_location(text)
-
         if ner_gpe[2] >= ner_org[2]:
             location = ner_gpe[0]
         else:
             location = ner_org[0]
 
         print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
-
         return location, date
 
     def _normalize_snippet_number(self, snippet_number):

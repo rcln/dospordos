@@ -42,7 +42,7 @@ def test():
 
     env = Environment()
     state = env.reset(1)
-    print('rewar', env._get_reward(), env._get_reward_soft())
+    print('rewar', env._get_reward(), env._get_soft_reward())
 
 
     agent = Agent(env)
