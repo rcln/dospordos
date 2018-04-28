@@ -163,11 +163,14 @@ def main(env, agent):
                 else:
                     X_train = np.concatenate((X_train, x_train))
 
-                if len(t) == 0:
+                try:
+                    l = len(t)
+                except TypeError:
                     print("This is the T", t, " With type: ", type(t), " With shape: ", t.shape,
                           " For user: ", us,
                           " sample.r is: ", sample.r,
-                          " type " , type(sample.r), "target_ar ", max(target_ar))
+                          " type ", type(sample.r), "target_ar ", max(target_ar))
+
 
                 Y_train.append(t[0])
 
