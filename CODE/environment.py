@@ -57,12 +57,15 @@ class Environment:
 
         self.queues.clear()
         self.current_db.clear()
-        self.current_queue = None
+        self.current_queue = 0
         self._get_golden_standard_db(id_person)
         self.reward_prev = 0
 
-        if self.golden_standard_db[0][0] is None:
-            return 0, True
+
+        for t in self.golden_standard_db:
+            if None in t:
+                print("RESET...", self.golden_standard_db)
+                return 0, True
 
         for file in os.listdir(files):
             with open(files+file) as f:
@@ -75,8 +78,7 @@ class Environment:
             num_snippet = sorted(num_snippet)
             for i in num_snippet:
                 q.put(data[str(i)])
-            if self.current_queue is None:
-                self.current_queue = 0
+
             self.queues[len(self.queues)] = q
 
         self.current_data = self.queues[self.current_queue].get()
@@ -280,6 +282,7 @@ class Environment:
         if len(a) == 0:
             print("Well josue, the world is weird")
             try:
+                print("ERROR IN THE FUNCTION _get_reward()")
                 sys.exit(-1)
             except SystemExit:
                 os._exit(-2)
@@ -348,9 +351,14 @@ class Environment:
         return location, date
 
     def _normalize_snippet_number(self, snippet_number):
-        div = float((self.queues[self.current_queue]).qsize())
-        if div == 0:
-            div = 0.001
-        return 1 - (snippet_number / div)
+        try:
+            div = float((self.queues[self.current_queue]).qsize())
+            if div == 0:
+                div = 0.001
+            return 1 - (snippet_number / div)
+        except KeyError:
+            print("ERROR in next_snippet\n current queue: ", self.current_queue)
+            print("Queues ", self.queues)
+            print("DATA ", self.current_data)
 
 

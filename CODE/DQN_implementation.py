@@ -53,15 +53,29 @@ def main(env, agent):
     if os.path.exists(os.getcwd() + path_replay_memory):
         replay_memory = joblib.load(os.getcwd() + path_replay_memory)
     else:  # Desc: generate first replay memory
+        print("Getting replay memory")
         replay_memory_ar = []
         while len(replay_memory_ar) <= 999:
             random_user = list_users[randint(0, len_list_user)]
-            s = env.reset(random_user)
+
+            s, pass_us = env.reset(random_user)
+
+            if pass_us:
+                continue
+
             for x in range(0, 30):
                 a = Sars.get_random_action_vector(6)
                 r, s_prime, done = env.step(agent.actions_to_take(a))
                 replay_memory_ar.append(Sars(s, a, r, s_prime, False))
                 s = s_prime
+
+                print("ACTION TAKEN:: ", end="")
+                interpret_action(a)
+                print("Gold standard:: ", env.golden_standard_db)
+                print("Current queue:: ", env.current_queue)
+                print("Current snippet:: ", env.current_text)
+                print("QUEUES:: ", env.queues, "\n")
+
         print("Saving replay memory")
         joblib.dump(replay_memory_ar, os.getcwd() + path_replay_memory)
         print("Saved replay memory")
@@ -165,6 +179,8 @@ def main(env, agent):
                 x_train = np.concatenate((sample.s, sample.a), axis=1)
 
                 # TODO ERROR HERE TypeError: 'NoneType' object is not callable
+
+                print("T obj", t, " T shape", t.shape, " sample.r type", type(sample.r), " sample.r obj", sample.r)
                 if len(X_train) == 0:
                     X_train = x_train
                 else:
@@ -178,12 +194,11 @@ def main(env, agent):
                           " sample.r is: ", sample.r,
                           " type ", type(sample.r), "target_ar ", max(target_ar))
 
-
                 Y_train.append(t[0])
 
             Y_train = np.array(Y_train)
 
-            agent.network.fit(X_train, Y_train, 1, len(x_train))
+            agent.network.fit(X_train, Y_train, 1, len(X_train))
 
             state = next_state
 

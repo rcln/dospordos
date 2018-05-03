@@ -15,11 +15,17 @@ class Agent:
     # grid functions
     def next_snippet(self):
 
-        if self.env.queues[self.env.current_queue].qsize() == 0:
-            self.env.current_data = {"number_snippet": "1000000", "text": "", "cite": "", "search": "", "title": "",
-                                     "engine_search": "-1", "id_person": ""}
-        else:
-            self.env.current_data = self.env.queues[self.env.current_queue].get(False)
+        try:
+            if self.env.queues[self.env.current_queue].qsize() == 0:
+                self.env.current_data = {"number_snippet": "1000000", "text": "", "cite": "", "search": "", "title": "",
+                                         "engine_search": "-1", "id_person": ""}
+            else:
+                self.env.current_data = self.env.queues[self.env.current_queue].get(False)
+        except KeyError:
+            print("ERROR in next_snippet\n current queue: ", self.env.current_queue)
+            print("Queues ", self.env.queues)
+            print("DATA ", self.env.current_data)
+
 
     def change_queue(self, queue=None):
         if queue is None:
