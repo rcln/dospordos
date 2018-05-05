@@ -174,13 +174,14 @@ def main(env, agent):
                         target_ar.append(agent.network.predict(t_vector))
                     if bad_franky(target_ar):
                         print("Target_ar that is in training is bad, target_ar", target_ar)
-                    t = sample.r + gamma * (max(target_ar))
+                    t = sample.r + gamma * np.array([(max(target_ar))])
+
 
                 x_train = np.concatenate((sample.s, sample.a), axis=1)
 
                 # TODO ERROR HERE TypeError: 'NoneType' object is not callable
 
-                print("T obj", t, " T shape", t.shape, " sample.r type", type(sample.r), " sample.r obj", sample.r)
+                # print("T obj", t, " T shape", t.shape, " sample.r type", type(sample.r), " sample.r obj", sample.r)
                 if len(X_train) == 0:
                     X_train = x_train
                 else:
