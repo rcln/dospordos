@@ -180,7 +180,8 @@ def main(env, agent):
 
                 # TODO ERROR HERE TypeError: 'NoneType' object is not callable
 
-                # print("T obj", t, " T shape", t.shape, " sample.r type", type(sample.r), " sample.r obj", sample.r)
+                print("T obj", t, " T shape", t.shape, " sample.r type", type(sample.r), "sample shape", sample.r.shape,
+                      ' sample.r obj', sample.r)
                 if len(X_train) == 0:
                     X_train = x_train
                 else:
@@ -192,7 +193,7 @@ def main(env, agent):
                     print("This is the T", t, " With type: ", type(t), " With shape: ", t.shape,
                           " For user: ", us,
                           " sample.r is: ", sample.r,
-                          " type ", type(sample.r), "target_ar ", max(target_ar))
+                          " type ", type(sample.r), "sample shape", sample.r.shape, "target_ar ", max(target_ar))
 
                 Y_train.append(t[0])
 
