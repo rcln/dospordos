@@ -174,8 +174,7 @@ def main(env, agent):
                         target_ar.append(agent.network.predict(t_vector))
                     if bad_franky(target_ar):
                         print("Target_ar that is in training is bad, target_ar", target_ar)
-                    t = sample.r + gamma * np.array([(max(target_ar))])
-
+                    t = sample.r + gamma * np.array((max(target_ar)))
 
                 x_train = np.concatenate((sample.s, sample.a), axis=1)
 
