@@ -151,6 +151,8 @@ def main(env, agent):
             if len(replay_memory) < 4000:
                 replay_memory.append(Sars(state, action_vector, reward, next_state))
             else:
+                print("ADDING TO MEMORY...", " reward type", type(reward), " reward", reward, " shape", reward.shape)
+
                 del replay_memory[0]
                 replay_memory.append(Sars(state, action_vector, reward, next_state))
 
@@ -163,7 +165,8 @@ def main(env, agent):
                 # sample.s = sample.s.T
 
                 if env._check_grid() or (sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
-                    t = sample.r
+                    t = np.array([sample.r])
+                    print(" GETTING REWARD JUST FROM SAMPLE.R  t=", t, "t. shape")
                 else:
                     target_ar = []
                     for i in range(6):
@@ -190,6 +193,8 @@ def main(env, agent):
                 try:
                     l = len(t)
                 except TypeError:
+                    # TODO why is this happening...? with the current_db
+                    # Currrent db = [(( , ''),), ((Marisol, ''),)]  where error prompt
                     print("This is the T", t, " With type: ", type(t), " With shape: ", t.shape,
                           " For user: ", us,
                           " sample.r is: ", sample.r,
