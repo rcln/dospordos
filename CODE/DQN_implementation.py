@@ -183,8 +183,8 @@ def main(env, agent):
 
                 # TODO ERROR HERE TypeError: 'NoneType' object is not callable
 
-                print("T obj", t, " T shape", t.shape, " sample.r type", type(sample.r), "sample shape", sample.r.shape,
-                      ' sample.r obj', sample.r)
+                # print("T obj", t, " T shape", t.shape, " sample.r type", type(sample.r), "sample shape", sample.r.shape,
+                #       ' sample.r obj', sample.r)
                 if len(X_train) == 0:
                     X_train = x_train
                 else:
