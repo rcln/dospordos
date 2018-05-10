@@ -210,6 +210,8 @@ def main(env, agent):
 
         agent.network.save_weights(env.path_weights)
         history.append(episode)
+        print("HISTORY..", history, "type.", type(history))
+
         pickle.dump(history, open(path_history, 'wb'))
 
 
