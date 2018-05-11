@@ -11,7 +11,7 @@ from Sars import Sars
 from sklearn.externals import joblib
 
 path_replay_memory = "/../DATA/replay_memory.pkl"
-path_history = "/../DATA/history"
+path_history = "../DATA/history"
 
 
 # TODO can we have repeatables, ask Pegah ta daaaa
