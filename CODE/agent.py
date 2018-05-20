@@ -26,7 +26,6 @@ class Agent:
             print("Queues ", self.env.queues)
             print("DATA ", self.env.current_data)
 
-
     def change_queue(self, queue=None):
         if queue is None:
             tmp = self.env.current_queue + 1

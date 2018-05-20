@@ -3,7 +3,7 @@ import os
 import json
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.externals import joblib
-import pickle
+
 
 
 def snippets_to_list():
@@ -13,7 +13,7 @@ def snippets_to_list():
         folder_content = os.listdir(os.getcwd() + "/../DATA/train_db/" + folder)
         for json_query in folder_content:
             json_file = open(os.getcwd() + "/../DATA/train_db/" + folder + "/" + json_query)
-            json_str  = json_file.read()
+            json_str = json_file.read()
             json_data = json.loads(json_str)
             json_keys = json_data.keys()
             for json_key in json_keys:
