@@ -348,7 +348,7 @@ class Environment:
             location = ner_org[0]
 
         print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
-        return location, date
+        return str(location), str(date)
 
     def _normalize_snippet_number(self, snippet_number):
         try:
