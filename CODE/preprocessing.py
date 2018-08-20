@@ -8,6 +8,7 @@ from sklearn.externals import joblib
 
 def snippets_to_list():
     folders = os.listdir(os.getcwd() + "/../DATA/train_db/")
+    # TODO PA: All texts from training DB have been registered in mega_list with out any labelisation like dictionary or whatever!!
     mega_list = []
     for folder in folders:
         folder_content = os.listdir(os.getcwd() + "/../DATA/train_db/" + folder)
@@ -29,13 +30,18 @@ def save_object(obj, filename):
 
 
 def list_to_pickle_count_vectorizer():
+    # CountVectorizer: Convert a collection of text documents to a matrix of token counts
     tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
+    # Learn a vocabulary dictionary of all tokens in the raw documents (the raw documents here are all
+    # the extracted texts for all persons in training DB by search engines).
     tf = tf_vectorizer.fit(snippets_to_list())
     save_object(tf, 'count_vectorizer.pkl')
 
 
 def list_to_pickle_tfidf_vectorizer():
+    # TfidfVectorizer: Convert a collection of raw documents to a matrix of TF-IDF features.
     tfidf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
+    # Learn vocabulary and idf from training set
     tf = tfidf_vectorizer.fit(snippets_to_list())
     save_object(tf, 'tfidf_vectorizer.pkl')
 
@@ -53,9 +59,9 @@ def list_to_pickle_vectorizer(path):
 
 if __name__ == "__main__":
     # List all the folders of train_db
-    # print(len(snippets_to_list()))
+    print(len(snippets_to_list()))
     # list_to_pickle_count_vectorizer()
     # list_to_pickle_tfidf_vectorizer()
-    list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+    # list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
 
 

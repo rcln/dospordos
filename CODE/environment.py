@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import utils
 import json
 import os
 import sys
 import math as m
 import numpy as np
-import preprocessing as prep
+import CODE.preprocessing as prep
 from queue import Queue
-from utils import FeatureFilter
+
+from CODE import utils
+from CODE.utils import FeatureFilter
 from sklearn.externals import joblib
 
 
@@ -61,7 +62,6 @@ class Environment:
         self._get_golden_standard_db(id_person)
         self.reward_prev = 0
 
-
         for t in self.golden_standard_db:
             if None in t:
                 print("RESET...", self.golden_standard_db)
@@ -79,6 +79,9 @@ class Environment:
             for i in num_snippet:
                 q.put(data[str(i)])
 
+            # self.queues is a list including several queues such that each one returned back to a set of documents
+            # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
+
             self.queues[len(self.queues)] = q
 
         self.current_data = self.queues[self.current_queue].get()
@@ -91,8 +94,9 @@ class Environment:
         # action_query(*args)
         # action_current_db()
 
-        action_tuple[0]()
-        action_tuple[1]()
+        #action_tuple[0]()
+        #action_tuple[1]()
+
         next_state = self.get_state()
 
         # Todo Find the optimal reward
@@ -112,6 +116,9 @@ class Environment:
         return queries
 
     def get_state(self):
+
+        # TODO PA: states are the vectors of size 27407, which is a high dimension vector, which the state size is 21 and the rest (27386) are related to vect_tf
+
         """
         this function returns back the current state which is a vector consisting of
         :return: 7 dimension vector with one 1 and the rest are zeros: indicates which query result is considered in the current state
@@ -121,18 +128,18 @@ class Environment:
                  number of common dates between goal standards and extracted NE in snippet
                  number of common extracted NER in snippet and all goal standards
                  number of all goal standards
-                 number of all extrcated NER from the anippet
+                 number of all extracted NER from the snippet
                  number of union of goal standards and NER in snippet
-                 confident score for estrcated ORG and GPE by Spacy from the snippet
+                 confident score for extracted ORG and GPE by Spacy from the snippet
                  if a person name given by "goal standards" is a valid person name or not
                  #TODO PA: checking the person name coming from Fernando DB as a person name sounds strange. It makes more sence checking the person name coming from the snippet as a person name.
                     # Answer:
                         It verifies whether a valid variation of the name exists in the snippet or not.
                         The class is initialized with the name in order to make the valid variations.
-                        Then the method search a valid name variation in the text passed 
+                        Then the method search a valid name variation in the text passed
+                And a huge vector for vect_tf !!
         """
         state = []
-
         self.current_text = self.current_data['title']+" "+self.current_data['text']
 
         text = self.current_text
@@ -145,7 +152,6 @@ class Environment:
 
         # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
         golden_standard_db = self.golden_standard_db
-
         data_cur = self.info_snippet
 
         # print(golden_standard_db)
@@ -209,6 +215,7 @@ class Environment:
         # checks if the person name is valid or not.
         state.append(self._valid_name())
 
+        # TODO PA: what is necessity of adding vect_tf?
         vect_tf = self.tf_vectorizer.transform([text]).toarray()
 
         state = np.array([state])
@@ -227,7 +234,7 @@ class Environment:
         if not os.path.exists(self.path_db):
             raise ValueError('path given doesn\'t exits:\n' + self.path_db)
 
-        # PA:year_start can be taken into account too.
+        #TODO PA:year_start can be taken into account too.
         tags = ['institution', 'year_finish']
         with open(self.path_db) as f:
             data_raw = f.read()
@@ -252,9 +259,10 @@ class Environment:
 
     # Todo familias de equivalencia semántica
     # TODO: PA: why are rewards defined in this way? this is completely depends on the goal standards
-    # and not the improvement on one state w.r.t the previosu visited state.
+    # and not the improvement on one state w.r.t the previous visited state.
     def _get_reward(self, offset=3):
         golden_standard_db = self.golden_standard_db
+
         data_cur = []
 
         if golden_standard_db[0][0] is None:
@@ -278,6 +286,7 @@ class Environment:
             data_cur.append((str(tup[0][0]).lower().replace(' ', ''), tup[0][1]))
 
         a = set(golden_standard_db)
+        print("a", a)
 
         if len(a) == 0:
             print("Well josue, the world is weird")
@@ -289,6 +298,7 @@ class Environment:
 
         # TODO: PA: it shouldn't be the extracted NER from the snippet in self.current_data ?
         b = set(data_cur)
+        print("b", b)
 
         # Jaccard index - penalty
         # penalty =  e^(alpha * len(b)) * u(len(b)-offset) + min (edit_distance(A,B)) / len(A_content)
@@ -340,8 +350,10 @@ class Environment:
         return reward
 
     def _fill_info_snippet(self, text, ner_org, ner_gpe):
+
         date = utils.get_date(text, True)
         # location = utils.get_location(text)
+        #TODO PA: why?? it means that location = maximum_confident_score(GPE, ORG)
         if ner_gpe[2] >= ner_org[2]:
             location = ner_gpe[0]
         else:

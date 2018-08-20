@@ -2,12 +2,12 @@
 import os
 import sys
 import numpy as np
-import preprocessing as prep
+import CODE.preprocessing as prep
 import pickle
 from random import shuffle, randint
-from environment import Environment
-from agent import Agent
-from Sars import Sars
+from CODE.environment import Environment
+from CODE.agent import Agent
+from CODE.Sars import Sars
 from sklearn.externals import joblib
 
 path_replay_memory = "/../DATA/replay_memory.pkl"

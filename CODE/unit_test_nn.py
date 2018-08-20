@@ -1,6 +1,6 @@
 import os
-from environment import Environment
-from agent import Agent
+from CODE.environment import Environment
+from CODE.agent import Agent
 import numpy as np
 
 """
@@ -41,28 +41,32 @@ def test():
     #list_users = sorted(list(map(int, os.listdir(data_train))))
 
     env = Environment()
-    state = env.reset(1)
-    print('rewar', env._get_reward(), env._get_soft_reward())
-
 
     agent = Agent(env)
+    state = env.reset(1)
 
-    # state = env.reset(1)
-    # print('state',state)
-    # action_vector = [1,0,0,0,0,0]
-    # print('action_vector', action_vector)
-    # input_vector = [state+action_vector]
-    # input_vector = np.array(input_vector)
-    # print('input shape', input_vector.shape)
-    # print('input_vector', input_vector)
-    #
-    # # print(agent.network.summary())
-    # print(agent.network.predict(input_vector))
+    print('state',state)
+    print('reward', env._get_reward(), env._get_soft_reward())
+
+    action_vector = [1,0,0,0,0,0]
+
+    print('state', state)
+    print("state", state[0][0][0:21])
+    print(type(state))
+    print('action', action_vector)
+    print(type(action_vector))
+
+    input_vector = [(state[0][0][0:21]).tolist() + action_vector]
+    input_vector = np.asarray(input_vector)
+    print(input_vector)
+    print(input_vector.shape)
+
+    print(agent.network.predict(input_vector))
 
     pass
 
-if __name__ == "__main__":
-
-    #main()
-    test()
+# if __name__ == "__main__":
+#
+#     #main()
+#     test()
 

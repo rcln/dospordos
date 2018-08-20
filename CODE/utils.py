@@ -472,6 +472,9 @@ def int_to_onehot(length, number, zero_based=False):
 
 
 def get_confidence(text):
+
+    #TODO PA: sometimes GPE or ORG are empty or they have a very low confidence. This is again depended on the supported texts gathered by the queries.
+
     """
     :param text:gets snippet as an input
     :return: gives back the organization name or geopolitical name such as countery, cities etc. The Spacy library extracts
@@ -499,6 +502,7 @@ def get_confidence(text):
             ner_org = (doc[start:end], label, entity_scores[key])
         elif label == 'GPE' and entity_scores[key] > ner_gpe[2]:
             ner_gpe = (doc[start:end], label, entity_scores[key])
+
     return ner_org, ner_gpe
 
 
@@ -546,9 +550,6 @@ def step(x):
 
 
 def edit_distance(a, b):
-
-    # print(a, b)
-
     dist = []
     for e_a in a:
         str_a = e_a[0]
@@ -567,6 +568,7 @@ def edit_distance(a, b):
     return dist
 
 
+# TODO PA: what types of the distances this function compute?
 def _edit_distance(str1, str2):
     return editdistance.eval(str1, str2)
 
@@ -577,3 +579,7 @@ def len_content(a):
         tmp = len(e[0])
         num_content = max(num_content, tmp)
     return num_content
+
+# if __name__ == '__main__':
+#     text = "Oscar Avila Akerberg 3 september 2023"
+#     print(get_date(text))

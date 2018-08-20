@@ -69,7 +69,30 @@ class Network:
         self.model.compile(loss=keras.losses.mean_squared_error,
                            optimizer=keras.optimizers.adam(),
                            metrics=['accuracy'])
-        print(self.model.summary())
+        # print(self.model.summary())
+
+
+
+    #TODO PA: we can play with the NN model. The used model in the MIT paper is: linear, RELU, linear, RELU, linear
+
+    """
+    our NN model for predicting Q(s,a):
+    
+        Layer (type)                 Output Shape              Param #   
+    =================================================================
+    input_1 (InputLayer)         (None, 27)                0         
+    _________________________________________________________________
+    dense_1 (Dense)              (None, 10)                280       
+    _________________________________________________________________
+    dropout_1 (Dropout)          (None, 10)                0         
+    _________________________________________________________________
+    dense_2 (Dense)              (None, 10)                110       
+    _________________________________________________________________
+    dropout_2 (Dropout)          (None, 10)                0         
+    _________________________________________________________________
+    dense_3 (Dense)              (None, 1)                 11        
+    ================================================================= 
+    """
 
     @staticmethod
     def _create_model(tensor_shape):
@@ -104,5 +127,3 @@ class Network:
 
     def predict(self, x):
         return self.model.predict(x)
-
-
