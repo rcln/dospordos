@@ -45,7 +45,7 @@ def test():
     agent = Agent(env)
     state = env.reset(1)
 
-    print('state',state)
+    print('state',len(state[0][0]))
     print('reward', env._get_reward(), env._get_soft_reward())
 
     action_vector = [1,0,0,0,0,0]
@@ -65,8 +65,8 @@ def test():
 
     pass
 
-# if __name__ == "__main__":
-#
-#     #main()
-#     test()
+if __name__ == "__main__":
+
+    #main()
+    test()
 

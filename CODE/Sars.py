@@ -18,20 +18,32 @@ class Sars:
         action_vector[0, np.random.randint(0, size)] = 1
         return action_vector
 
+    @staticmethod
+    def get_random_action_vector_pa(size: int):
+        action_vector = [0] * size
+        action_vector[np.random.randint(0, size)] = 1
+        return action_vector
+
     def get_random_sars(self):
+
         A = np.random.uniform(0.0, 10.0)
         B = np.random.uniform(0.0, 10.0)
         a = self.get_random_action_vector(6)
         r = np.array([np.random.uniform(-20.0, 0.0)])
+
         s = np.concatenate((self.get_random_action_vector(7),
-                            np.array([np.random.uniform(0.0, 1.0)]),
-                            self.get_random_action_vector(4),
-                            np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0),
-                                      np.random.uniform(0.0, 1.0)]),
-                            np.array((A, B, A + B)),
-                            np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                            np.array([np.random.randint(0, 2)]),
-                            np.zeros(shape=(27386, ))))
+                                  np.array([np.random.uniform(0.0, 1.0)]),
+                                  self.get_random_action_vector(4),
+                                  np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0),
+                                            np.random.uniform(0.0, 1.0)]),
+                                  np.array((A, B, A + B)),
+                                  np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
+                                  np.array([np.random.randint(0, 2)])
+                                  , np.zeros(shape=(27386, ))
+                                  ))
+
+        #TODO : PA why state has dimension 19(+27386) instead of dimension 21(+27386)?!!!
+
         A = np.random.uniform(0.0, 10.0)
         B = np.random.uniform(0.0, 10.0)
         s_prime = np.concatenate((self.get_random_action_vector(7),
@@ -41,14 +53,12 @@ class Sars:
                                             np.random.uniform(0.0, 1.0)]),
                                   np.array((A, B, A + B)),
                                   np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                                  np.array([np.random.randint(0, 2)]),
-                                  np.zeros(shape=(27386, ))))
+                                  np.array([np.random.randint(0, 2)])
+                                  , np.zeros(shape=(27386, ))
+                                  ))
         return s, a, r, s_prime
 
-
 if __name__ == "__main__":
-    sars1 = Sars()
-    print("State: ", sars1.s)
-    print("Action: ", sars1.a)
-    print("Reward: ", sars1.r)
-    print("Previous state: ", sars1.s_prime)
+    sars1 = Sars(random= False)
+    print("random action ", sars1.get_random_action_vector_pa(6))
+

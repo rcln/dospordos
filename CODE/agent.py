@@ -8,7 +8,7 @@ from keras.utils import plot_model
 
 class Agent:
 
-    def __init__(self, env, shape=(27,)):
+    def __init__(self, env, shape=(28,)):
         self.env = env
         self.network = Network(shape)
 
@@ -20,6 +20,30 @@ class Agent:
                 self.env.current_data = {"number_snippet": "1000000", "text": "", "cite": "", "search": "", "title": "",
                                          "engine_search": "-1", "id_person": ""}
             else:
+                self.env.current_data = self.env.queues[self.env.current_queue].get(False)
+        except KeyError:
+            print("ERROR in next_snippet\n current queue: ", self.env.current_queue)
+            print("Queues ", self.env.queues)
+            print("DATA ", self.env.current_data)
+
+    def next_snippet_pa(self):
+
+        try:
+            if self.env.queues[self.env.current_queue].qsize() == 0:
+                # TODO PA: I should think, what to do if a queue of a query for a given person_id is empty, should we stop the whole
+                #process or use another query randomly, but this means choose an action as a query obligatory!!
+                while True:
+                    self.change_queue()
+                    if self.env.queues[self.env.current_queue].qsize() != 0:
+                        self.env.que_changed_obligatory = True
+                        break
+                    else:
+                        print("*** all snippents from all queries have been searched ****")
+                        break
+                        #raise NameError('***QUEUE IS EMPTY***')
+
+            else:
+                # this is equal to poping a anippent from the current query
                 self.env.current_data = self.env.queues[self.env.current_queue].get(False)
         except KeyError:
             print("ERROR in next_snippet\n current queue: ", self.env.current_queue)
@@ -52,11 +76,34 @@ class Agent:
         pass
 
     def actions_to_take(self, action_activation_vector):
+
         num_l = np.nonzero(action_activation_vector[0])
         num = num_l[0][0]
         actions_db = (self.delete_current_db, self.add_current_db, self.keep_current_db)
         actions_grid = (self.next_snippet, self.change_queue)
         return actions_grid[int(num/3)], actions_db[num % 3]
+
+    def actions_to_take_pa(self, action_activation_vector):
+
+        "if query is called"
+        #print(action_activation_vector)
+        if action_activation_vector[-1] == 1:
+            self.change_queue()
+        #if the NER should be reconciled
+        elif action_activation_vector[-1] == 0:
+
+            if action_activation_vector[0] == 1:
+                "Organisation is accepted"
+            if action_activation_vector[1] == 1:
+                "Organization is rejected"
+            if action_activation_vector[2] == 1:
+                "date is accepted"
+            if action_activation_vector[3] == 1:
+                "date is rejected"
+
+            self.next_snippet_pa()
+
+        return action_activation_vector
 
     def print_model(self):
         plot_model(self.network, to_file='model.png')
@@ -80,7 +127,7 @@ class Network:
     
         Layer (type)                 Output Shape              Param #   
     =================================================================
-    input_1 (InputLayer)         (None, 27)                0         
+    input_1 (InputLayer)         (None, 28)                0         
     _________________________________________________________________
     dense_1 (Dense)              (None, 10)                280       
     _________________________________________________________________

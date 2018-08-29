@@ -5,6 +5,8 @@ import os
 import sys
 import math as m
 import numpy as np
+import spacy
+
 import CODE.preprocessing as prep
 from queue import Queue
 
@@ -31,6 +33,12 @@ class Environment:
         self.info_snippet = None
         self.reward_prev = 0
         self.alpha_reward = 0.5
+        self.person_id = None
+
+        self.que_changed_obligatory = False
+
+        self.university_name_pa = ""
+        self.date_pa = set()
 
         # tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
         # tf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
@@ -50,7 +58,13 @@ class Environment:
 
     # start new episode
     # there are 4518 person names in train-db
-    def reset(self, id_person):
+    def reset(self, id_person, is_pa = False):
+
+        self.person_id = id_person
+
+        self.university_name_pa = ""
+        self.date_pa = set()
+        self.que_changed_obligatory = False
 
         files = self.path + str(id_person)+"/"
         if not os.path.exists(files):
@@ -85,22 +99,38 @@ class Environment:
             self.queues[len(self.queues)] = q
 
         self.current_data = self.queues[self.current_queue].get()
-        # The input vector for our NN
-        initial_state = self.get_state()
+        # part of the input vector for our NN
+        initial_state = self.get_state(is_pa)
 
         return initial_state, False
 
     def step(self, action_tuple, *args):
+        #TODO PA: what is *args input here? why nothing work here?
+        #TODO PA: step does not update the pointer on queires!
+
         # action_query(*args)
         # action_current_db()
 
-        #action_tuple[0]()
-        #action_tuple[1]()
+        action_tuple[0]()
+        action_tuple[1]()
 
         next_state = self.get_state()
 
         # Todo Find the optimal reward
         reward = self._get_reward()
+
+        done = self._check_grid() or self._is_finished()
+
+        return reward, next_state, done
+
+    def step_pa(self, action_tuple, *args):
+
+        # action_query(*args)
+        # action_current_db()
+
+        previous_entities = self.info_snippet
+        next_state = self.get_state(pa_state = True)
+        reward = self._get_reward_pa(previous_entities, *args)
 
         done = self._check_grid() or self._is_finished()
 
@@ -115,9 +145,9 @@ class Environment:
             queries.append(k)
         return queries
 
-    def get_state(self):
+    def get_state(self, pa_state= False):
 
-        # TODO PA: states are the vectors of size 27407, which is a high dimension vector, which the state size is 21 and the rest (27386) are related to vect_tf
+        # TODO PA: states are the vectors of size 27407, which is a high dimension vector, which the state size is 22 and the rest (27386) are related to vect_tf
 
         """
         this function returns back the current state which is a vector consisting of
@@ -148,14 +178,14 @@ class Environment:
         location_confident = utils.get_confidence(text)
 
         # for a provided text in snippet result, we get date and organization of text if there exist any.
-        self.info_snippet.append(self._fill_info_snippet(text, location_confident[0], location_confident[1]))
+        if pa_state:
+            self.info_snippet.append(self._fill_info_snippet_pa(text, location_confident))
+        else:
+            self.info_snippet.append(self._fill_info_snippet(text, location_confident[0], location_confident[1]))
 
         # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
         golden_standard_db = self.golden_standard_db
         data_cur = self.info_snippet
-
-        # print(golden_standard_db)
-        # print(data_cur)
 
         # university name and date coming from goal standards (fernando database)
         A = set(golden_standard_db)
@@ -219,7 +249,7 @@ class Environment:
         vect_tf = self.tf_vectorizer.transform([text]).toarray()
 
         state = np.array([state])
-        state = np.concatenate([state, vect_tf], axis=1)
+        #state = np.concatenate([state, vect_tf], axis=1)
 
         return state
 
@@ -235,7 +265,7 @@ class Environment:
             raise ValueError('path given doesn\'t exits:\n' + self.path_db)
 
         #TODO PA:year_start can be taken into account too.
-        tags = ['institution', 'year_finish']
+        tags = ['institution', 'year_start', 'year_finish']
         with open(self.path_db) as f:
             data_raw = f.read()
             tmp = json.loads(data_raw)
@@ -286,7 +316,6 @@ class Environment:
             data_cur.append((str(tup[0][0]).lower().replace(' ', ''), tup[0][1]))
 
         a = set(golden_standard_db)
-        print("a", a)
 
         if len(a) == 0:
             print("Well josue, the world is weird")
@@ -298,7 +327,6 @@ class Environment:
 
         # TODO: PA: it shouldn't be the extracted NER from the snippet in self.current_data ?
         b = set(data_cur)
-        print("b", b)
 
         # Jaccard index - penalty
         # penalty =  e^(alpha * len(b)) * u(len(b)-offset) + min (edit_distance(A,B)) / len(A_content)
@@ -309,18 +337,44 @@ class Environment:
         reward_cur = (len(a.intersection(b))/len(a.union(b))) - penalty
 
         reward = reward_cur - self.reward_prev
-
-        print("Current reward", reward_cur)
-        print("Previous reward", self.reward_prev)
-        print("Reward", reward)
-        print("min Edit_distance", utils.edit_distance(a, b))
-
         self.reward_prev = reward_cur
 
         return reward
 
     # Todo rewrite this function so is similar to the normal reward but only with the universities
 
+    def _get_reward_pa(self, previous_entities, *args):
+
+        reward = 0
+
+        tempo = self.que_changed_obligatory
+
+        golden_standard_db = self.golden_standard_db
+        golden_standard_db_ = ["", "", "", ""]
+
+        action = args[0]
+
+        if golden_standard_db[0][0] is None:
+            print("THE GOLD STANDARD IS MORE LIKE SILVER...[?] HMMM")
+            try:
+                sys.exit(-1)
+            except SystemExit:
+                os._exit(-2)
+        else:
+            golden_standard_db_ = list(golden_standard_db[0]) + [self.current_name]
+
+        new_entities = self.info_snippet
+        # if the taken action is query
+        if action[-1] == 1:
+            reward = -1.0
+        #if the taken action is conciling the extrcated entities
+        else:
+            reward = reward + self.get_accuracy(new_entities[0], previous_entities[0], golden_standard_db_)
+            if self.que_changed_obligatory:
+                reward += -1.0
+                self.que_changed_obligatory = False
+
+        return reward
 
     def _get_soft_reward(self, tolerance=3):
         """
@@ -353,14 +407,31 @@ class Environment:
 
         date = utils.get_date(text, True)
         # location = utils.get_location(text)
-        #TODO PA: why?? it means that location = maximum_confident_score(GPE, ORG)
         if ner_gpe[2] >= ner_org[2]:
             location = ner_gpe[0]
         else:
             location = ner_org[0]
 
-        print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
+        #print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
         return str(location), str(date)
+
+    def _fill_info_snippet_pa(self, text, ners):
+
+        date = utils.get_date(text, True)
+
+        ner_org = ners[0]
+        ner_gpe = ners[1]
+        ner_person_name = ners[2]
+        #ner_date = ners[3]
+
+        # location = utils.get_location(text)
+        if ner_gpe[2] >= ner_org[2]:
+            location = ner_gpe[0]
+        else:
+            location = ner_org[0]
+
+        #print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
+        return str(location), str(date), str(ner_person_name[0]) #, str(ner_date[0])
 
     def _normalize_snippet_number(self, snippet_number):
         try:
@@ -372,5 +443,60 @@ class Environment:
             print("ERROR in next_snippet\n current queue: ", self.current_queue)
             print("Queues ", self.queues)
             print("DATA ", self.current_data)
+
+    def get_accuracy(self, new_entities, previous_entities, golden_standards):
+        #TODO PA: this function should be more optimised
+
+        accuracy_prev = 0.0
+        accuracy_curr = 0.0
+
+        years = [str(golden_standards[1]) , str(golden_standards[2])]
+
+        university_name = str(golden_standards[0].lower())
+
+        un_curr = str(new_entities[0].lower())
+        un_prev = str(previous_entities[0].lower())
+
+        # if year is correct
+        if new_entities[1] in years:
+            accuracy_curr += 0.25
+            self.date_pa.add(new_entities[1])
+
+        if previous_entities[1] in years:
+            accuracy_prev += 0.25
+
+        # if university name is correct
+        if un_curr == university_name or self.is_similar_university(un_curr, university_name):
+            accuracy_curr += 0.5
+            self.university_name_pa = un_curr
+
+        #elif un_curr in university_name:
+        #    accuracy_curr += 0.5
+
+        if un_prev == university_name or self.is_similar_university(un_prev, university_name):
+            accuracy_prev += 0.5
+
+        #elif un_prev in university_name:
+        #    accuracy_prev += 0.5
+
+        reward = accuracy_curr - accuracy_prev
+
+        #add a negative reward to each step
+        reward += -0.1
+
+        return reward
+
+    # TODO PA: Spacy depends on capital letters, we should find a way to solve this problem, thats the reason that all NEs can't be extracted.
+    def is_similar_university(self, given, univrsity_name):
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp(univrsity_name)
+
+        for ent in doc.ents:
+            if ent.text == given:
+                return True
+
+        return False
+
+
 
 
