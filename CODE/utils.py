@@ -470,6 +470,11 @@ def int_to_onehot(length, number, zero_based=False):
     l.__setitem__(number, 1)
     return l
 
+def get_confidence_RE(text):
+
+
+
+    return
 
 def get_confidence(text):
 
@@ -482,6 +487,7 @@ def get_confidence(text):
      these name entities with various confidence scores. The function output is (confident score for ORG, confident score for GPE)
     using SPacy library have different
     """
+    #print(text)
 
     nlp = spacy.load('en_core_web_sm')
     ner_person_name = ('', u'PERSON', 0.0)
@@ -552,8 +558,8 @@ def get_date(text, first=False):
     matches = re.findall(r'\d{4}', text)
     if first and len(matches) > 0:
         return matches[0]
-    elif len(matches) == 0:
-        return ""
+    #elif len(matches) == 0:
+    #    return ""
     else:
         return matches
 

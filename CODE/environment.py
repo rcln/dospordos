@@ -11,6 +11,7 @@ import CODE.preprocessing as prep
 from queue import Queue
 
 from CODE import utils
+from CODE.regular_ne import list_organization
 from CODE.utils import FeatureFilter
 from sklearn.externals import joblib
 
@@ -37,8 +38,11 @@ class Environment:
 
         self.que_changed_obligatory = False
 
-        self.university_name_pa = ""
+        self.university_name_pa = set()
         self.date_pa = set()
+
+        self.check_university_pa = False
+        self.check_date_pa = False
 
         # tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
         # tf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
@@ -62,9 +66,12 @@ class Environment:
 
         self.person_id = id_person
 
-        self.university_name_pa = ""
+        self.university_name_pa = set()
         self.date_pa = set()
         self.que_changed_obligatory = False
+
+        self.check_university_pa = False
+        self.check_date_pa = False
 
         files = self.path + str(id_person)+"/"
         if not os.path.exists(files):
@@ -132,12 +139,18 @@ class Environment:
         next_state = self.get_state(pa_state = True)
         reward = self._get_reward_pa(previous_entities, *args)
 
-        done = self._check_grid() or self._is_finished()
+        done = self._check_grid() or self._is_finished_pa()
 
         return reward, next_state, done
 
     def _is_finished(self):
         return self.current_db == self.golden_standard_db
+
+    def _is_finished_pa(self):
+        #TODO PA: this is a very tough stopping criteria, we can make it easier to stop the loop.
+        #print(self.check_date_pa, self.check_university_pa)
+
+        return self.check_date_pa and self.check_university_pa
 
     def get_queries(self):
         queries = []
@@ -176,6 +189,7 @@ class Environment:
         self.info_snippet = []
 
         location_confident = utils.get_confidence(text)
+        #location_confident = utils.get_confidence_RE(text)
 
         # for a provided text in snippet result, we get date and organization of text if there exist any.
         if pa_state:
@@ -185,7 +199,17 @@ class Environment:
 
         # common, Total  (only Univ),   common, Total (only year),  common, Total(U-A)
         golden_standard_db = self.golden_standard_db
-        data_cur = self.info_snippet
+        #data_cur = self.info_snippet
+
+        tempo = self.info_snippet
+
+        unis = list(set(tempo[0][0]))
+        dates = tempo[0][1]
+        data_cur = [tuple(unis+dates)]
+
+        data_cur_dic = {'unis':[], 'dates': []}
+        data_cur_dic['unis'] = unis
+        data_cur_dic['dates'] = dates
 
         # university name and date coming from goal standards (fernando database)
         A = set(golden_standard_db)
@@ -196,13 +220,18 @@ class Environment:
         set_uni_B = set()
         set_ani_B = set()
 
+        #print(self.current_name, golden_standard_db, ',', data_cur)
+
         for y1 in golden_standard_db:
             set_uni_A.add(y1[0])
             set_ani_A.add(y1[1])
+            set_ani_A.add(y1[2])
 
-        for y2 in data_cur:
-            set_uni_B.add(y2[0])
-            set_ani_B.add(y2[1])
+        for y2 in data_cur_dic['dates']:
+            set_ani_B.add(y2)
+
+        for y3 in data_cur_dic['unis']:
+            set_uni_B.add(y3)
 
         total = len(A.union(B))
         common = len(A.intersection(B))
@@ -342,7 +371,6 @@ class Environment:
         return reward
 
     # Todo rewrite this function so is similar to the normal reward but only with the universities
-
     def _get_reward_pa(self, previous_entities, *args):
 
         reward = 0
@@ -417,21 +445,24 @@ class Environment:
 
     def _fill_info_snippet_pa(self, text, ners):
 
-        date = utils.get_date(text, True)
+        #it returns a list of dates
+        date = utils.get_date(text, False)
+        location = []
 
-        ner_org = ners[0]
-        ner_gpe = ners[1]
+        ner_org = ners[0] # organisation information (a list)
+        ner_gpe = ners[1] # geographical position information (a list)
         ner_person_name = ners[2]
         #ner_date = ners[3]
 
-        # location = utils.get_location(text)
-        if ner_gpe[2] >= ner_org[2]:
-            location = ner_gpe[0]
-        else:
-            location = ner_org[0]
+        location.append(str(ner_gpe[0]))
+        location.append(str(ner_org[0]))
+
+        RE = list(set(list_organization(text)))
+        for item in RE:
+            location.append(item)
 
         #print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
-        return str(location), str(date), str(ner_person_name[0]) #, str(ner_date[0])
+        return [list(set(location)), date, str(ner_person_name[0])] #, str(ner_date[0])
 
     def _normalize_snippet_number(self, snippet_number):
         try:
@@ -445,6 +476,7 @@ class Environment:
             print("DATA ", self.current_data)
 
     def get_accuracy(self, new_entities, previous_entities, golden_standards):
+
         #TODO PA: this function should be more optimised
 
         accuracy_prev = 0.0
@@ -454,30 +486,41 @@ class Environment:
 
         university_name = str(golden_standards[0].lower())
 
-        un_curr = str(new_entities[0].lower())
-        un_prev = str(previous_entities[0].lower())
+        # un_curr = str(new_entities[0].lower())
+        # un_prev = str(previous_entities[0].lower())
+
+        un_curr = [str(i).lower() for i in new_entities[0]]
+        for item in un_curr:
+            self.university_name_pa.add(item)
+        un_prev = [str(i).lower() for i in previous_entities[0]]
 
         # if year is correct
-        if new_entities[1] in years:
-            accuracy_curr += 0.25
-            self.date_pa.add(new_entities[1])
+        for y_ in new_entities[1]:
+            self.date_pa.add(y_)
+            if y_ in years:
+                accuracy_curr += 0.25
+                #self.date_pa.add(y_)
 
-        if previous_entities[1] in years:
-            accuracy_prev += 0.25
+        if set(self.date_pa) == set(years):
+            self.check_date_pa = True
+
+        for y__ in previous_entities[1]:
+            if y__ in years:
+                accuracy_prev += 0.25
+                #self.date_pa.add(y__)
 
         # if university name is correct
-        if un_curr == university_name or self.is_similar_university(un_curr, university_name):
+        if self.is_similar_university(un_curr, university_name):
             accuracy_curr += 0.5
-            self.university_name_pa = un_curr
+        elif self.how_university(un_curr, university_name):
+            accuracy_curr += 0.2
+            #self.university_name_pa = un_curr
 
-        #elif un_curr in university_name:
-        #    accuracy_curr += 0.5
-
-        if un_prev == university_name or self.is_similar_university(un_prev, university_name):
+        #if un_prev == university_name or self.is_similar_university(un_prev, university_name):
+        if self.is_similar_university(un_prev, university_name):
             accuracy_prev += 0.5
-
-        #elif un_prev in university_name:
-        #    accuracy_prev += 0.5
+        elif self.how_university(un_prev, university_name):
+            accuracy_prev += 0.2
 
         reward = accuracy_curr - accuracy_prev
 
@@ -487,15 +530,42 @@ class Environment:
         return reward
 
     # TODO PA: Spacy depends on capital letters, we should find a way to solve this problem, thats the reason that all NEs can't be extracted.
-    def is_similar_university(self, given, univrsity_name):
-        nlp = spacy.load('en_core_web_sm')
-        doc = nlp(univrsity_name)
+    def how_university(self, given_list, univrsity_name):
 
-        for ent in doc.ents:
-            if ent.text == given:
+        document_words = univrsity_name.split()
+
+        for given in given_list:
+            given_words = given.split()
+            common = set(document_words).intersection(set(given_words))
+            if 'university' in common:
+                common.remove('university')
+            if 'of' in common:
+                common.remove('of')
+            if 'the' in common:
+                common.remove('the')
+            if 'college' in common:
+                common.remove('college')
+            if len(common) >= 1:
+                #self.university_name_pa.add(given)
+                #self.check_university_pa = True
                 return True
 
         return False
+
+    def edit_distance(self, given_list, univrsity_name):
+
+        return
+
+    def is_similar_university(self, given_list, university_name):
+
+        for item in given_list:
+            if item == university_name:
+                #self.university_name_pa.add(item)
+                self.check_university_pa = True
+                return True
+
+        return False
+
 
 
 
