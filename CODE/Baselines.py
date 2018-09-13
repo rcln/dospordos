@@ -10,6 +10,8 @@ import CODE.preprocessing as prep
 from CODE.agent import Agent
 from sklearn.externals import joblib
 
+from CODE.regular_ne import re_organization
+
 path_entities_memory = "/../DATA/entities_memory.pkl"
 
 class Baselines:
@@ -109,11 +111,10 @@ class Baselines:
 
     def closest_to_gold(self, input, gold_standards):
 
-
         golds = gold_standards[1]
         uni = golds[0][0].lower()
         years = [str(golds[0][1]), str(golds[0][2])]
-        eval = Evaluation(gold, uni, years)
+        eval = Evaluation(golds, uni, years)
 
         common_year = set()
         common_university = set()
@@ -132,6 +133,23 @@ class Baselines:
 
         return ev.total_accuray()
 
+    def filter_with_RE(self, input, gold_standards):
+
+        entities = input[0]
+        years = input[1]
+
+        filtered_ne = set()
+
+        for item in entities:
+            if re_organization(item.title()) is not None:
+                filtered_ne.add(item)
+
+
+        golds = gold_standards[1]
+        filtered_ne = list(filtered_ne)
+
+        ev = Evaluation(golds, list(filtered_ne), set(list(years)))
+        return ev.total_accuray()
 
 if __name__ == '__main__':
 
@@ -147,5 +165,8 @@ if __name__ == '__main__':
 
     base = Baselines(env, agent, list_users)
     entities, gold = base.baseline_agregate_NE(list_users[35])
-    print(base.majority_aggregation(entities, gold))
-    print(base.closest_to_gold(entities, gold))
+
+    #print(base.majority_aggregation(entities, gold))
+    #print(base.closest_to_gold(entities, gold))
+
+    print(base.filter_with_RE(entities, gold))

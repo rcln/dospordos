@@ -113,4 +113,3 @@ def list_organization(text):
             w = text[idx:idx+len(w)]
             result.append(w.strip())
     return result
-

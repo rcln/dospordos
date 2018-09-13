@@ -9,7 +9,7 @@ from random import shuffle, randint
 
 from CODE.Evaluation import Evaluation
 from CODE.environment import Environment
-from CODE.agent import Agent
+from CODE.agent import Agent, Network
 from CODE.Sars import Sars
 from sklearn.externals import joblib
 
@@ -21,10 +21,11 @@ path_history = "../DATA/history"
 
 class DQN:
 
-    def __init__(self, env_, agent_, list_users_):
+    def __init__(self, env_, agent_, list_users_, is_RE):
 
         self.env = env_
         self.agent = agent_
+        self.is_RE = is_RE
 
         # Desc: loading users
         self.list_users = list_users_
@@ -73,19 +74,19 @@ class DQN:
             while len(replay_memory_ar) <= 2000:
 
                 random_user = self.list_users[randint(0, len_list_user)]
-                s, pass_us = self.env.reset(random_user, is_pa=True)
+                s, pass_us = self.env.reset(random_user, is_RE=self.is_RE)
 
                 if pass_us:
                     continue
 
                 for x in range(0, 100):  # TODO PA: why 30 times?
                     a = Sars.get_random_action_vector_pa(6)
-                    r, s_prime, done = self.env.step_pa(self.agent.actions_to_take_pa(a), a)
+                    r, s_prime, done = self.env.step_pa(self.agent.actions_to_take_pa(a), a, is_RE= self.is_RE)
                     replay_memory_ar.append(Sars(s, a, r, s_prime, False))
                     s = s_prime
 
                 print('gold standars', self.env.current_name, self.env.golden_standard_db)
-                print('extrcated name entities', self.env.university_name_pa, self.env.date_pa)
+                print('extracted name entities', self.env.university_name_pa, self.env.date_pa)
 
             print("Saving replay memory")
             joblib.dump(replay_memory_ar, os.getcwd() + path_replay_memory)
@@ -118,10 +119,9 @@ class DQN:
 
         return action_vector
 
-# TODO too big for it's own good, break into funcs
     def deep_QN(self):
 
-        eps = 0.1 #TODO PA: the eps should be tested with the smaller values
+        eps = 0.1 #TODO PA: the eps should be tested with the small values
         history = []
 
         # Desc: loading users
@@ -143,15 +143,15 @@ class DQN:
             gamma = 0.9
 
             # initial state
-            state, err = self.env.reset(us, is_pa = True)
+            state, err = self.env.reset(us, is_RE=self.is_RE)
             episode = {}
             if err:
                 continue
             episode[len(history)] = []
 
             done = False
-            # DQN with experience replace
 
+            # DQN with experience replace
             counter = 0
             while not done:
             #for i in range(50):
@@ -172,16 +172,9 @@ class DQN:
                     action_vector = self.get_max_action(state)
 
                 # Observe reward and new state
-                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector)
+                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector, is_RE = self.is_RE)
 
                 episode[len(history)].append(reward)
-
-                #print("reward step:: ", reward)
-                #print("current_db in agent:: ", agent.env.current_db)
-
-                #print("Gold standard:: ", env.current_name, env.golden_standard_db)
-                #print("Current queue:: ", env.current_queue)
-                #print("Current snippet:: ", env.current_text)
 
                 # Todo Ask Pegah about replay memory ask her opinion...?
                 if len(replay_memory) < 1000:
@@ -209,11 +202,13 @@ class DQN:
                         for i in range(6):
                             action_vector = self.generate_action(i, 6)
                             t_vector = np.concatenate((sample.s_prime, action_vector), axis=1)
+                            #TODO DDQN: target should be predicetd using the weights from the previous epoch
                             target_ar.append(self.agent.network.predict(t_vector))
 
                         if self.bad_franky(target_ar):
                             print("Target_ar that is in training is bad, target_ar", target_ar)
 
+                        # TODO DDQN: the following should change to: sample.r + gamma * max(target_ar)
                         t = sample.r + gamma * max(target_ar)[0][0]
 
                     if not type(sample.a) is list:
@@ -250,6 +245,7 @@ class DQN:
 
             """get entities by following the optimal policy"""
             print("couter", self.get_best_entities_with_optimal_policy(us))
+
             print('gold standards', self.env.current_name, self.env.golden_standard_db)
             print('extracted entities', self.env.university_name_pa, self.env.date_pa)
 
@@ -259,7 +255,7 @@ class DQN:
     def get_best_entities_with_optimal_policy(self, us):
 
         # initial state
-        state, err = self.env.reset(us, is_pa=True)
+        state, err = self.env.reset(us, is_RE=self.is_RE)
 
         done = False
         counter = 0
@@ -273,7 +269,7 @@ class DQN:
 
             action_vector = self.get_max_action(state)
             # Observe reward and new state
-            reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector)
+            reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector, is_RE= self.is_RE)
             state = next_state
 
             counter += 1
@@ -298,10 +294,13 @@ if __name__ == "__main__":
     agent = Agent(env, (28, )) # + len_vect.shape[1],)) # the comma is very important
     list_users = sorted(list(map(int, os.listdir(env.path))))
 
-    dqn = DQN(env, agent, list_users)
+    dqn = DQN(env, agent, list_users, is_RE= True)
 
     try:
         dqn.deep_QN()
+
+        #dqn.deep_QN(is_RE=True, double_DQN = True )
+
     except KeyboardInterrupt:
         print("\n\n-----Interruption-----\nSaving weights")
         agent.network.save_weights(env.path_weights)

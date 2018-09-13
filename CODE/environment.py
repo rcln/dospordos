@@ -11,7 +11,7 @@ import CODE.preprocessing as prep
 from queue import Queue
 
 from CODE import utils
-from CODE.regular_ne import list_organization
+from CODE.regular_ne import list_organization, re_organization
 from CODE.utils import FeatureFilter
 from sklearn.externals import joblib
 
@@ -22,6 +22,7 @@ class Environment:
         self.path = "../DATA/train_db/"
         self.path_db = "../DATA/fer_db/train.json"
         self.path_weights = "../DATA/model_w.h5"
+        self.path_previous_weights = "../DATA/model_w.h5"
         self.path_count_vect = "../DATA/count_vectorizer.pkl"
         self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
         self.queues = {}
@@ -62,7 +63,7 @@ class Environment:
 
     # start new episode
     # there are 4518 person names in train-db
-    def reset(self, id_person, is_pa = False):
+    def reset(self, id_person, is_RE):
 
         self.person_id = id_person
 
@@ -107,11 +108,11 @@ class Environment:
 
         self.current_data = self.queues[self.current_queue].get()
         # part of the input vector for our NN
-        initial_state = self.get_state(is_pa)
+        initial_state = self.get_state(is_RE, pa_state= True)
 
         return initial_state, False
 
-    def step(self, action_tuple, *args):
+    def step(self, action_tuple, *args, is_RE):
         #TODO PA: what is *args input here? why nothing work here?
         #TODO PA: step does not update the pointer on queires!
 
@@ -121,7 +122,7 @@ class Environment:
         action_tuple[0]()
         action_tuple[1]()
 
-        next_state = self.get_state()
+        next_state = self.get_state(is_RE)
 
         # Todo Find the optimal reward
         reward = self._get_reward()
@@ -130,13 +131,13 @@ class Environment:
 
         return reward, next_state, done
 
-    def step_pa(self, action_tuple, *args):
+    def step_pa(self, action_tuple, *args, is_RE):
 
         # action_query(*args)
         # action_current_db()
 
         previous_entities = self.info_snippet
-        next_state = self.get_state(pa_state = True)
+        next_state = self.get_state(is_RE= is_RE, pa_state = True)
         reward = self._get_reward_pa(previous_entities, *args)
 
         done = self._check_grid() or self._is_finished_pa()
@@ -158,7 +159,7 @@ class Environment:
             queries.append(k)
         return queries
 
-    def get_state(self, pa_state= False):
+    def get_state(self, is_RE, pa_state = False):
 
         # TODO PA: states are the vectors of size 27407, which is a high dimension vector, which the state size is 22 and the rest (27386) are related to vect_tf
 
@@ -193,7 +194,7 @@ class Environment:
 
         # for a provided text in snippet result, we get date and organization of text if there exist any.
         if pa_state:
-            self.info_snippet.append(self._fill_info_snippet_pa(text, location_confident))
+            self.info_snippet.append(self._fill_info_snippet_pa(text, location_confident, is_RE))
         else:
             self.info_snippet.append(self._fill_info_snippet(text, location_confident[0], location_confident[1]))
 
@@ -443,7 +444,7 @@ class Environment:
         #print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
         return str(location), str(date)
 
-    def _fill_info_snippet_pa(self, text, ners):
+    def _fill_info_snippet_pa(self, text, ners, is_RE):
 
         #it returns a list of dates
         date = utils.get_date(text, False)
@@ -454,12 +455,22 @@ class Environment:
         ner_person_name = ners[2]
         #ner_date = ners[3]
 
+        """use gazettees from Jorge work"""
+        Gazettee_university = list(set(list_organization(text)))
+        for item in Gazettee_university:
+            location.append(item)
+
         location.append(str(ner_gpe[0]))
         location.append(str(ner_org[0]))
 
-        RE = list(set(list_organization(text)))
-        for item in RE:
-            location.append(item)
+        """use RE check"""
+        if is_RE:
+            filtered_ne = set()
+            for item in location:
+                if re_organization(item.title()) is not None:
+                    filtered_ne.add(item)
+
+            location = list(filtered_ne)
 
         #print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
         return [list(set(location)), date, str(ner_person_name[0])] #, str(ner_date[0])

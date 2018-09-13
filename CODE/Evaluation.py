@@ -26,7 +26,6 @@ class Evaluation:
 
         return False
 
-
     def total_accuray(self):
         percentage_uni = 0.0
         percentage_years = 0.0
