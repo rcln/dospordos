@@ -112,12 +112,12 @@ class Agent:
 class Network:
 
     def __init__(self, tensor_shape):
+        self.tensor_shape = tensor_shape
         self.model = self._create_model(tensor_shape)
         self.model.compile(loss=keras.losses.mean_squared_error,
                            optimizer=keras.optimizers.adam(),
                            metrics=['accuracy'])
         # print(self.model.summary())
-
 
 
     #TODO PA: we can play with the NN model. The used model in the MIT paper is: linear, RELU, linear, RELU, linear
@@ -171,6 +171,12 @@ class Network:
 
     def load_weights(self, path):
         self.model.load_weights(filepath=path, by_name=False)
+
+    def save_model(self, path):
+        self.model.save(path)
+
+    def load_model(self, path):
+        keras.models.load_model(path)
 
     def predict(self, x):
         return self.model.predict(x)

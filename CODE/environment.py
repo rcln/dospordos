@@ -22,7 +22,7 @@ class Environment:
         self.path = "../DATA/train_db/"
         self.path_db = "../DATA/fer_db/train.json"
         self.path_weights = "../DATA/model_w.h5"
-        self.path_previous_weights = "../DATA/model_w.h5"
+        self.path_weights_previous = "../DATA/model_w_prev.h5"
         self.path_count_vect = "../DATA/count_vectorizer.pkl"
         self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
         self.queues = {}
