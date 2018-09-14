@@ -12,8 +12,6 @@ import os.path
 import re
 import editdistance
 
-#TODO: area under the curve (AUC) should be added as another measure too.
-
 def verbose(*args):
     return None
 
@@ -129,29 +127,33 @@ if __name__ == '__main__':
     scores = []
 
     for gs, sys in zip(GS, SYS):
-        gs_ = []
+        gs_ = list(gs)
         sys_ = []
         tp, fp, fn = 0, 0, 0
 
         for sv_ in sys:
             flag_tp = False
-            for sv in gs:
+            for ii,sv in enumerate(gs_):
                 if sv[0] == sv_[0] and editdistance.eval(sv[1],sv_[1])/len(sv[1]) < 0.2:
                     tp += 1
                     TP += 1
                     flat_tp = True
                     gs_.append(sv)
+                    del gs_[ii]
                     break
             if flag_tp:
                 continue
             fp += 1
             FP += 1
-        fn += len(gs)-len(gs_)
-        FN += len(gs)-len(gs_)
+        fn += len(gs_)
+        FN += len(gs_)
 
         scores.append(prf(tp, fp, fn))
 
     P, R, F = prf(TP, FP, FN)
+    print("TP",TP)
+    print("FP",FP)
+    print("FN",FN)
     print("MACRO SCORES")
     print("Precision:", P)
     print("Recall:", R)
@@ -160,6 +162,8 @@ if __name__ == '__main__':
     print("Precision:", sum([P for P,R,F in scores])/len(scores))
     print("Recall:", sum([R for P,R,F in scores])/len(scores))
     print("F-score:", sum([F for P,R,F in scores])/len(scores))
+
+
 
 
 
