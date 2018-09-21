@@ -29,10 +29,10 @@ load_model = False
 class DQN:
     """we have two DQN approaches in general: 1- DQN + normal NE 2 - DQN + normal NE + regular expresions"""
 
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler('dqn.log')
-    fh.setLevel(logging.DEBUG)
+    # logger = logging.getLogger()
+    # logger.setLevel(logging.DEBUG)
+    # fh = logging.FileHandler('dqn.log')
+    # fh.setLevel(logging.DEBUG)
 
     def __init__(self, env_, agent_, list_users_, is_RE):
         """
@@ -186,6 +186,11 @@ class DQN:
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
 
+        # Epochs
+        epoch_reward_list = []
+        epoch_accuracy_list = []
+        e_count = 0
+
         for us in self.list_users[35:36]:
             # initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
@@ -197,8 +202,8 @@ class DQN:
 
             # Double DQN
             counter = 0
-
             # episodes
+            tmp_reward = 0
             while not done:
 
                 if counter > 1000:
@@ -213,7 +218,8 @@ class DQN:
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                             is_RE=self.is_RE)
 
-                print(' ::: ' + str(reward) + ' ::: ')
+                logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
+                tmp_reward = tmp_reward + reward
 
                 # Todo Ask Pegah about replay memory, ask her opinion...?
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
@@ -261,6 +267,8 @@ class DQN:
                 state = next_state
                 counter += 1
 
+
+
             # TODO PA: do the wieghts change during the learning process in the NN automatically?
             self.agent.network.save_weights(self.env.path_weights)
 
@@ -270,15 +278,25 @@ class DQN:
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            print(eval.total_accuray())
+            accuracy = eval.total_accuray()
+            logger.debug(accuracy)
 
+            epoch_accuracy_list.append(accuracy)
+            epoch_reward_list.append(tmp_reward/counter)
+            e_count = e_count + 1
+
+        logger.warning('epoch_reward_list' + str(epoch_reward_list))
+        logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
+
+        pickle.dump(epoch_reward_list, open('ddqn_ep_re.pkl', 'wb'))
+        pickle.dump(epoch_accuracy_list, open('ddqn_acc_re.pkl', 'wb'))
         return
 
     def deep_QN(self, gamma, eps, training_replay_size):
         # TODO PA: the gamma should be increased to 0.95 or 0.99 after the first test
         # TODO PA: the eps should be tested with the small values
 
-        history = []
+        # history = []
 
         # Desc: loading users
         # list_users = sorted(list(map(int, os.listdir(self.env.path))))
@@ -286,20 +304,26 @@ class DQN:
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
 
+        # Epochs
+        epoch_reward_list = []
+        epoch_accuracy_list = []
+        e_count = 0
+
         # train episodes
-        for us in self.list_users[35:36]:
+        for us in self.list_users: #[35:36]:
 
             # reset episode with new user and get initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
-            episode = {}
+            # episode = {}
             if err:
                 continue
-            episode[len(history)] = []
+            # episode[len(history)] = []
 
             done = False
 
             # DQN with experience replace
             counter = 0
+            tmp_reward = 0
             while not done:
                 # for i in range(50):
 
@@ -314,7 +338,10 @@ class DQN:
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                             is_RE=self.is_RE)
 
-                episode[len(history)].append(reward)
+                logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
+                tmp_reward = tmp_reward + reward
+
+                # episode[len(history)].append(reward)
 
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
 
@@ -369,19 +396,30 @@ class DQN:
 
             # TODO PA: does the wieghts change during the learning process in the NN automatically?
             self.agent.network.save_weights(self.env.path_weights)
-            history.append(episode)
-            print("HISTORY..", history, "type.", type(history))
+            # history.append(episode)
+            # print("HISTORY..", history, "type.", type(history))
 
-            pickle.dump(history, open(path_history, 'wb'))
+            # pickle.dump(history, open(path_history, 'wb'))
 
             """get entities by following the optimal policy"""
             print("Counter", self.get_best_entities_with_optimal_policy(us))
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
+            # TODO TP pickle and log these prints and the eval for both
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            print(eval.total_accuray())
+            accuracy = eval.total_accuray()
+            logger.debug(accuracy)
 
+            epoch_accuracy_list.append(accuracy)
+            epoch_reward_list.append(tmp_reward / counter)
+            e_count = e_count + 1
+
+        logger.warning('epoch_reward_list' + str(epoch_reward_list))
+        logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
+
+        pickle.dump(epoch_reward_list, open('dqn_ep_re.pkl', 'wb'))
+        pickle.dump(epoch_accuracy_list, open('dqn_acc_re.pkl', 'wb'))
         return
 
     def get_best_entities_with_optimal_policy(self, us):
@@ -412,8 +450,23 @@ class DQN:
 
 if __name__ == "__main__":
 
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    file_handler = logging.FileHandler('dqn.log')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
+
+    logger.debug('NEW RUN')
+    # logger.info('')
+    # logger.warning('')
+    # logger.error('')
+    # logger.critical('')
+
     # TODO TP needd to change this env to reflect what datasource we want to use
-    env = Environment(path="/home/urb/PycharmProjects/dospordos/DATA/db_v1/")
+    env = Environment('../DATA/db_v1/')
 
     # if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
     #     print("Training BOW vectors")
@@ -431,8 +484,8 @@ if __name__ == "__main__":
     dqn = DQN(env, agent, list_users, is_RE=True)
 
     try:
-        # dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size=2000)
-        dqn.DoubleDQN(gamma=0.95, eps=0.1, training_replay_size=30)
+        dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size=2000)
+        # dqn.DoubleDQN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
 
     except KeyboardInterrupt:
         print("\n\n-----Interruption-----\nSaving weights")

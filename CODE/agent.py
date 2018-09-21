@@ -154,7 +154,7 @@ class Network:
     def fit(self, x_train, y_train, epochs, batch_size):
         self.model.fit(x_train, y_train, # batch_size=batch_size,
                        epochs=epochs,
-                       verbose=1)
+                       verbose=0)  # could be 1
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,
