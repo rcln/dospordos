@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import h5py
+# import h5py
 import os
 import random
 import sys
@@ -146,7 +146,7 @@ class DQN:
             replay_memory = joblib.load(os.getcwd() + path_replay_memory)
         else:
             # Desc: generate first replay memory
-            # MDP framework for Information Extraction (Traiing Phase)
+            # MDP framework for Information Extraction (Training Phase)
             replay_memory = self.training_phase(size)
 
         return replay_memory
@@ -213,7 +213,7 @@ class DQN:
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                             is_RE=self.is_RE)
 
-                self.logger.debug(' ::: ' + str(reward) + ' ::: ')
+                print(' ::: ' + str(reward) + ' ::: ')
 
                 # Todo Ask Pegah about replay memory, ask her opinion...?
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
@@ -316,7 +316,6 @@ class DQN:
 
                 episode[len(history)].append(reward)
 
-                # Todo Ask Pegah about replay memory ask her opinion...?
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
 
                 # Desc: Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
@@ -414,12 +413,12 @@ class DQN:
 if __name__ == "__main__":
 
     # TODO TP needd to change this env to reflect what datasource we want to use
-    env = Environment()
+    env = Environment(path="/home/urb/PycharmProjects/dospordos/DATA/db_v1/")
 
-    if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
-        print("Training BOW vectors")
-        prep.file_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
-        print("---FIT COMPLETED----")
+    # if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
+    #     print("Training BOW vectors")
+    #     prep.file_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+    #     print("---FIT COMPLETED----")
 
     # TODO get the second number automatically ... env.tf_vectorizer.shape[0]
     # Desc: agent = Agent(env, (27 + 27386,))
@@ -432,8 +431,8 @@ if __name__ == "__main__":
     dqn = DQN(env, agent, list_users, is_RE=True)
 
     try:
-        dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size=2000)
-        # dqn.DoubleDQN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
+        # dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size=2000)
+        dqn.DoubleDQN(gamma=0.95, eps=0.1, training_replay_size=30)
 
     except KeyboardInterrupt:
         print("\n\n-----Interruption-----\nSaving weights")

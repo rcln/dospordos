@@ -5,9 +5,9 @@ import os
 import sys
 import math as m
 import numpy as np
-import spacy
+# import spacy
 
-import preprocessing as prep
+# import preprocessing as prep
 from queue import Queue
 
 import utils
@@ -49,12 +49,12 @@ class Environment:
         # tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
         # tf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
 
-        if not os.path.exists(self.path_count_vect) or not os.path.exists(self.path_tfidf_vect):
-            print("Training BOW vectors")
-            prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
-            print("---FIT COMPLETED----")
-
-        self.tf_vectorizer = joblib.load(self.path_tfidf_vect)
+        # if not os.path.exists(self.path_count_vect) or not os.path.exists(self.path_tfidf_vect):
+        #     print("Training BOW vectors")
+        #     prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+        #     print("---FIT COMPLETED----")
+        #
+        # self.tf_vectorizer = joblib.load(self.path_tfidf_vect)
 
     def set_path_train(self, path):
         self.path = path
@@ -111,7 +111,7 @@ class Environment:
                 data_raw = f.read()
             data = json.loads(data_raw)
             q = Queue()
-            for snippet in data[file.replace('.json', '').replace('_', ' ')]:
+            for snippet in data[file.replace('.json', '')]:
                 q.put(snippet)
 
             self.queues[len(self.queues)] = q
@@ -302,7 +302,7 @@ class Environment:
         # the snippet text. Following the idea of LSTM, we add the tf-idf in order to have some context of the snippet
         # and then add it to the status.
 
-        vect_tf = self.tf_vectorizer.transform([text]).toarray()
+        # vect_tf = self.tf_vectorizer.transform([text]).toarray()
 
         state = np.array([state])
         #state = np.concatenate([state, vect_tf], axis=1)
