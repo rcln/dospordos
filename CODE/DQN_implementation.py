@@ -53,8 +53,8 @@ class DQN:
         """
         output = random.sample(ar, number)
         element_list = []
-        for i in output: #range(0, number):
-            #element_list.append(ar[np.random.randint(0, len(ar))])
+        for i in output:  # range(0, number):
+            # element_list.append(ar[np.random.randint(0, len(ar))])
             element_list.append(i)
         return element_list
 
@@ -95,7 +95,7 @@ class DQN:
 
                 for x in range(0, 100):  # TODO PA: why 30 times?
                     a = Sars.get_random_action_vector_pa(6)
-                    r, s_prime, done = self.env.step_pa(self.agent.actions_to_take_pa(a), a, is_RE= self.is_RE)
+                    r, s_prime, done = self.env.step_pa(self.agent.actions_to_take_pa(a), a, is_RE=self.is_RE)
                     replay_memory_ar.append(Sars(s, a, r, s_prime, False))
                     s = s_prime
 
@@ -140,7 +140,7 @@ class DQN:
             replay_memory = joblib.load(os.getcwd() + path_replay_memory)
         else:
             # Desc: generate first replay memory
-            #MDP framework for Information Extraction (Traiing Phase)
+            # MDP framework for Information Extraction (Traiing Phase)
             replay_memory = self.training_phase(size)
 
         return replay_memory
@@ -173,8 +173,8 @@ class DQN:
         # TODO: this function should be double checked.
 
         "two networks are required"
-        mainQN = self.agent.network #Q for finding the max action: for all s, argmax_a mainQN(s, a)
-        targetQN = Network((28, )) #Q for evaluating actions: for all s, a, targetQN(s, a)
+        mainQN = self.agent.network  # Q for finding the max action: for all s, argmax_a mainQN(s, a)
+        targetQN = Network((28,))  # Q for evaluating actions: for all s, a, targetQN(s, a)
         targetQN.model.set_weights(mainQN.model.get_weights())
 
         # Desc: loading replayed memory
@@ -192,7 +192,7 @@ class DQN:
             # Double DQN
             counter = 0
 
-            # episods
+            # episodes
             while not done:
 
                 if counter > 1000:
@@ -201,13 +201,13 @@ class DQN:
 
                 """Select an action with an epsilon probability"""
                 action_vector = self.get_action_with_probability(state, mainQN, eps)
-                #action_vector = self.get_action_with_probability(state, self.agent.network, eps)
-
+                # action_vector = self.get_action_with_probability(state, self.agent.network, eps)
 
                 # Observe reward and new state
-                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector, is_RE=self.is_RE)
+                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
+                                                            is_RE=self.is_RE)
 
-                # Todo Ask Pegah about replay memory ask her opinion...?
+                # Todo Ask Pegah about replay memory, ask her opinion...?
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
 
                 # Desc: reward + gamma * Q(s', argmax_a'(Q[s',a', w_main]), w_target ) - Q[s,a, w_main])
@@ -220,7 +220,8 @@ class DQN:
                 for sample in tempo:
 
                     # if state is terminal
-                    if self.env._check_grid() or (sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
+                    if self.env._check_grid() or (
+                            sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
                         t = np.array([sample.r])
                         print(" GETTING REWARD JUST FROM SAMPLE.R  t=", t, "t. shape")
                     else:
@@ -247,19 +248,18 @@ class DQN:
 
                 targetQN.model.set_weights(mainQN.model.get_weights())
                 mainQN.fit(X_train, Y_train, 1, len(X_train))
-                #mainQN.save_weights(self.env.path_weights)
+                # mainQN.save_weights(self.env.path_weights)
 
                 state = next_state
                 counter += 1
 
-            # TODO PA: does the wieghts change during the learning process in the NN automatically?
+            # TODO PA: do the wieghts change during the learning process in the NN automatically?
             self.agent.network.save_weights(self.env.path_weights)
 
             """get entities by following the optimal policy"""
-            print("couter", self.get_best_entities_with_optimal_policy(us))
-
-            print('gold standards', self.env.current_name, self.env.golden_standard_db)
-            print('extracted entities', self.env.university_name_pa, self.env.date_pa)
+            print("Counter", self.get_best_entities_with_optimal_policy(us))
+            print('Gold standards', self.env.current_name, self.env.golden_standard_db)
+            print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
             print(eval.total_accuray())
@@ -273,7 +273,7 @@ class DQN:
         history = []
 
         # Desc: loading users
-        #list_users = sorted(list(map(int, os.listdir(self.env.path))))
+        # list_users = sorted(list(map(int, os.listdir(self.env.path))))
 
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
@@ -293,17 +293,18 @@ class DQN:
             # DQN with experience replace
             counter = 0
             while not done:
-            #for i in range(50):
+                # for i in range(50):
 
                 if counter > 1000:
                     print('we use break option')
                     break
 
                 """Select an action with an epsilon probability"""
-                action_vector = self.get_action_with_probability(state,self.agent.network, eps)
+                action_vector = self.get_action_with_probability(state, self.agent.network, eps)
 
                 # Observe reward and new state
-                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector, is_RE = self.is_RE)
+                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
+                                                            is_RE=self.is_RE)
 
                 episode[len(history)].append(reward)
 
@@ -320,7 +321,8 @@ class DQN:
                 for sample in tempo:
 
                     # if state is terminal
-                    if self.env._check_grid() or (sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
+                    if self.env._check_grid() or (
+                            sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
                         t = np.array([sample.r])
                         print(" GETTING REWARD JUST FROM SAMPLE.R  t=", t, "t. shape")
                     else:
@@ -365,18 +367,15 @@ class DQN:
 
             pickle.dump(history, open(path_history, 'wb'))
 
-
             """get entities by following the optimal policy"""
-            print("counter", self.get_best_entities_with_optimal_policy(us))
-
-            print('gold standards', self.env.current_name, self.env.golden_standard_db)
-            print('extracted entities', self.env.university_name_pa, self.env.date_pa)
+            print("Counter", self.get_best_entities_with_optimal_policy(us))
+            print('Gold standards', self.env.current_name, self.env.golden_standard_db)
+            print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
             print(eval.total_accuray())
 
         return
-
 
     def get_best_entities_with_optimal_policy(self, us):
 
@@ -395,7 +394,8 @@ class DQN:
 
             action_vector = self.get_max_action(state, self.agent.network)
             # Observe reward and new state
-            reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector, is_RE= self.is_RE)
+            reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
+                                                        is_RE=self.is_RE)
             state = next_state
 
             counter += 1
@@ -405,25 +405,26 @@ class DQN:
 
 if __name__ == "__main__":
 
+    # TODO TP needd to change this env to reflect what datasource we want to use
     env = Environment()
 
     if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
         print("Training BOW vectors")
-        prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+        prep.file_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
         print("---FIT COMPLETED----")
 
     # TODO get the second number automatically ... env.tf_vectorizer.shape[0]
     # Desc: agent = Agent(env, (27 + 27386,))
-    #len_vect = env.tf_vectorizer.transform([""]).toarray()
-    #print(len(len_vect))
+    # len_vect = env.tf_vectorizer.transform([""]).toarray()
+    # print(len(len_vect))
 
-    agent = Agent(env, (28, )) # + len_vect.shape[1],)) # the comma is very important
+    agent = Agent(env, (28,))  # + len_vect.shape[1],)) # the comma is very important
     list_users = sorted(list(map(int, os.listdir(env.path))))
 
-    dqn = DQN(env, agent, list_users, is_RE= True)
+    dqn = DQN(env, agent, list_users, is_RE=True)
 
     try:
-        dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
+        dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size=2000)
         # dqn.DoubleDQN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
 
     except KeyboardInterrupt:

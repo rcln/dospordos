@@ -19,8 +19,9 @@ from sklearn.externals import joblib
 
 class Environment:
 
-    def __init__(self):
-        self.path = "../DATA/train_db/"
+    def __init__(self, path='../DATA/train_db/'):
+        # self.path = "../DATA/train_db/"
+        self.path = path
         self.path_db = "../DATA/fer_db/train.json"
         self.path_weights = "../DATA/model_w.h5"
         self.path_count_vect = "../DATA/count_vectorizer.pkl"
@@ -88,21 +89,30 @@ class Environment:
             if None in t:
                 print("RESET...", self.golden_standard_db)
                 return 0, True
+        # TODO TH Change to read tFormat
 
-        for file in os.listdir(files):
-            with open(files+file) as f:
-                data_raw = f.read()
-            data = json.loads(data_raw)
-            q = Queue()
-            num_snippet = []
-            for num in data:
-                num_snippet.append(int(num))
-            num_snippet = sorted(num_snippet)
-            for i in num_snippet:
-                q.put(data[str(i)])
+        # for file in os.listdir(files):
+        #     with open(files+file) as f:
+        #         data_raw = f.read()
+        #     data = json.loads(data_raw)
+        #     q = Queue()
+        #     num_snippet = []
+        #     for num in data:
+        #         num_snippet.append(int(num))
+        #     num_snippet = sorted(num_snippet)
+        #     for i in num_snippet:
+        #         q.put(data[str(i)])
 
             # self.queues is a list including several queues such that each one returned back to a set of documents
             # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
+
+        for file in os.listdir(files):
+            with open(files + file) as f:
+                data_raw = f.read()
+            data = json.loads(data_raw)
+            q = Queue()
+            for snippet in data[file.replace('.json', '').replace('_', ' ')]:
+                q.put(snippet)
 
             self.queues[len(self.queues)] = q
 
@@ -145,7 +155,7 @@ class Environment:
         # action_current_db()
 
         previous_entities = self.info_snippet
-        next_state = self.get_state(is_RE= is_RE, pa_state = True)
+        next_state = self.get_state(is_RE=is_RE, pa_state=True)
         reward = self._get_reward_pa(previous_entities, *args)
 
         done = self._check_grid() or self._is_finished_pa()
@@ -167,7 +177,7 @@ class Environment:
             queries.append(k)
         return queries
 
-    def get_state(self, is_RE, pa_state = False):
+    def get_state(self, is_RE, pa_state=False):
 
         # TODO PA: states are the vectors of size 27407, which is a high dimension vector, which the state size is 22 and the rest (27386) are related to vect_tf
 
