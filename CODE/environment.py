@@ -7,12 +7,13 @@ import math as m
 import numpy as np
 import spacy
 
-import CODE.preprocessing as prep
+import preprocessing as prep
 from queue import Queue
 
-from CODE import utils
-from CODE.regular_ne import list_organization, re_organization
-from CODE.utils import FeatureFilter
+import utils
+# from CODE import utils
+from regular_ne import list_organization, re_organization
+from utils import FeatureFilter
 from sklearn.externals import joblib
 
 
@@ -113,7 +114,15 @@ class Environment:
 
     def step(self, action_tuple, *args, is_RE):
         #TODO PA: what is *args input here? why nothing work here?
+        # Todo Answer: It was intended for a further version of the model. Where the actions
+        # were capable of receiving arguments. An action would be select an specific queue
+        # instead of just jumping to the next one; in order to do that you need the argument
+        # besides other actions might don't receive any argument
+
         #TODO PA: step does not update the pointer on queires!
+        # ToDo: Josue: In the previous idea, the actions were supposed to affect the environment
+        # that's why the step doesn't affect the pointer directly but rather is done with an
+        # specific action
 
         # action_query(*args)
         # action_current_db()
@@ -265,6 +274,9 @@ class Environment:
 
         # TODO: PA (Question) this is a confident score for extracted entities (ORG and GPE) from the given text.
         # this entities get extracted again inside the get_confidence function
+        # Todo Answer: Indeed the entities are extracted again, but I wanted to keep it functional and don't store those
+        # values in memory; just compute them when is necessary and get the desired values
+
         tmp_vec = location_confident #utils.get_confidence(text)
 
         # get the confidence score for NER with Spacy on GPE (ner_gpe = (GPE: Geopolitical entity, i.e. countries, cities, states)
@@ -275,6 +287,11 @@ class Environment:
         state.append(self._valid_name())
 
         # TODO PA: what is necessity of adding vect_tf?
+        # Todo Answer: The status of the environment has information about the current status of the system standard
+        # , the golden standard, the queries, and the entities. However, it doesn't have any information related with
+        # the snippet text. Following the idea of LSTM, we add the tf-idf in order to have some context of the snippet
+        # and then add it to the status.
+
         vect_tf = self.tf_vectorizer.transform([text]).toarray()
 
         state = np.array([state])

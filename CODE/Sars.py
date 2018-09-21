@@ -43,6 +43,9 @@ class Sars:
                                   ))
 
         #TODO : PA why state has dimension 19(+27386) instead of dimension 21(+27386)?!!!
+        # TODO: Answer. The dimension is 21, the missing numbers are in the line  np.array((A, B, A + B)),
+        # However, the function is deprecated, needs to be updated because the shape of get_random_action_vector
+        # changed from (7,)  to (1,7)
 
         A = np.random.uniform(0.0, 10.0)
         B = np.random.uniform(0.0, 10.0)

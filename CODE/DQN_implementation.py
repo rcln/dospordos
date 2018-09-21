@@ -5,14 +5,14 @@ import random
 import sys
 
 import numpy as np
-import CODE.preprocessing as prep
+import preprocessing as prep
 import pickle
 from random import shuffle, randint
 
-from CODE.Evaluation import Evaluation
-from CODE.environment import Environment
-from CODE.agent import Agent, Network
-from CODE.Sars import Sars
+from Evaluation import Evaluation
+from environment import Environment
+from agent import Agent, Network
+from Sars import Sars
 from sklearn.externals import joblib
 
 path_replay_memory = "/../DATA/replay_memory.pkl"
@@ -22,8 +22,8 @@ path_model = "../DATA/dqn/model_nn.h5"
 load_model = False
 
 
+# can we have repeatables, ask Pegah ta daaaa : PA response: no it should not be repeatable samples
 
-# TODO can we have repeatables, ask Pegah ta daaaa : PA response: no it should not be repeatable samples
 
 class DQN:
     """we have two DQN approaches in general: 1- DQN + normal NE 2 - DQN + normal NE + regular expresions"""
@@ -423,8 +423,8 @@ if __name__ == "__main__":
     dqn = DQN(env, agent, list_users, is_RE= True)
 
     try:
-        #dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
-        dqn.DoubleDQN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
+        dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
+        # dqn.DoubleDQN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)
 
     except KeyboardInterrupt:
         print("\n\n-----Interruption-----\nSaving weights")
