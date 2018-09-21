@@ -3,6 +3,7 @@ import h5py
 import os
 import random
 import sys
+import logging
 
 import numpy as np
 import preprocessing as prep
@@ -27,6 +28,11 @@ load_model = False
 
 class DQN:
     """we have two DQN approaches in general: 1- DQN + normal NE 2 - DQN + normal NE + regular expresions"""
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('dqn.log')
+    fh.setLevel(logging.DEBUG)
 
     def __init__(self, env_, agent_, list_users_, is_RE):
         """
@@ -206,6 +212,8 @@ class DQN:
                 # Observe reward and new state
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                             is_RE=self.is_RE)
+
+                self.logger.debug(' ::: ' + str(reward) + ' ::: ')
 
                 # Todo Ask Pegah about replay memory, ask her opinion...?
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
