@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import editdistance
+
 
 class Evaluation:
 
@@ -75,29 +75,21 @@ class Evaluation:
     def get_measuring_results(self):
         accuracy_uni, accuracy_years = self.total_accuracy()
 
-        gs = []
-        sys = []
-
+        uni_gs = []
+        uni_sys = []
         for uni in self.university_names:
-            sys.append(('u', uni.lower()))
-        for y_ in self.years:
-            sys.append(('y', str(y_)))
+            uni_sys.append(('u', uni.lower()))
         gold_uni_name = self.gold_standards[0][0].lower()
-        gold_years = [str(self.gold_standards[0][1]), str(self.gold_standards[0][2])]
-        gs.append(('u', gold_uni_name))
-        for gy in gold_years:
-            gs.append(('y', gy))
+        uni_gs.append(('u', gold_uni_name))
 
         tp, TP = 0, 0
         fp, FP = 0, 0
         fn, FN = 0, 0
 
         scores = []
+        gs_ = list(uni_gs)
 
-        gs_ = list(gs)
-        tp, fp, fn = 0, 0, 0
-
-        for sv_ in sys:
+        for sv_ in uni_sys:
             flag_tp = False
             for ii, sv in enumerate(gs_):
                 print(sv, "___", sv_)
@@ -117,7 +109,47 @@ class Evaluation:
 
         scores.append(self._prf(tp, fp, fn))
 
-        P, R, F = self._prf(TP, FP, FN)
+        Pu, Ru, Fu = self._prf(TP, FP, FN)
 
-        return accuracy_uni, accuracy_years, P, R, F
+        year_gs = []
+        year_sys = []
+
+        for y_ in self.years:
+            year_sys.append(('y', str(y_)))
+        gold_years = [str(self.gold_standards[0][1]), str(self.gold_standards[0][2])]
+        for gy in gold_years:
+            year_gs.append(('y', gy))
+
+        tp, TP = 0, 0
+        fp, FP = 0, 0
+        fn, FN = 0, 0
+
+        scores = []
+        gs_ = list(year_gs)
+
+        for sv_ in year_sys:
+            flag_tp = False
+            for ii, sv in enumerate(gs_):
+                print(sv, "___", sv_)
+                if sv[0] == sv_[0] and editdistance.eval(sv[1], sv_[1]) / len(sv[1]) < 0.2:
+                    tp += 1
+                    TP += 1
+                    flag_tp = True
+                    gs_.append(sv)
+                    del gs_[ii]
+                    break
+            if flag_tp:
+                continue
+            fp += 1
+            FP += 1
+        fn += len(gs_)
+        FN += len(gs_)
+
+        scores.append(self._prf(tp, fp, fn))
+        Py, Ry, Fy = self._prf(TP, FP, FN)
+
+        return accuracy_uni, accuracy_years, Pu, Ru, Fu, Py, Ry, Fy
+
+
+
 
