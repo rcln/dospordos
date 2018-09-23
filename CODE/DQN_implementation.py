@@ -16,7 +16,7 @@ from agent import Agent, Network
 from Sars import Sars
 from sklearn.externals import joblib
 
-path_replay_memory = "/../DATA/replay_memory.pkl"
+
 path_history = "../DATA/history"
 path_model = "../DATA/dqn/model_nn.h5"
 
@@ -29,7 +29,7 @@ load_model = False
 class DQN:
     """we have two DQN approaches in general: 1- DQN + normal NE 2 - DQN + normal NE + regular expresions"""
 
-    def __init__(self, env_, agent_, list_users_, is_RE, logger):
+    def __init__(self, env_, agent_, list_users_, is_RE, logger, name):
         """
 
         :param env_:
@@ -42,6 +42,8 @@ class DQN:
         self.agent = agent_
         self.is_RE = is_RE
         self.logger = logger
+        self.name = name
+        self.path_replay_memory = '/../DATA/' + self.name + 'replay_memory.pkl'
 
         # Desc: loading users
         self.list_users = list_users_
@@ -83,8 +85,8 @@ class DQN:
         shuffle(self.list_users)
         len_list_user = len(self.list_users)
 
-        if os.path.exists(os.getcwd() + path_replay_memory):
-            replay_memory = joblib.load(os.getcwd() + path_replay_memory)
+        if os.path.exists(os.getcwd() + self.path_replay_memory):
+            replay_memory = joblib.load(os.getcwd() + self.path_replay_memory)
         else:  # Desc: generate first replay memory
             print("Getting replay memory")
             replay_memory_ar = []
@@ -107,7 +109,7 @@ class DQN:
                 print('extracted name entities', self.env.university_name_pa, self.env.date_pa)
 
             print("Saving replay memory")
-            joblib.dump(replay_memory_ar, os.getcwd() + path_replay_memory)
+            joblib.dump(replay_memory_ar, os.getcwd() + self.path_replay_memory)
             print("Saved replay memory")
             replay_memory = replay_memory_ar
 
@@ -140,8 +142,8 @@ class DQN:
     def replay_memory(self, size):
 
         # Desc: loading replayed memory
-        if os.path.exists(os.getcwd() + path_replay_memory):
-            replay_memory = joblib.load(os.getcwd() + path_replay_memory)
+        if os.path.exists(os.getcwd() + self.path_replay_memory):
+            replay_memory = joblib.load(os.getcwd() + self.path_replay_memory)
         else:
             # Desc: generate first replay memory
             # MDP framework for Information Extraction (Training Phase)
@@ -186,7 +188,7 @@ class DQN:
 
         # Epochs
         epoch_reward_list = []
-        epoch_accuracy_list = []
+        epoch_measuring_results_list = []
         e_count = 0
 
         for us in self.list_users[35:36]:
@@ -276,24 +278,24 @@ class DQN:
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            accuracy = eval.total_accuray()
-            self.logger.debug(accuracy)
+            measuring_results = eval.get_measuring_results()
+            self.logger.debug(measuring_results)
 
-            epoch_accuracy_list.append(accuracy)
-            self.logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
-            pickle.dump(epoch_accuracy_list, open('../DATA/ddqn_acc_re.pkl', 'wb'))
+            epoch_measuring_results_list.append(measuring_results)
+            self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
+            pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'_acc.pkl', 'wb'))
 
             epoch_reward_list.append(tmp_reward/counter)
             self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
-            pickle.dump(epoch_reward_list, open('../DATA/ddqn_ep_re.pkl', 'wb'))
+            pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
 
             e_count = e_count + 1
 
         self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
-        self.logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
+        self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
 
-        pickle.dump(epoch_reward_list, open('../DATA/ddqn_ep_re.pkl', 'wb'))
-        pickle.dump(epoch_accuracy_list, open('../DATA/ddqn_acc_re.pkl', 'wb'))
+        pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+        pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
         return
 
     def deep_QN(self, gamma, eps, training_replay_size):
@@ -310,7 +312,7 @@ class DQN:
 
         # Epochs
         epoch_reward_list = []
-        epoch_accuracy_list = []
+        epoch_measuring_results_list = []
         e_count = 0
 
         # train episodes
@@ -412,23 +414,23 @@ class DQN:
 
             # TODO TP pickle and log these prints and the eval for both
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            accuracy = eval.total_accuray()
-            self.logger.debug(accuracy)
+            measuring_results = eval.get_measuring_results()
+            self.logger.debug(measuring_results)
 
-            epoch_accuracy_list.append(accuracy)
+            epoch_measuring_results_list.append(measuring_results)
             self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-            pickle.dump(epoch_reward_list, open('../DATA/dqn_ep_re.pkl', 'wb'))
+            pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
 
             epoch_reward_list.append(tmp_reward / counter)
-            pickle.dump(epoch_accuracy_list, open('../DATA/dqn_acc_re.pkl', 'wb'))
-            self.logger.warning('epoch_accuracy_list:: ' + str(epoch_accuracy_list))
+            pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
+            self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
             e_count = e_count + 1
 
         self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-        self.logger.warning('epoch_accuracy_list:: ' + str(epoch_accuracy_list))
+        self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
 
-        pickle.dump(epoch_reward_list, open('../DATA/dqn_ep_re.pkl', 'wb'))
-        pickle.dump(epoch_accuracy_list, open('../DATA/dqn_acc_re.pkl', 'wb'))
+        pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+        pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
         return
 
     def get_best_entities_with_optimal_policy(self, us):

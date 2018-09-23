@@ -19,11 +19,12 @@ from sklearn.externals import joblib
 
 class Environment:
 
-    def __init__(self, path='../DATA/train_db/'):
+    def __init__(self, path='../DATA/train_db/', path_weights='../DATA/model_w.h5'):
         # self.path = "../DATA/train_db/"
         self.path = path
         self.path_db = "../DATA/fer_db/train.json"
-        self.path_weights = "../DATA/model_w.h5"
+        # self.path_weights = "../DATA/model_w.h5"
+        self.path_weights = path_weights
         self.path_count_vect = "../DATA/count_vectorizer.pkl"
         self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
         self.queues = {}
@@ -107,7 +108,7 @@ class Environment:
             # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
 
         for file in os.listdir(files):
-            with open(files + file) as f:
+            with open(files + file, 'r') as f:
                 data_raw = f.read()
             data = json.loads(data_raw)
             q = Queue()
@@ -322,7 +323,7 @@ class Environment:
 
         #TODO PA:year_start can be taken into account too.
         tags = ['institution', 'year_start', 'year_finish']
-        with open(self.path_db) as f:
+        with open(self.path_db, 'r') as f:
             data_raw = f.read()
             tmp = json.loads(data_raw)
             grid = tmp['_default']
