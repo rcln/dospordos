@@ -3,6 +3,7 @@
 import os
 import sys
 import argparse
+import logging
 
 from DQN_implementation import DQN
 from environment import Environment
@@ -34,12 +35,23 @@ if __name__ == "__main__":
     algorithm = args.ALG
     is_RE = args.is_RE
 
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    file_handler = logging.FileHandler("../DATA/"+str(algorithm)+"_"+str(is_RE)+"_"+str(path_data.split('/')[-2])+".log")
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
+
+    logger.debug('NEW RUN')
+
     env = Environment(path=path_data)
 
     agent = Agent(env, (28,))
     list_users = sorted(list(map(int, os.listdir(env.path))))
 
-    dqn = DQN(env, agent, list_users, is_RE=is_RE)
+    dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger)
 
     try:
         if algorithm.upper() == "DQN":

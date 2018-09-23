@@ -29,12 +29,7 @@ load_model = False
 class DQN:
     """we have two DQN approaches in general: 1- DQN + normal NE 2 - DQN + normal NE + regular expresions"""
 
-    # logger = logging.getLogger()
-    # logger.setLevel(logging.DEBUG)
-    # fh = logging.FileHandler('dqn.log')
-    # fh.setLevel(logging.DEBUG)
-
-    def __init__(self, env_, agent_, list_users_, is_RE):
+    def __init__(self, env_, agent_, list_users_, is_RE, logger):
         """
 
         :param env_:
@@ -46,9 +41,12 @@ class DQN:
         self.env = env_
         self.agent = agent_
         self.is_RE = is_RE
+        self.logger = logger
 
         # Desc: loading users
         self.list_users = list_users_
+
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
 
     def get_random_elements(self, ar: list, number):
         """
@@ -218,7 +216,7 @@ class DQN:
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                             is_RE=self.is_RE)
 
-                logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
+                self.logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
                 tmp_reward = tmp_reward + reward
 
                 # Todo Ask Pegah about replay memory, ask her opinion...?
@@ -279,17 +277,23 @@ class DQN:
 
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
             accuracy = eval.total_accuray()
-            logger.debug(accuracy)
+            self.logger.debug(accuracy)
 
             epoch_accuracy_list.append(accuracy)
+            self.logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
+            pickle.dump(epoch_accuracy_list, open('../DATA/ddqn_acc_re.pkl', 'wb'))
+
             epoch_reward_list.append(tmp_reward/counter)
+            self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
+            pickle.dump(epoch_reward_list, open('../DATA/ddqn_ep_re.pkl', 'wb'))
+
             e_count = e_count + 1
 
-        logger.warning('epoch_reward_list' + str(epoch_reward_list))
-        logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
+        self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
+        self.logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
 
-        pickle.dump(epoch_reward_list, open('ddqn_ep_re.pkl', 'wb'))
-        pickle.dump(epoch_accuracy_list, open('ddqn_acc_re.pkl', 'wb'))
+        pickle.dump(epoch_reward_list, open('../DATA/ddqn_ep_re.pkl', 'wb'))
+        pickle.dump(epoch_accuracy_list, open('../DATA/ddqn_acc_re.pkl', 'wb'))
         return
 
     def deep_QN(self, gamma, eps, training_replay_size):
@@ -338,7 +342,7 @@ class DQN:
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                             is_RE=self.is_RE)
 
-                logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
+                self.logger.info('Reward:: ' + str(reward) + ", Step:: " + str(counter) + ", Episode:: " + str(e_count))
                 tmp_reward = tmp_reward + reward
 
                 # episode[len(history)].append(reward)
@@ -409,17 +413,22 @@ class DQN:
             # TODO TP pickle and log these prints and the eval for both
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
             accuracy = eval.total_accuray()
-            logger.debug(accuracy)
+            self.logger.debug(accuracy)
 
             epoch_accuracy_list.append(accuracy)
+            self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
+            pickle.dump(epoch_reward_list, open('../DATA/dqn_ep_re.pkl', 'wb'))
+
             epoch_reward_list.append(tmp_reward / counter)
+            pickle.dump(epoch_accuracy_list, open('../DATA/dqn_acc_re.pkl', 'wb'))
+            self.logger.warning('epoch_accuracy_list:: ' + str(epoch_accuracy_list))
             e_count = e_count + 1
 
-        logger.warning('epoch_reward_list' + str(epoch_reward_list))
-        logger.warning('epoch_accuracy_list' + str(epoch_accuracy_list))
+        self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
+        self.logger.warning('epoch_accuracy_list:: ' + str(epoch_accuracy_list))
 
-        pickle.dump(epoch_reward_list, open('dqn_ep_re.pkl', 'wb'))
-        pickle.dump(epoch_accuracy_list, open('dqn_acc_re.pkl', 'wb'))
+        pickle.dump(epoch_reward_list, open('../DATA/dqn_ep_re.pkl', 'wb'))
+        pickle.dump(epoch_accuracy_list, open('../DATA/dqn_acc_re.pkl', 'wb'))
         return
 
     def get_best_entities_with_optimal_policy(self, us):
@@ -450,16 +459,16 @@ class DQN:
 
 if __name__ == "__main__":
 
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-    file_handler = logging.FileHandler('dqn.log')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
-
-    logger.debug('NEW RUN')
+    # logger = logging.getLogger(__name__)
+    # logger.setLevel(logging.DEBUG)
+    # formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+    # file_handler = logging.FileHandler('../DATA/dqn.log')
+    # file_handler.setFormatter(formatter)
+    # logger.addHandler(file_handler)
+    #
+    # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
+    #
+    # logger.debug('NEW RUN')
     # logger.info('')
     # logger.warning('')
     # logger.error('')
