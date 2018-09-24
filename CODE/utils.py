@@ -470,14 +470,12 @@ def int_to_onehot(length, number, zero_based=False):
     l.__setitem__(number, 1)
     return l
 
+
 def get_confidence_RE(text):
-
-
-
     return
 
-def get_confidence(text):
 
+def get_confidence(text):
     #TODO PA: Spacy depends on capital letters, we should find a way to solve this problem, thats the reason that all NEs can't be extracted.
     #TODO PA: sometimes GPE or ORG are empty or they have a very low confidence. This is again depended on the supported texts gathered by the queries.
 
@@ -487,19 +485,16 @@ def get_confidence(text):
      these name entities with various confidence scores. The function output is (confident score for ORG, confident score for GPE)
     using SPacy library have different
     """
-    #print(text)
-
     nlp = spacy.load('en_core_web_sm')
     ner_person_name = ('', u'PERSON', 0.0)
-    #ner_date = ('', u'DATE', 0.0)
-
     ner_org = ('', u'ORG', 0.0) # ORG: Companies, agencies, institutions.
     ner_gpe = ('', u'GPE', 0.0) # GPE: Geopolitical entity, i.e. countries, cities, states.
+    # ner_date = ('', u'DATE', 0.0) now with Regex
     with nlp.disable_pipes('ner'):
         "convert text to spacy.tokens.doc.Doc type"
         doc = nlp(text)
 
-    (beams, something_else_not_used) = nlp.entity.beam_parse([doc], beam_width=16, beam_density=0.0001)
+    beams, something_else_not_used = nlp.entity.beam_parse([doc], beam_width=16, beam_density=0.0001)
 
     entity_scores = defaultdict(float)
     for beam in beams:
@@ -513,14 +508,14 @@ def get_confidence(text):
         if label == 'PERSON' and entity_scores[key] > ner_person_name[2]:
             ner_person_name = (doc[start:end], label, entity_scores[key])
 
-        #elif label == 'DATE' and entity_scores[key] > ner_date[2]:
-        #    ner_date = (doc[start:end], label, entity_scores[key])
-
         elif label == 'ORG' and entity_scores[key] > ner_org[2]:
             ner_org = (doc[start:end], label, entity_scores[key])
 
         elif label == 'GPE' and entity_scores[key] > ner_gpe[2]:
             ner_gpe = (doc[start:end], label, entity_scores[key])
+
+        #elif label == 'DATE' and entity_scores[key] > ner_date[2]:
+        #    ner_date = (doc[start:end], label, entity_scores[key])
 
     return ner_org, ner_gpe, ner_person_name#, ner_date
 

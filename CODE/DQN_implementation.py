@@ -31,7 +31,6 @@ class DQN:
 
     def __init__(self, env_, agent_, list_users_, is_RE, logger, name):
         """
-
         :param env_:
         :param agent_:
         :param list_users_:
@@ -80,7 +79,6 @@ class DQN:
 
         if os.path.exists(self.env.path_weights):
             self.agent.network.load_weights(self.env.path_weights)
-
         # Desc: agent.print_model()
         ###shuffle(self.list_users)
         len_list_user = len(self.list_users)
@@ -92,22 +90,18 @@ class DQN:
             replay_memory_ar = []
             # TODO PA: maybe 999 replay training is not enough because we have 4518 users in total
             while len(replay_memory_ar) <= minibatch:
-
                 random_user = self.list_users[randint(0, len_list_user)]
                 s, pass_us = self.env.reset(random_user, is_RE=self.is_RE)
 
                 if pass_us:
                     continue
-
-                for x in range(0, 100):  # TODO PA: why 30 times?
+                for x in range(0, 100):  # TODO PA: why 30 times?. Answer it was for debugging purpose
                     a = Sars.get_random_action_vector_pa(6)
                     r, s_prime, done = self.env.step_pa(self.agent.actions_to_take_pa(a), a, is_RE=self.is_RE)
                     replay_memory_ar.append(Sars(s, a, r, s_prime, False))
                     s = s_prime
-
-                print('gold standars', self.env.current_name, self.env.golden_standard_db)
+                print('gold standard', self.env.current_name, self.env.golden_standard_db)
                 print('extracted name entities', self.env.university_name_pa, self.env.date_pa)
-
             print("Saving replay memory")
             joblib.dump(replay_memory_ar, os.getcwd() + self.path_replay_memory)
             print("Saved replay memory")
@@ -116,31 +110,24 @@ class DQN:
         return replay_memory
 
     def generate_action(self, i, length):
-
         action_vector = [0] * length
         action_vector[i] = 1
         action_vector = np.array([action_vector])
-
         return action_vector
 
     def get_max_action(self, state, network):
-
         arg_max = []
         for i in range(6):
             action_vector = self.generate_action(i, 6)
             in_vector = np.concatenate([state, action_vector], axis=1)
-
             arg_max.append(network.predict(in_vector))
         if self.bad_franky(arg_max):
             print("The project is in danger :(, out_vector ", arg_max)
-
         action_vector = [0] * 6
         action_vector[arg_max.index(max(arg_max))] = 1
-
         return action_vector
 
     def replay_memory(self, size):
-
         # Desc: loading replayed memory
         if os.path.exists(os.getcwd() + self.path_replay_memory):
             replay_memory = joblib.load(os.getcwd() + self.path_replay_memory)
@@ -148,7 +135,6 @@ class DQN:
             # Desc: generate first replay memory
             # MDP framework for Information Extraction (Training Phase)
             replay_memory = self.training_phase(size)
-
         return replay_memory
 
     def get_action_with_probability(self, state, networkQN, eps):
@@ -156,7 +142,10 @@ class DQN:
         p = np.random.random()
 
         if p < eps:
-            action_vector = Sars.get_random_action_vector(6)[0]
+            action_vector = np.zeros([1, 6])
+            action_vector[0, np.random.randint(0, 6)] = 1
+            action_vector = action_vector[0]
+            # action_vector = Sars.get_random_action_vector(6)[0]
         else:
             # Desc: a = argmaxQ(s,a)
             action_vector = self.get_max_action(state, networkQN)
@@ -221,7 +210,6 @@ class DQN:
                 self.logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
                 tmp_reward = tmp_reward + reward
 
-                # Todo Ask Pegah about replay memory, ask her opinion...?
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
 
                 # Desc: reward + gamma * Q(s', argmax_a'(Q[s',a', w_main]), w_target ) - Q[s,a, w_main])
@@ -301,23 +289,15 @@ class DQN:
     def deep_QN(self, gamma, eps, training_replay_size):
         # TODO PA: the gamma should be increased to 0.95 or 0.99 after the first test
         # TODO PA: the eps should be tested with the small values
-
-        # history = []
-
         # Desc: loading users
-        # list_users = sorted(list(map(int, os.listdir(self.env.path))))
-
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
-
         # Epochs
         epoch_reward_list = []
         epoch_measuring_results_list = []
         e_count = 0
-
         # train episodes
         for us in self.list_users: #[35:36]:
-
             # reset episode with new user and get initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
             # episode = {}
