@@ -8,7 +8,7 @@ import logging
 import numpy as np
 import preprocessing as prep
 import pickle
-from random import shuffle, randint
+from random import randint
 
 from Evaluation import Evaluation
 from environment import Environment
@@ -82,7 +82,7 @@ class DQN:
             self.agent.network.load_weights(self.env.path_weights)
 
         # Desc: agent.print_model()
-        shuffle(self.list_users)
+        ###shuffle(self.list_users)
         len_list_user = len(self.list_users)
 
         if os.path.exists(os.getcwd() + self.path_replay_memory):
@@ -191,7 +191,7 @@ class DQN:
         epoch_measuring_results_list = []
         e_count = 0
 
-        for us in self.list_users[35:36]:
+        for us in self.list_users: #[35:36]:
             # initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
 
