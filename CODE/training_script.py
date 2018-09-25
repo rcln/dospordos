@@ -9,6 +9,11 @@ from DQN_implementation import DQN
 from environment import Environment
 from agent import Agent
 
+# ToDo Note to Pegah
+# From the terminal run this script. Selecting the folder with the data, the algorithm and is_RE
+# Example:
+# > python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/train_db/ DQN 0
+# It will run the algorithm DQN with is_RE=0 and the data is in that path
 
 if __name__ == "__main__":
 
@@ -19,7 +24,6 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose",
                         action="store_true", dest="verbose",
                         help="Verbose mode [Off]")
-
     args = parser.parse_args()
 
     if args.verbose:
