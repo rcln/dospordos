@@ -34,7 +34,7 @@ if __name__ == "__main__":
     path_data = args.DB
     algorithm = args.ALG
     is_RE = args.is_RE
-    name = str(algorithm) + "_" + str(is_RE) + "_" + str(path_data.split('/')[-2])
+    name = str(algorithm) + "_" + str(is_RE) + "_" + str(path_data.split('/')[-3])
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
