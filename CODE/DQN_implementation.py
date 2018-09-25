@@ -308,6 +308,8 @@ class DQN:
 
             # DQN with experience replace
             counter = 0
+
+            # epoch
             tmp_reward = 0
             while not done:
                 # for i in range(50):
