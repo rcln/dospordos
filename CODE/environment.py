@@ -23,10 +23,11 @@ class Environment:
         # self.path = "../DATA/train_db/"
         self.path = path
         self.path_db = "../DATA/fer_db/train.json"
+        self.fer_db = self._get_gs()
         # self.path_weights = "../DATA/model_w.h5"
         self.path_weights = path_weights
-        self.path_count_vect = "../DATA/count_vectorizer.pkl"
-        self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
+        # self.path_count_vect = "../DATA/count_vectorizer.pkl"
+        # self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
         self.queues = {}
         self.current_queue = None
         self.current_text = ""
@@ -66,17 +67,15 @@ class Environment:
     # start new episode
     # there are 4518 person names in train-db
     def reset(self, id_person, is_RE):
-
         self.person_id = id_person
-
         self.university_name_pa = set()
         self.date_pa = set()
         self.que_changed_obligatory = False
-
         self.check_university_pa = False
         self.check_date_pa = False
 
         files = self.path + str(id_person)+"/"
+
         if not os.path.exists(files):
             raise ValueError('path given doesn\'t exits:\n'+files)
 
@@ -90,23 +89,8 @@ class Environment:
             if None in t:
                 print("RESET...", self.golden_standard_db)
                 return 0, True
-        # TODO TH Change to read tFormat
-
-        # for file in os.listdir(files):
-        #     with open(files+file) as f:
-        #         data_raw = f.read()
-        #     data = json.loads(data_raw)
-        #     q = Queue()
-        #     num_snippet = []
-        #     for num in data:
-        #         num_snippet.append(int(num))
-        #     num_snippet = sorted(num_snippet)
-        #     for i in num_snippet:
-        #         q.put(data[str(i)])
-
             # self.queues is a list including several queues such that each one returned back to a set of documents
             # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
-
         for file in os.listdir(files):
             with open(files + file, 'r') as f:
                 data_raw = f.read()
@@ -114,13 +98,11 @@ class Environment:
             q = Queue()
             for snippet in data[file.replace('.json', '')]:
                 q.put(snippet)
-
             self.queues[len(self.queues)] = q
 
         self.current_data = self.queues[self.current_queue].get()
         # part of the input vector for our NN
-        initial_state = self.get_state(is_RE, pa_state= True)
-
+        initial_state = self.get_state(is_RE, pa_state=True)
         return initial_state, False
 
     def step(self, action_tuple, *args, is_RE):
@@ -202,10 +184,10 @@ class Environment:
                         Then the method search a valid name variation in the text passed
                 And a huge vector for vect_tf !!
         """
-        state = []
-        self.current_text = self.current_data['title']+" "+self.current_data['text']
+        # state = []
+        text = self.current_text = self.current_data['title']+" "+self.current_data['text']
 
-        text = self.current_text
+        # text = self.current_text
         self.info_snippet = []
 
         location_confident = utils.get_confidence(text)
@@ -227,9 +209,7 @@ class Environment:
         dates = tempo[0][1]
         data_cur = [tuple(unis+dates)]
 
-        data_cur_dic = {'unis':[], 'dates': []}
-        data_cur_dic['unis'] = unis
-        data_cur_dic['dates'] = dates
+        data_cur_dic = {'unis': unis, 'dates': dates}
 
         # university name and date coming from goal standards (fernando database)
         A = set(golden_standard_db)
@@ -259,7 +239,10 @@ class Environment:
         commonA = len(set_ani_A.intersection(set_ani_B))
 
         # it defines which query result is taken for this state. We have 7 query types in total.
-        state = state + utils.int_to_onehot(7, self.current_queue)         # state.append(self.current_queue)
+        state = utils.int_to_onehot(7, self.current_queue) \
+                + [self._normalize_snippet_number(float(self.current_data['number_snippet']))] \
+                + utils.int_to_onehot(4, int(self.current_data['engine_search']), True) \
+                + [commonU, commonA, common, len(A), len(B), total]
         # We normalize the taken snippet number of query results w.r.t rest of query snippets results
         # PA: I do not know the reason yet.
         """ Answer: The number of the current snippet have values between 0 and approximately 40, 
@@ -267,31 +250,32 @@ class Environment:
                 to realize a normalization and pass a value between 0 and 1. Where 1 is the beginning of the
                 snippets in the queue 
         """
-        state.append(self._normalize_snippet_number(float(self.current_data['number_snippet'])))
-        # shows the selceted engine search. There are 4 enigine searches in total.
-        state = state + utils.int_to_onehot(4, int(self.current_data['engine_search']), True)       #state.append(int(self.current_data['engine_search']))
+        # state.append(self._normalize_snippet_number(float(self.current_data['number_snippet'])))
+        # shows the selected engine search. There are 4 enigine searches in total.
+        # state = state + utils.int_to_onehot(4, int(self.current_data['engine_search']), True)
+        # #state.append(int(self.current_data['engine_search']))
         # number of common university names between goal standards and extracted university names from the given snippet
-        state.append(commonU)
+        # state.append(commonU)
         # number of common dates between goal standards and extracted dates from the given snippet
-        state.append(commonA)
-        # number of set of common dates and university names between goal standards and extracted dates and university names from the given snippet
-        state.append(common)
+        # state.append(commonA)
+        # number of set of common dates and university names between goal standards and extracted dates and university
+        # names from the given snippet
+        # state.append(common)
         # number of total university names and dates given in goal standards
-        state.append(len(A))
+        # state.append(len(A))
         # number of total university name and dates extracted from the given snippet
-        state.append(len(B)) # -6
+        # state.append(len(B)) # -6
         # total number of universities names and dates in union of goal standards and the given snippet
-        state.append(total)
+        # state.append(total)
+
 
         # TODO: PA (Question) this is a confident score for extracted entities (ORG and GPE) from the given text.
         # this entities get extracted again inside the get_confidence function
         # Todo Answer: Indeed the entities are extracted again, but I wanted to keep it functional and don't store those
         # values in memory; just compute them when is necessary and get the desired values
-
-        tmp_vec = location_confident #utils.get_confidence(text)
-
         # get the confidence score for NER with Spacy on GPE (ner_gpe = (GPE: Geopolitical entity, i.e. countries, cities, states)
-        for v in tmp_vec:
+
+        for v in location_confident:
             state.append(v[2])
 
         # checks if the person name is valid or not.
@@ -306,7 +290,7 @@ class Environment:
         # vect_tf = self.tf_vectorizer.transform([text]).toarray()
 
         state = np.array([state])
-        #state = np.concatenate([state, vect_tf], axis=1)
+        # state = np.concatenate([state, vect_tf], axis=1)
 
         return state
 
@@ -317,22 +301,25 @@ class Environment:
         else:
             return 0
 
+    def _get_gs(self):
+        with open(self.path_db, 'r') as f:
+            data_raw = f.read()
+            tmp = json.loads(data_raw)
+            grid = tmp['_default']
+        return grid
+
     def _get_golden_standard_db(self, id_person):
         if not os.path.exists(self.path_db):
             raise ValueError('path given doesn\'t exits:\n' + self.path_db)
 
         #TODO PA:year_start can be taken into account too.
         tags = ['institution', 'year_start', 'year_finish']
-        with open(self.path_db, 'r') as f:
-            data_raw = f.read()
-            tmp = json.loads(data_raw)
-            grid = tmp['_default']
 
         tmp = []
         for tag in tags:
-            tmp.append(grid[str(id_person)][tag])
+            tmp.append(self.fer_db[str(id_person)][tag])
 
-        self.current_name = (grid[str(id_person)]['name']).strip()
+        self.current_name = (self.fer_db[str(id_person)]['name']).strip()
         self.golden_standard_db = [tuple(tmp)]
 
     def _check_grid(self):
@@ -403,19 +390,16 @@ class Environment:
 
         reward = 0
 
-        tempo = self.que_changed_obligatory
+        tempo = self.que_changed_obligatory # Todo PA: This var is not used
 
         golden_standard_db = self.golden_standard_db
-        golden_standard_db_ = ["", "", "", ""]
+        # golden_standard_db_ = ["", "", "", ""] # Todo PA: This var is not necessary due to the if
 
         action = args[0]
 
         if golden_standard_db[0][0] is None:
             print("THE GOLD STANDARD IS MORE LIKE SILVER...[?] HMMM")
-            try:
-                sys.exit(-1)
-            except SystemExit:
-                os._exit(-2)
+            sys.exit(-1)
         else:
             golden_standard_db_ = list(golden_standard_db[0]) + [self.current_name]
 
@@ -515,12 +499,12 @@ class Environment:
 
     def get_accuracy(self, new_entities, previous_entities, golden_standards):
 
-        #TODO PA: this function should be more optimised
+        # TODO PA: this function should be more optimised
 
         accuracy_prev = 0.0
         accuracy_curr = 0.0
 
-        years = [str(golden_standards[1]) , str(golden_standards[2])]
+        years = [str(golden_standards[1]), str(golden_standards[2])]
 
         university_name = str(golden_standards[0].lower())
 

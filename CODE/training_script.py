@@ -42,7 +42,6 @@ if __name__ == "__main__":
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-
     # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s:%(levelname)s:%(message)s')
 
     logger.debug('NEW RUN')
@@ -50,7 +49,8 @@ if __name__ == "__main__":
     env = Environment(path=path_data, path_weights=name+'_weights.h5')
 
     agent = Agent(env, (28,))
-    list_users = sorted(list(map(int, os.listdir(env.path))))
+    # list_users = sorted(list(map(int, os.listdir(env.path))))
+    list_users = os.listdir(env.path)
 
     dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger, name=name)
 
