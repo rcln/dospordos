@@ -260,7 +260,7 @@ class DQN:
             self.agent.network.save_weights(self.env.path_weights)
 
             """get entities by following the optimal policy"""
-            # print("Counter", self.get_best_entities_with_optimal_policy(us))
+            # print("Counter", self.get_best_entities_with_optimal_policy(eps, us))
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
@@ -389,7 +389,7 @@ class DQN:
             # pickle.dump(history, open(path_history, 'wb'))
 
             """get entities by following the optimal policy"""
-            # print("Counter", self.get_best_entities_with_optimal_policy(us))
+            # print("Counter", self.get_best_entities_with_optimal_policy(eps, us))
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
@@ -414,7 +414,7 @@ class DQN:
         pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
         return
 
-    def get_best_entities_with_optimal_policy(self, us):
+    def get_best_entities_with_optimal_policy(self, eps, us):
 
         # initial state
         state, err = self.env.reset(us, is_RE=self.is_RE)
@@ -422,6 +422,8 @@ class DQN:
         done = False
         counter = 0
 
+        # epoch
+        #if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
         while not done:
             # for i in range(50):
 
@@ -429,7 +431,9 @@ class DQN:
                 print('we use break option')
                 return counter
 
-            action_vector = self.get_max_action(state, self.agent.network)
+            """Select an action with an epsilon probability"""
+            action_vector = self.get_action_with_probability(state, self.agent.network, eps)
+
             # Observe reward and new state
             reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                         is_RE=self.is_RE)
