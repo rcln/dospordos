@@ -292,6 +292,7 @@ class DQN:
 
             # DQN with experience replace
             counter = 0
+            # epoch
             while not done:
             #for i in range(50):
 
@@ -420,7 +421,7 @@ if __name__ == "__main__":
     agent = Agent(env, (28, )) # + len_vect.shape[1],)) # the comma is very important
     list_users = sorted(list(map(int, os.listdir(env.path))))
 
-    dqn = DQN(env, agent, list_users, is_RE= True)
+    dqn = DQN(env, agent, list_users, is_RE = True)
 
     try:
         #dqn.deep_QN(gamma= 0.95, eps = 0.1, training_replay_size= 2000)

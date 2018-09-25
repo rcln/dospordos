@@ -151,9 +151,9 @@ if __name__ == '__main__':
         scores.append(prf(tp, fp, fn))
 
     P, R, F = prf(TP, FP, FN)
-    print("TP",TP)
-    print("FP",FP)
-    print("FN",FN)
+    #print("TP",TP)
+    #print("FP",FP)
+    #print("FN",FN)
     print("MACRO SCORES")
     print("Precision:", P)
     print("Recall:", R)
