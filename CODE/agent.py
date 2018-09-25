@@ -14,7 +14,6 @@ class Agent:
 
     # grid functions
     def next_snippet(self):
-
         try:
             if self.env.queues[self.env.current_queue].qsize() == 0:
                 self.env.current_data = {"number_snippet": "1000000", "text": "", "cite": "", "search": "", "title": "",
@@ -31,7 +30,7 @@ class Agent:
         try:
             if self.env.queues[self.env.current_queue].qsize() == 0:
                 # TODO PA: I should think, what to do if a queue of a query for a given person_id is empty, should we stop the whole
-                #process or use another query randomly, but this means choose an action as a query obligatory!!
+                # process or use another query randomly, but this means choose an action as a query obligatory!!
                 while True:
                     self.change_queue()
                     if self.env.queues[self.env.current_queue].qsize() != 0:
@@ -43,7 +42,7 @@ class Agent:
                         #raise NameError('***QUEUE IS EMPTY***')
 
             else:
-                # this is equal to poping a anippent from the current query
+                # this is equal to poping a snippet from the current query
                 self.env.current_data = self.env.queues[self.env.current_queue].get(False)
         except KeyError:
             print("ERROR in next_snippet\n current queue: ", self.env.current_queue)
@@ -76,33 +75,44 @@ class Agent:
         pass
 
     def actions_to_take(self, action_activation_vector):
-
         num_l = np.nonzero(action_activation_vector[0])
         num = num_l[0][0]
         actions_db = (self.delete_current_db, self.add_current_db, self.keep_current_db)
         actions_grid = (self.next_snippet, self.change_queue)
         return actions_grid[int(num/3)], actions_db[num % 3]
 
-    def actions_to_take_pa(self, action_activation_vector):
+    # ToDo Message to Pegah: I had to comment this just to improve the time execution a little bit. But is the same
+    # def actions_to_take_pa(self, action_activation_vector):
 
-        "if query is called"
+        # "if query is called"
         #print(action_activation_vector)
-        if action_activation_vector[-1] == 1:
-            self.change_queue()
+        # if action_activation_vector[-1] == 1:
+        #     self.change_queue()
         #if the NER should be reconciled
-        elif action_activation_vector[-1] == 0:
+        # elif action_activation_vector[-1] == 0:
 
-            if action_activation_vector[0] == 1:
-                "Organisation is accepted"
-            if action_activation_vector[1] == 1:
-                "Organization is rejected"
-            if action_activation_vector[2] == 1:
-                "date is accepted"
-            if action_activation_vector[3] == 1:
-                "date is rejected"
+            # if action_activation_vector[0] == 1:
+            #     "Organisation is accepted"
+            # if action_activation_vector[1] == 1:
+            #     "Organization is rejected"
+            # if action_activation_vector[2] == 1:
+            #     "date is accepted"
+            # if action_activation_vector[3] == 1:
+            #     "date is rejected"
+            # self.next_snippet_pa()
 
+        # if action_activation_vector[-1]:
+        #     self.change_queue()
+        # else:
+        #     self.next_snippet_pa()
+
+        # return action_activation_vector
+
+    def actions_to_take_pa(self, action_activation_vector):
+        if action_activation_vector[-1]:
+            self.change_queue()
+        else:
             self.next_snippet_pa()
-
         return action_activation_vector
 
     def print_model(self):
@@ -154,7 +164,7 @@ class Network:
     def fit(self, x_train, y_train, epochs, batch_size):
         self.model.fit(x_train, y_train, # batch_size=batch_size,
                        epochs=epochs,
-                       verbose=1)
+                       verbose=0)  # could be 1
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,

@@ -45,6 +45,8 @@ def main():
     # # print('done?', done)
     #
     # # TODO PA: this test not wrking because agent.keep_db is not defined in the code
+    # #      QAnswer: This tests are deprecated, but are kept for reference in how to use
+    # #               The action keep_db was similar to do nothing. with the instruction 'pass'
     # # changing to queue # 2
     # # env.step(agent.change_queue, agent.keep_db, 2)
     # # print('data size env current queue', env.queues[env.current_queue].qsize())

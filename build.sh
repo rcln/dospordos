@@ -10,18 +10,18 @@ sklearn, hdf5 or cuDNN
 '
 
 # Make virtual env
-mkdir rl
-virtualenv rl
+virtualenv -p python3 venv-dospordos
 git clone https://github.com/rcln/dospordos.git
-source bin/activate
+source venv-dospordos/bin/activate
 
 # Install dependencies
 pip install numpy
 pip install editdistance
 pip install -U spacy
+# python -m spacy download en
 pip install sklearn
 pip install nltk
-pip install hdf5
+pip install h5py
 
 # Configure for GPU
 
