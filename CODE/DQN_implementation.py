@@ -255,13 +255,11 @@ class DQN:
                 state = next_state
                 counter += 1
 
-
-
             # TODO PA: do the wieghts change during the learning process in the NN automatically?
             self.agent.network.save_weights(self.env.path_weights)
 
             """get entities by following the optimal policy"""
-            print("Counter", self.get_best_entities_with_optimal_policy(us))
+            # print("Counter", self.get_best_entities_with_optimal_policy(us))
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
@@ -388,7 +386,7 @@ class DQN:
             # pickle.dump(history, open(path_history, 'wb'))
 
             """get entities by following the optimal policy"""
-            print("Counter", self.get_best_entities_with_optimal_policy(us))
+            # print("Counter", self.get_best_entities_with_optimal_policy(us))
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
