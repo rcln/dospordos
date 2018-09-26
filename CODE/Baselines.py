@@ -98,7 +98,7 @@ class Baselines:
         years = [tempo[0][0], tempo[1][0]]
 
         eval = Evaluation(gold_standards[1], {max_uni}, years)
-        accur = eval.total_accuray()
+        accur = eval.total_accuracy()
 
         accur_uni += accur[0]
         accu_year += accur[1]
@@ -129,7 +129,7 @@ class Baselines:
 
         ev = Evaluation(golds, list(common_university), list(common_year))
 
-        return ev.total_accuray()
+        return ev.total_accuracy()
 
     def filter_with_RE(self, input, gold_standards):
 
@@ -146,7 +146,7 @@ class Baselines:
         filtered_ne = list(filtered_ne)
 
         ev = Evaluation(golds, list(filtered_ne), set(list(years)))
-        return ev.total_accuray()
+        return ev.total_accuracy()
 
 
 if __name__ == '__main__':
