@@ -378,6 +378,9 @@ class DQN:
         # initial state
         state, err = self.env.reset(us, is_RE=self.is_RE)
 
+        if err:
+            return -1
+
         done = False
         counter = 0
         base = Baselines(self.env, self.agent, [])

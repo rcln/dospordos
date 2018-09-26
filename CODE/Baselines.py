@@ -32,7 +32,10 @@ class Baselines:
         # for user_id in self.list_users:
 
         # initial state
-        self.env.reset(user_id, 0, is_pa=True)
+        state, err = self.env.reset(user_id, 0, is_pa=True)
+
+        if err:
+            return 0, 0
 
         universities = []
         years = []
@@ -152,7 +155,7 @@ class Baselines:
 
 if __name__ == '__main__':
 
-    env = Environment()
+    env = Environment(path='../DATA/db_v1_ns/test_db/', path_weights='test.h5')
 
     # if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
     #     print("Training BOW vectors")
