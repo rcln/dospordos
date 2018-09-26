@@ -25,7 +25,7 @@ class Environment:
         self.path_db = "../DATA/fer_db/train.json"
         self.fer_db = self._get_gs()
         # self.path_weights = "../DATA/model_w.h5"
-        self.path_weights = path_weights
+        self.path_weights = "../DATA/"+path_weights
         # self.path_count_vect = "../DATA/count_vectorizer.pkl"
         # self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
         self.queues = {}

@@ -16,20 +16,17 @@ from agent import Agent, Network
 from Sars import Sars
 from sklearn.externals import joblib
 
-
 path_history = "../DATA/history"
 path_model = "../DATA/dqn/model_nn.h5"
 
 load_model = False
-
-
 # can we have repeatables, ask Pegah ta daaaa : PA response: no it should not be repeatable samples
 
 
 class DQN:
     """we have two DQN approaches in general: 1- DQN + normal NE 2 - DQN + normal NE + regular expresions"""
 
-    def __init__(self, env_, agent_, list_users_, is_RE, logger, name):
+    def __init__(self, env_, agent_, list_users_, is_RE, logger, name, is_test=0):
         """
         :param env_:
         :param agent_:
@@ -43,7 +40,7 @@ class DQN:
         self.logger = logger
         self.name = name
         self.path_replay_memory = '/../DATA/' + self.name + 'replay_memory.pkl'
-
+        self.is_test = is_test
         # Desc: loading users
         self.list_users = list_users_
 
@@ -176,8 +173,8 @@ class DQN:
         replay_memory = self.replay_memory(training_replay_size)
 
         # Epochs
-        epoch_reward_list = []
-        epoch_measuring_results_list = []
+        # epoch_reward_list = []
+        # epoch_measuring_results_list = []
         e_count = 0
 
         for us in self.list_users: #[35:36]:
@@ -188,7 +185,6 @@ class DQN:
                 continue
 
             done = False
-
             # Double DQN
             counter = 0
             # episodes
@@ -264,25 +260,25 @@ class DQN:
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
-            eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            measuring_results = eval.get_measuring_results()
-            self.logger.debug(measuring_results)
+            # eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
+            # measuring_results = eval.get_measuring_results()
+            # self.logger.debug(measuring_results)
 
-            epoch_measuring_results_list.append(measuring_results)
-            self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
-            pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'_acc.pkl', 'wb'))
+            # epoch_measuring_results_list.append(measuring_results)
+            # self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
+            # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'_acc.pkl', 'wb'))
 
-            epoch_reward_list.append(tmp_reward/counter)
-            self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
-            pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+            # epoch_reward_list.append(tmp_reward/counter)
+            # self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
+            # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
 
             e_count = e_count + 1
 
-        self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
-        self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
+        # self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
+        # self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
 
-        pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-        pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
+        # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+        # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
         return
 
     def deep_QN(self, gamma, eps, training_replay_size):
@@ -292,8 +288,8 @@ class DQN:
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
         # Epochs
-        epoch_reward_list = []
-        epoch_measuring_results_list = []
+        # epoch_reward_list = []
+        # epoch_measuring_results_list = []
         e_count = 0
         # train episodes
         for us in self.list_users: #[35:36]:
@@ -394,24 +390,24 @@ class DQN:
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
             # TODO TP pickle and log these prints and the eval for both
-            eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            measuring_results = eval.get_measuring_results()
-            self.logger.debug(measuring_results)
+            # eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
+            # measuring_results = eval.get_measuring_results()
+            # self.logger.debug(measuring_results)
 
-            epoch_measuring_results_list.append(measuring_results)
-            self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-            pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+            # epoch_measuring_results_list.append(measuring_results)
+            # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
+            # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
 
-            epoch_reward_list.append(tmp_reward / counter)
-            pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
-            self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
+            # epoch_reward_list.append(tmp_reward / counter)
+            # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
+            # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
             e_count = e_count + 1
 
-        self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-        self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
+        # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
+        # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
 
-        pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-        pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
+        # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+        # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
         return
 
     def get_best_entities_with_optimal_policy(self, eps, us):
@@ -440,6 +436,25 @@ class DQN:
             state = next_state
 
             counter += 1
+
+            # eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
+            # measuring_results = eval.get_measuring_results()
+            # self.logger.debug(measuring_results)
+
+            # epoch_measuring_results_list.append(measuring_results)
+            # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
+            # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+
+            # epoch_reward_list.append(tmp_reward / counter)
+            # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
+            # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
+            e_count = e_count + 1
+
+        # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
+        # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
+
+        # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
+        # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
 
         return counter
 

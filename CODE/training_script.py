@@ -14,6 +14,8 @@ from agent import Agent
 # Example:
 # > python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/train_db/ DQN 0
 # It will run the algorithm DQN with is_RE=0 and the data is in that path
+# If the directory is for testing
+# > python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/train_db/ DQN 0 -is_test=1
 
 if __name__ == "__main__":
 
@@ -21,6 +23,8 @@ if __name__ == "__main__":
     parser.add_argument("DB", help="Path to training directory")
     parser.add_argument("ALG", help="Algorithm to execute")
     parser.add_argument("is_RE", help="Use of Regular Expression")
+    parser.add_argument("-is_test", help="The data is for testing", required=False,
+                        default=0)
     parser.add_argument("-v", "--verbose",
                         action="store_true", dest="verbose",
                         help="Verbose mode [Off]")
@@ -38,6 +42,7 @@ if __name__ == "__main__":
     path_data = args.DB
     algorithm = args.ALG
     is_RE = args.is_RE
+    is_test = args.is_test
     name = str(algorithm) + "_" + str(is_RE) + "_" + str(path_data.split('/')[-3])
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -56,7 +61,7 @@ if __name__ == "__main__":
     # list_users = sorted(list(map(int, os.listdir(env.path))))
     list_users = os.listdir(env.path)
 
-    dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger, name=name)
+    dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger, name=name, is_test=is_test)
 
     try:
         if algorithm.upper() == "DQN":
