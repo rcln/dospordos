@@ -362,6 +362,9 @@ class DQN:
         return
 
     def testing(self, eps):
+        if os.path.exists(self.env.path_weights):
+            self.agent.network.load_weights(self.env.path_weights)
+            print('LOADING WEIGHTS!')
         for us in self.list_users:
             self.get_best_entities_with_optimal_policy(eps=eps, us=us)
         pickle.dump(self.measure_results_matrix, '../DATA/'+self.name+'_mrm.pkl')
