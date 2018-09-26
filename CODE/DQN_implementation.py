@@ -403,13 +403,10 @@ class DQN:
                                                         is_RE=self.is_RE)
 
             reward_list.append((reward+reward_list[-1]))
-            measure_results_list.append( () )
-
             state = next_state
 
             counter += 1
-            e_count = e_count + 1
-
+            eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
             measuring_results = eval.get_measuring_results()
             measure_results_list.append(measuring_results)
 

@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("training_script")
     parser.add_argument("DB", help="Path to training directory")
-    parser.add_argument("ALG", help="Algorithm to execute", required=False, default="DQN")
-    parser.add_argument("is_RE", help="Use of Regular Expression", required=False, default="0")
+    parser.add_argument("ALG", help="Algorithm to execute", default="DQN")
+    parser.add_argument("is_RE", help="Use of Regular Expression", default="0")
     parser.add_argument("-is_test", help="The data is for testing", required=False,
                         default=0)
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
