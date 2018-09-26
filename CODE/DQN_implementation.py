@@ -369,9 +369,7 @@ class DQN:
         pickle.dump(self.base_ctg_list, '../DATA/'+self.name+'_ctg.pkl')
         pickle.dump(self.base_ma_list, '../DATA/'+self.name+'_ma.pkl')
 
-
     def get_best_entities_with_optimal_policy(self, eps, us):
-
         reward_list = [0]
         measure_results_list = []
 
