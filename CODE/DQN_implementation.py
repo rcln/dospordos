@@ -367,10 +367,10 @@ class DQN:
             print('LOADING WEIGHTS!')
         for us in self.list_users:
             self.get_best_entities_with_optimal_policy(eps=eps, us=us)
-        pickle.dump(self.measure_results_matrix, '../DATA/'+self.name+'_mrm.pkl')
-        pickle.dump(self.reward_matrix, '../DATA/'+self.name+'_rm.pkl')
-        pickle.dump(self.base_ctg_list, '../DATA/'+self.name+'_ctg.pkl')
-        pickle.dump(self.base_ma_list, '../DATA/'+self.name+'_ma.pkl')
+        pickle.dump(self.measure_results_matrix, open('../DATA/'+self.name+'_mrm.pkl', 'wb'))
+        pickle.dump(self.reward_matrix, open('../DATA/'+self.name+'_rm.pkl', 'wb'))
+        pickle.dump(self.base_ctg_list, open('../DATA/'+self.name+'_ctg.pkl', 'wb'))
+        pickle.dump(self.base_ma_list, open('../DATA/'+self.name+'_ma.pkl', 'wb'))
 
     def get_best_entities_with_optimal_policy(self, eps, us):
         reward_list = [0]

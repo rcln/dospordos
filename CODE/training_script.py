@@ -71,7 +71,7 @@ if __name__ == "__main__":
     elif initial_range != "-1":
         list_users = list_users[int(initial_range):]
     elif final_range != "-1":
-        list_users = list_users[int(initial_range):int(final_range)]
+        list_users = list_users[:int(final_range)]
 
     dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger, name=name)
 
