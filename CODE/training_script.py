@@ -15,16 +15,18 @@ from agent import Agent
 # > python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/train_db/ DQN 0
 # It will run the algorithm DQN with is_RE=0 and the data is in that path
 # If the directory is for testing
-# > python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/train_db/ DQN 0 -is_test=1
+# > python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/test_db/ -is_test=1
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("training_script")
     parser.add_argument("DB", help="Path to training directory")
-    parser.add_argument("ALG", help="Algorithm to execute")
-    parser.add_argument("is_RE", help="Use of Regular Expression")
+    parser.add_argument("ALG", help="Algorithm to execute", required=False, default="DQN")
+    parser.add_argument("is_RE", help="Use of Regular Expression", required=False, default="0")
     parser.add_argument("-is_test", help="The data is for testing", required=False,
                         default=0)
+    parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
+    parser.add_argument("-final_range", help="FInal range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",
                         action="store_true", dest="verbose",
                         help="Verbose mode [Off]")
@@ -43,6 +45,9 @@ if __name__ == "__main__":
     algorithm = args.ALG
     is_RE = args.is_RE
     is_test = args.is_test
+    initial_range = args.initial_range
+    final_range = args.final_range
+
     name = str(algorithm) + "_" + str(is_RE) + "_" + str(path_data.split('/')[-3])
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -61,16 +66,25 @@ if __name__ == "__main__":
     # list_users = sorted(list(map(int, os.listdir(env.path))))
     list_users = os.listdir(env.path)
 
-    dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger, name=name, is_test=is_test)
+    if initial_range != "-1" and final_range != "-1":
+        list_users = list_users[int(initial_range):int(final_range)]
+    elif initial_range != "-1":
+        list_users = list_users[int(initial_range):]
+    elif final_range != "-1":
+        list_users = list_users[int(initial_range):int(final_range)]
+
+    dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger, name=name)
 
     try:
-        if algorithm.upper() == "DQN":
+        if is_test == "1":
+            dqn.testing(eps=0.1)
+        elif algorithm.upper() == "DQN":
             dqn.deep_QN(gamma=0.95, eps=0.1, training_replay_size=2000)
         elif algorithm.upper() == "DDQN":
             dqn.DoubleDQN(gamma=0.95, eps=0.1, training_replay_size=2000)
 
     except KeyboardInterrupt:
         print("\n\n-----Interruption-----\nSaving weights")
-        agent.network.save_weights(env.path_weights)
+        # agent.network.save_weights(env.path_weights)
         print("Weights saved")
         sys.exit(0)

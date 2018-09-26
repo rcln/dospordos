@@ -26,7 +26,7 @@ load_model = False
 class DQN:
     """we have two DQN approaches in general: 1- DQN + normal NE 2 - DQN + normal NE + regular expresions"""
 
-    def __init__(self, env_, agent_, list_users_, is_RE, logger, name, is_test=0):
+    def __init__(self, env_, agent_, list_users_, is_RE, logger, name):
         """
         :param env_:
         :param agent_:
@@ -40,7 +40,6 @@ class DQN:
         self.logger = logger
         self.name = name
         self.path_replay_memory = '/../DATA/' + self.name + 'replay_memory.pkl'
-        self.is_test = is_test
         # Desc: loading users
         self.list_users = list_users_
 
@@ -173,8 +172,6 @@ class DQN:
         replay_memory = self.replay_memory(training_replay_size)
 
         # Epochs
-        # epoch_reward_list = []
-        # epoch_measuring_results_list = []
         e_count = 0
 
         for us in self.list_users: #[35:36]:
@@ -247,7 +244,7 @@ class DQN:
 
                 targetQN.model.set_weights(mainQN.model.get_weights())
                 mainQN.fit(X_train, Y_train, 1, len(X_train))
-                # mainQN.save_weights(self.env.path_weights)
+                mainQN.save_weights(self.env.path_weights)
 
                 state = next_state
                 counter += 1
@@ -260,25 +257,7 @@ class DQN:
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
-            # eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            # measuring_results = eval.get_measuring_results()
-            # self.logger.debug(measuring_results)
-
-            # epoch_measuring_results_list.append(measuring_results)
-            # self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
-            # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'_acc.pkl', 'wb'))
-
-            # epoch_reward_list.append(tmp_reward/counter)
-            # self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
-            # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-
             e_count = e_count + 1
-
-        # self.logger.warning('epoch_reward_list' + str(epoch_reward_list))
-        # self.logger.warning('epoch_measuring_results_list' + str(epoch_measuring_results_list))
-
-        # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-        # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
         return
 
     def deep_QN(self, gamma, eps, training_replay_size):
@@ -288,28 +267,19 @@ class DQN:
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
         # Epochs
-        # epoch_reward_list = []
-        # epoch_measuring_results_list = []
         e_count = 0
         # train episodes
         for us in self.list_users: #[35:36]:
             # reset episode with new user and get initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
-            # episode = {}
             if err:
                 continue
-            # episode[len(history)] = []
-
             done = False
-
             # DQN with experience replace
             counter = 0
-
             # epoch
             tmp_reward = 0
             while not done:
-                # for i in range(50):
-
                 if counter > 1000:
                     print('we use break option')
                     break
@@ -320,11 +290,8 @@ class DQN:
                 # Observe reward and new state
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                             is_RE=self.is_RE)
-
                 self.logger.info('Reward:: ' + str(reward) + ", Step:: " + str(counter) + ", Episode:: " + str(e_count))
                 tmp_reward = tmp_reward + reward
-
-                # episode[len(history)].append(reward)
 
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
 
@@ -379,36 +346,18 @@ class DQN:
 
             # TODO PA: does the wieghts change during the learning process in the NN automatically?
             self.agent.network.save_weights(self.env.path_weights)
-            # history.append(episode)
-            # print("HISTORY..", history, "type.", type(history))
-
-            # pickle.dump(history, open(path_history, 'wb'))
 
             """get entities by following the optimal policy"""
-            # print("Counter", self.get_best_entities_with_optimal_policy(eps, us))
             print('Gold standards', self.env.current_name, self.env.golden_standard_db)
             print('Extracted entities', self.env.university_name_pa, self.env.date_pa)
 
-            # TODO TP pickle and log these prints and the eval for both
-            # eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            # measuring_results = eval.get_measuring_results()
-            # self.logger.debug(measuring_results)
-
-            # epoch_measuring_results_list.append(measuring_results)
-            # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-            # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-
-            # epoch_reward_list.append(tmp_reward / counter)
-            # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
-            # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
             e_count = e_count + 1
 
-        # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-        # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
-
-        # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-        # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
         return
+
+    def testing(self, eps):
+        for us in self.list_users:
+            self.get_best_entities_with_optimal_policy(eps=eps, us=us)
 
     def get_best_entities_with_optimal_policy(self, eps, us):
 
@@ -419,7 +368,7 @@ class DQN:
         counter = 0
 
         # epoch
-        #if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
+        # if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
         while not done:
             # for i in range(50):
 
