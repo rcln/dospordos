@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 import operator
-from random import shuffle
+import utils
+from Evaluation import Evaluation
+from environment import Environment
 
-from CODE import utils
-from CODE.Evaluation import Evaluation
-from CODE.environment import Environment
-import CODE.preprocessing as prep
-from CODE.agent import Agent
-from sklearn.externals import joblib
-
-from CODE.regular_ne import re_organization
+from agent import Agent
+from regular_ne import re_organization
 
 path_entities_memory = "/../DATA/entities_memory.pkl"
 
