@@ -13,11 +13,11 @@ path_entities_memory = "/../DATA/entities_memory.pkl"
 
 class Baselines:
 
-    def __init__(self, env, agent, list_users):
+    def __init__(self, env, agent, list_users, is_RE=0):
         self.env = env
         self.agent = agent
         self.list_users = list_users
-
+        self.is_RE = is_RE
         self.path = "../DATA/"
 
     def baseline_agregate_NE(self, user_id):
@@ -45,7 +45,7 @@ class Baselines:
                 text = current_data['title'] + " " + current_data['text']
                 location_confident = utils.get_confidence(text)
 
-                tempo = self.env._fill_info_snippet_pa(text, location_confident)
+                tempo = self.env._fill_info_snippet_pa(text, location_confident, is_RE=self.is_RE)
 
                 universities = universities + [item.lower() for item in tempo[0]]
                 years = years + tempo[1]

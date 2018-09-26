@@ -384,7 +384,7 @@ class DQN:
 
         done = False
         counter = 0
-        base = Baselines(self.env, self.agent, [])
+        base = Baselines(self.env, self.agent, [], is_RE=self.is_RE)
 
         # epoch
         # if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
