@@ -162,7 +162,7 @@ class Network:
         return Model(inputs=x, outputs=o)
 
     def fit(self, x_train, y_train, epochs, batch_size):
-        self.model.fit(x_train, y_train, # batch_size=batch_size,
+        self.model.fit(x_train, y_train,  # batch_size=batch_size,
                        epochs=epochs,
                        verbose=0)  # could be 1
 

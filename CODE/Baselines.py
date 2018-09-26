@@ -14,6 +14,7 @@ from CODE.regular_ne import re_organization
 
 path_entities_memory = "/../DATA/entities_memory.pkl"
 
+
 class Baselines:
 
     def __init__(self, env, agent, list_users):
@@ -28,10 +29,10 @@ class Baselines:
         entities = None
         gold_standards = None
 
-        #for user_id in self.list_users:
+        # for user_id in self.list_users:
 
-            # initial state
-        self.env.reset(user_id, is_pa=True)
+        # initial state
+        self.env.reset(user_id, 0, is_pa=True)
 
         universities = []
         years = []
@@ -39,11 +40,10 @@ class Baselines:
 
         for key in self.env.queues.keys():
             while not self.env.queues[key].empty():
-
                 """the queue size reduce by 1 after using the get() fuction"""
                 current_data = self.env.queues[key].get()
 
-                text = current_data['title']+" "+current_data['text']
+                text = current_data['title'] + " " + current_data['text']
                 location_confident = utils.get_confidence(text)
 
                 tempo = self.env._fill_info_snippet_pa(text, location_confident)
@@ -52,13 +52,12 @@ class Baselines:
                 years = years + tempo[1]
                 names.append(tempo[2].lower())
 
-
         entities = (universities, years, names)
         gold_standards = [self.env.current_name, self.env.golden_standard_db]
 
-        #print("Saving extracted name entites in memory")
-        #joblib.dump((entities, gold_standards), os.getcwd() + self.path)
-        #print("Saved memory")
+        # print("Saving extracted name entites in memory")
+        # joblib.dump((entities, gold_standards), os.getcwd() + self.path)
+        # print("Saved memory")
 
         return entities, gold_standards
 
@@ -68,7 +67,7 @@ class Baselines:
         max_uni = ""
 
         for key, value in uni_dic.items():
-            if value > max_repeated and key not in ['', '\n', '...', '?'] :
+            if value > max_repeated and key not in ['', '\n', '...', '?']:
                 max_repeated = value
                 max_uni = key
 
@@ -88,24 +87,24 @@ class Baselines:
         #     (input, gold_standards) = joblib.load(os.getcwd() + path_entities_memory)
 
         person_counter = 0
-        accur_uni, accu_year = (0.0,0.0)
+        accur_uni, accu_year = (0.0, 0.0)
 
-        #for key in input.keys():
+        # for key in input.keys():
         tempo = input
-        university_repetition = {x:tempo[0].count(x) for x in tempo[0]}
-        year_repetition = {x:tempo[1].count(x) for x in tempo[1]}
+        university_repetition = {x: tempo[0].count(x) for x in tempo[0]}
+        year_repetition = {x: tempo[1].count(x) for x in tempo[1]}
 
         max_uni, max_repeated = self.get_max_university(university_repetition)
         tempo = self.get_max_years(year_repetition)
         years = [tempo[0][0], tempo[1][0]]
 
-        eval = Evaluation(gold_standards[1],{max_uni}, years)
-        accur= eval.total_accuray()
+        eval = Evaluation(gold_standards[1], {max_uni}, years)
+        accur = eval.total_accuray()
 
         accur_uni += accur[0]
         accu_year += accur[1]
 
-        #person_counter += 1
+        # person_counter += 1
 
         return (accur_uni, accu_year)
 
@@ -144,29 +143,30 @@ class Baselines:
             if re_organization(item.title()) is not None:
                 filtered_ne.add(item)
 
-
         golds = gold_standards[1]
         filtered_ne = list(filtered_ne)
 
         ev = Evaluation(golds, list(filtered_ne), set(list(years)))
         return ev.total_accuray()
 
+
 if __name__ == '__main__':
 
     env = Environment()
 
-    if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
-        print("Training BOW vectors")
-        prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
-        print("---FIT COMPLETED----")
+    # if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
+    #     print("Training BOW vectors")
+    #     prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+    #     print("---FIT COMPLETED----")
 
     agent = Agent(env, (28,))  # + len_vect.shape[1],)) # the comma is very important
     list_users = sorted(list(map(int, os.listdir(env.path))))
 
     base = Baselines(env, agent, list_users)
-    entities, gold = base.baseline_agregate_NE(list_users[35])
 
-    #print(base.majority_aggregation(entities, gold))
-    #print(base.closest_to_gold(entities, gold))
+    for user in list_users:
+        entities, gold = base.baseline_agregate_NE(user)
+        print(base.majority_aggregation(entities, gold))
+        print(base.closest_to_gold(entities, gold))
 
     print(base.filter_with_RE(entities, gold))

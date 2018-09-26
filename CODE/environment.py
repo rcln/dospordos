@@ -66,7 +66,7 @@ class Environment:
 
     # start new episode
     # there are 4518 person names in train-db
-    def reset(self, id_person, is_RE):
+    def reset(self, id_person, is_RE, is_pa=False):
         self.person_id = id_person
         self.university_name_pa = set()
         self.date_pa = set()
