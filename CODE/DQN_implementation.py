@@ -416,6 +416,7 @@ class DQN:
 
         self.base_ma_list.append(base.majority_aggregation(entities, gold))
         self.base_ctg_list.append(base.closest_to_gold(entities, gold))
+        print("Done with ", str(us))
         return counter
 
 

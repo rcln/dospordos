@@ -136,7 +136,6 @@ class Evaluation:
         for sv_ in year_sys:
             flag_tp = False
             for ii, sv in enumerate(gs_):
-                print(sv, "___", sv_)
                 if sv[0] == sv_[0] and editdistance.eval(sv[1], sv_[1]) / len(sv[1]) < 0.2:
                     TP += 1
                     flag_tp = True

@@ -73,9 +73,10 @@ class Baselines:
         return max_uni, max_repeated
 
     def get_max_years(self, years_dic):
-
         sorted_d = sorted(years_dic.items(), key=operator.itemgetter(1))
-        return sorted_d[-1], sorted_d[-2]
+        if len(sorted_d) > 1:
+            return sorted_d[-1], sorted_d[-2]
+        return '', ''
 
     def majority_aggregation(self, input, gold_standards):
 
@@ -94,6 +95,7 @@ class Baselines:
         year_repetition = {x: tempo[1].count(x) for x in tempo[1]}
 
         max_uni, max_repeated = self.get_max_university(university_repetition)
+        print("year_repetition: ", year_repetition)
         tempo = self.get_max_years(year_repetition)
         years = [tempo[0][0], tempo[1][0]]
 
