@@ -5,8 +5,6 @@ import argparse
 
 import matplotlib.pyplot as plt
 
-# todo
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("evaluate_test_run")
@@ -33,6 +31,8 @@ if __name__ == "__main__":
         for i in range(0, reward_matrix.shape[1]):
             tmp_ar = [x for x in reward_matrix[i] if not np.isnan(x)]
             reward_matrix_r.append(sum(tmp_ar) / len(tmp_ar))
+
+        print("Avg of cumulative reward:", reward_matrix_r)
 
         if args.g:
             plt.plot(reward_matrix_r)
@@ -70,6 +70,9 @@ if __name__ == "__main__":
             accuracy_uni_r.append(sum(tmp_ar) / len(tmp_ar))
             tmp_ar = [x for x in accuracy_years[i] if not np.isnan(x)]
             accuracy_years_r.append(sum(tmp_ar) / len(tmp_ar))
+
+        print("Avg of University accuracy:", accuracy_uni_r)
+        print("Avg of Years accuracy:", accuracy_years_r)
 
         if args.g:
             plt.plot(accuracy_uni_r)

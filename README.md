@@ -42,6 +42,9 @@ The data directory should have folders with numbers
    * 3
    * 5
    * ...
+   * 4904
+   * 4905
+   * ...
 
 Besides running the build.sh
 * python -m spacy download en
@@ -54,3 +57,15 @@ for stopping the network.
 
 `self.callbacks = [agent.EarlyStopByLossVal(value=0.1),
                           agent.EarlyStopping(patience=10)]`
+
+
+##For testing
+Use TESTS/evaluate_test_run script, you should already have all the pkl files you want to average and graph.
+This is the format you should follow:
+
+`python3 evaluate_test_run.py -r DQN_0_db_v1_ns_rm.pkl -acc DQN_0_db_v1_ns_acc.pkl -g 1`
+
+
+For more details:
+
+`python3 evaluate_test_run.py -h`
