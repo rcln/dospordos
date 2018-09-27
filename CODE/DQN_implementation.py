@@ -256,7 +256,7 @@ class DQN:
                 Y_train = np.array(Y_train)
 
                 targetQN.model.set_weights(mainQN.model.get_weights())
-                mainQN.fit(X_train, Y_train, 1, len(X_train))
+                mainQN.fit(X_train, Y_train, 1, len(X_train), callbacks=self.callbacks)
                 mainQN.save_weights(self.env.path_weights)
 
                 state = next_state
@@ -352,7 +352,7 @@ class DQN:
 
                 Y_train = np.array(Y_train)
 
-                self.agent.network.fit(X_train, Y_train, 1, len(X_train))
+                self.agent.network.fit(X_train, Y_train, 1, len(X_train), callbacks=self.callbacks)
                 state = next_state
 
                 counter += 1
@@ -411,7 +411,7 @@ class DQN:
 
             reward_list.append((reward+reward_list[-1]))
             state = next_state
-
+            self.logger.info(' Test.. Reward:: ' + str(reward) + ", step::" + str(counter) + ", user::" + str(us))
             counter += 1
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
             measuring_results = eval.get_measuring_results()
