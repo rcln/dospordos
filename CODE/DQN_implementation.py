@@ -56,7 +56,7 @@ class DQN:
         # ToDo: Note to Pegah, another callback with it can be stopped if there's no improvement with a min_delta .
         # after some epochs
         self.callbacks = [agent.EarlyStopByLossVal(value=0.1),
-                          agent.EarlyStopping()]
+                          agent.EarlyStopping(patience=10)]
 
     def get_random_elements(self, ar: list, number):
         """
