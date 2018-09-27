@@ -73,35 +73,23 @@ class Evaluation:
         return pres, reca, fsco
 
     def get_measuring_results(self):
-        accuracy_uni = 0.0
-        accuracy_years = 0.0
 
         uni_gs = []
         uni_sys = []
         year_gs = []
         year_sys = []
-        check = False
 
         gold_uni_name = self.gold_standards[0][0].lower()
         gold_years = [str(self.gold_standards[0][1]), str(self.gold_standards[0][2])]
 
         for uni in self.university_names:
             uni_sys.append(('u', uni.lower()))
-            if uni == gold_uni_name:
-                accuracy_uni = 1.0
-                check = True
-                break
-        uni_gs.append(('u', gold_uni_name))
 
-        if not check:
-            for uni in self.university_names:
-                if self.how_university(uni, gold_uni_name):
-                    accuracy_uni = 0.5
+        uni_gs.append(('u', gold_uni_name))
 
         for y_ in self.years:
             year_sys.append(('y', str(y_)))
-            if y_ in gold_years:
-                accuracy_years += 0.5
+
         for gy in gold_years:
             year_gs.append(('y', gy))
 
@@ -149,5 +137,5 @@ class Evaluation:
 
         Py, Ry, Fy = self._prf(TP, FP, FN)
 
-        return accuracy_uni, accuracy_years, Pu, Ru, Fu, Py, Ry, Fy
+        return Pu, Ru, Fu, Py, Ry, Fy
 

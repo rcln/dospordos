@@ -46,6 +46,7 @@ class DQN:
         self.list_users = list_users_
 
         self.reward_matrix = []
+        self.accuracy_matrix = []
         self.measure_results_matrix = []
         self.base_ma_list = []
         self.base_ctg_list = []
@@ -378,6 +379,7 @@ class DQN:
         pickle.dump(self.reward_matrix, open('../DATA/'+self.name+'_rm.pkl', 'wb'))
         pickle.dump(self.base_ctg_list, open('../DATA/'+self.name+'_ctg.pkl', 'wb'))
         pickle.dump(self.base_ma_list, open('../DATA/'+self.name+'_ma.pkl', 'wb'))
+        pickle.dump(self.accuracy_matrix, open('../DATA/'+self.name+'_acc.pkl', 'wb'))
 
     def get_best_entities_with_optimal_policy(self, eps, us):
         reward_list = [0]
@@ -404,7 +406,6 @@ class DQN:
 
             """Select an action with an epsilon probability"""
             action_vector = self.get_action_with_probability(state, self.agent.network, eps)
-
             # Observe reward and new state
             reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                         is_RE=self.is_RE)
@@ -414,8 +415,10 @@ class DQN:
             self.logger.info(' Test.. Reward:: ' + str(reward) + ", step::" + str(counter) + ", user::" + str(us))
             counter += 1
             eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-            measuring_results = eval.get_measuring_results()
-            measure_results_list.append(measuring_results)
+            self.accuracy_matrix.append(eval.total_accuracy())
+
+        measuring_results = eval.get_measuring_results()
+        measure_results_list.append(measuring_results)
 
         self.reward_matrix.append(reward_list[1:])
         self.measure_results_matrix.append(measure_results_list)
@@ -423,60 +426,10 @@ class DQN:
 
         self.base_ma_list.append(base.majority_aggregation(entities, gold))
         self.base_ctg_list.append(base.closest_to_gold(entities, gold))
-        print("Done with ", str(us))
+        print("Done with user: ", str(us))
         return counter
 
 
 if __name__ == "__main__":
     # ToDo Pegah: Please check the file training_script.py to run DQN
     pass
-
-
-
-    # def get_best_entities_with_optimal_policy(self, eps, us):
-    #
-    #     # initial state
-    #     state, err = self.env.reset(us, is_RE=self.is_RE)
-    #
-    #     done = False
-    #     counter = 0
-    #
-    #     # epoch
-    #     #if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
-    #     while not done:
-    #         # for i in range(50):
-    #
-    #         if counter > 1000:
-    #             print('we use break option')
-    #             return counter
-    #
-    #         """Select an action with an epsilon probability"""
-    #         action_vector = self.get_action_with_probability(state, self.agent.network, eps)
-    #
-    #         # Observe reward and new state
-    #         reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
-    #                                                     is_RE=self.is_RE)
-    #         state = next_state
-    #
-    #         counter += 1
-    #
-    #         # eval = Evaluation(self.env.golden_standard_db, self.env.university_name_pa, self.env.date_pa)
-    #         # measuring_results = eval.get_measuring_results()
-    #         # self.logger.debug(measuring_results)
-    #
-    #         # epoch_measuring_results_list.append(measuring_results)
-    #         # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-    #         # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-    #
-    #         # epoch_reward_list.append(tmp_reward / counter)
-    #         # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
-    #         # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
-    #         e_count = e_count + 1
-    #
-    #     # self.logger.warning('epoch_reward_list:: ' + str(epoch_reward_list))
-    #     # self.logger.warning('epoch_measuring_results_list:: ' + str(epoch_measuring_results_list))
-    #
-    #     # pickle.dump(epoch_reward_list, open('../DATA/'+self.name+'rew.pkl', 'wb'))
-    #     # pickle.dump(epoch_measuring_results_list, open('../DATA/'+self.name+'acc.pkl', 'wb'))
-    #
-    #     return counter
