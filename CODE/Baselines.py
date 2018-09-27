@@ -98,8 +98,9 @@ class Baselines:
         print("year_repetition: ", year_repetition)
         tempo = self.get_max_years(year_repetition)
         if tempo is None:
-            return None
-        years = [tempo[0][0], tempo[1][0]]
+            years = []
+        else:
+            years = [tempo[0][0], tempo[1][0]]
 
         eval = Evaluation(gold_standards[1], {max_uni}, years)
         accur = eval.total_accuracy()

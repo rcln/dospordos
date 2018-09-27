@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import keras
+from keras.callbacks import Callback
 from keras.models import Model
 from keras.layers import Input, Dense, Dropout
 from keras.utils import plot_model
@@ -161,10 +162,15 @@ class Network:
         o = Dense(units=1, activation='linear')(h)
         return Model(inputs=x, outputs=o)
 
-    def fit(self, x_train, y_train, epochs, batch_size):
-        self.model.fit(x_train, y_train,  # batch_size=batch_size,
-                       epochs=epochs,
-                       verbose=0)  # could be 1
+    def fit(self, x_train, y_train, epochs, batch_size, callbacks=None):
+        if callbacks is None:
+            self.model.fit(x_train, y_train,  # batch_size=batch_size,
+                           epochs=epochs,
+                           verbose=0)  # could be 1
+        else:
+            self.model.fit(x_train, y_train,  # batch_size=batch_size,
+                           epochs=epochs, callbacks=callbacks,
+                           verbose=0)  # could be 1
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,
@@ -190,3 +196,29 @@ class Network:
 
     def predict(self, x):
         return self.model.predict(x)
+
+
+class EarlyStopByLossVal(Callback):
+
+    def __init__(self, monitor='val_loss', value=0.01, verbose=0):
+        super(Callback, self).__init__()
+        self.monitor = monitor
+        self.value = value
+        self.verbose = verbose
+
+    def on_epoch_end(self, epoch, logs=None):
+        current = logs.get(self.monitor)
+        if current is None:
+            print("Early stopping requires %s available!" % self.monitor)
+            # warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
+
+        if current < self.value:
+            if self.verbose > 0:
+                print("Epoch %05d: early stopping THR" % epoch)
+            self.model.stop_training = True
+
+
+# Wrapper of EarlyStopping callback
+def EarlyStopping(monitor='val_loss', min_delta=0.01, patience=0, verbose=0, mode='auto', baseline=None):
+    return keras.callbacks.EarlyStopping(monitor=monitor, min_delta=min_delta,
+                                         patience=patience, verbose=verbose, mode=mode, baseline=baseline)
