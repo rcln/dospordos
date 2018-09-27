@@ -41,7 +41,7 @@ class DQN:
         self.is_RE = is_RE
         self.logger = logger
         self.name = name
-        self.path_replay_memory = '/../DATA/' + self.name + 'replay_memory.pkl'
+        self.path_replay_memory = '/../DATA/' + self.name + '_replay_memory.pkl'
         # Desc: loading users
         self.list_users = list_users_
 

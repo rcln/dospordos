@@ -85,6 +85,7 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         print("\n\n-----Interruption-----\nSaving weights")
-        # agent.network.save_weights(env.path_weights)
+        print("PATH:", env.path_weights)
+        agent.network.save_weights(env.path_weights)
         print("Weights saved")
         sys.exit(0)
