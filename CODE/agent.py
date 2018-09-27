@@ -200,7 +200,7 @@ class Network:
 
 class EarlyStopByLossVal(Callback):
 
-    def __init__(self, monitor='mean_squared_error', value=0.01, verbose=0):
+    def __init__(self, monitor='loss', value=0.01, verbose=0):
         super(Callback, self).__init__()
         self.monitor = monitor
         self.value = value
