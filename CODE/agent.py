@@ -219,6 +219,6 @@ class EarlyStopByLossVal(Callback):
 
 
 # Wrapper of EarlyStopping callback
-def EarlyStopping(monitor='val_loss', min_delta=0.01, patience=0, verbose=0, mode='auto', baseline=None):
+def EarlyStopping(monitor='loss', min_delta=0.01, patience=0, verbose=0, mode='auto', baseline=None):
     return keras.callbacks.EarlyStopping(monitor=monitor, min_delta=min_delta,
                                          patience=patience, verbose=verbose, mode=mode, baseline=baseline)
