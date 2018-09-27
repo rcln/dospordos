@@ -200,7 +200,7 @@ class Network:
 
 class EarlyStopByLossVal(Callback):
 
-    def __init__(self, monitor='val_loss', value=0.01, verbose=0):
+    def __init__(self, monitor='mean_squared_error', value=0.01, verbose=0):
         super(Callback, self).__init__()
         self.monitor = monitor
         self.value = value
@@ -211,7 +211,7 @@ class EarlyStopByLossVal(Callback):
         if current is None:
             print("Early stopping requires %s available!" % self.monitor)
             # warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
-
+            return
         if current < self.value:
             if self.verbose > 0:
                 print("Epoch %05d: early stopping THR" % epoch)
