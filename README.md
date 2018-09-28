@@ -60,7 +60,6 @@ for stopping the network.
 `self.callbacks = [agent.EarlyStopByLossVal(value=0.1),
                           agent.EarlyStopping(patience=10)]`
 
-
 ##For testing
 Use TESTS/evaluate_test_run script, you should already have all the pkl files you want to average and graph.
 This is the format you should follow:
@@ -71,3 +70,19 @@ This is the format you should follow:
 For more details:
 
 `python3 evaluate_test_run.py -h`
+
+
+## Connection to cluster
+
+`ssh -p 60022 urbinagonzalez@tal.lipn.univ-paris13.fr`
+
+in GPU2
+The directory for the project is
+
+`~/project/dospordos`
+
+The virtual environment is called `venv-dospordos`
+
+There's a tmux session ready. To connect 
+
+`tmux a -t base`
