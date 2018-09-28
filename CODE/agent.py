@@ -213,9 +213,8 @@ class EarlyStopByLossVal(Callback):
             # warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
             return
         if current < self.value:
-            if self.verbose > 0:
-                print("Epoch %05d: early stopping THR" % epoch)
             self.model.stop_training = True
+            print("Epoch %05d: early stopping THR" % epoch)
             with open('tmp_record', 'w') as f:
                 f.write("1")
 
