@@ -57,7 +57,7 @@ class DQN:
         # ToDo: Note to Pegah, another callback with it can be stopped if there's no improvement with a min_delta .
         # after some epochs
         self.callbacks = [agent.EarlyStopByLossVal(value=0.1),
-                          agent.EarlyStopping(patience=10)]
+                          agent.EarlyStopping(patience=3)]
 
     def get_random_elements(self, ar: list, number):
         """
@@ -187,8 +187,19 @@ class DQN:
 
         # Epochs
         e_count = 0
+        stop_train = False
 
+        with open('tmp_record', 'w') as f:
+            f.write("0")
         for us in self.list_users: #[35:36]:
+
+            with open('tmp_record', 'r') as f:
+                if f.readline() == "1":
+                    stop_train = True
+            if stop_train:
+                print("Train has stopped due to callback EarlyStopByLoss")
+                return
+
             # initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
 
@@ -257,6 +268,7 @@ class DQN:
                 Y_train = np.array(Y_train)
 
                 targetQN.model.set_weights(mainQN.model.get_weights())
+
                 mainQN.fit(X_train, Y_train, 1, len(X_train), callbacks=self.callbacks)
                 mainQN.save_weights(self.env.path_weights)
 
@@ -282,8 +294,17 @@ class DQN:
         replay_memory = self.replay_memory(training_replay_size)
         # Epochs
         e_count = 0
+        stop_train = False
         # train episodes
+        with open('tmp_record', 'w') as f:
+            f.write("0")
         for us in self.list_users: #[35:36]:
+            with open('tmp_record', 'r') as f:
+                if f.readline() == "1":
+                    stop_train = True
+            if stop_train:
+                print("Train has stopped due to callback EarlyStopByLoss")
+                return
             # reset episode with new user and get initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
             if err:

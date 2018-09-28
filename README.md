@@ -8,7 +8,8 @@ The script is called `training_script.py` which has the following arguments:
  - "is_RE", "Use of Regular Expression", default="0"
  - "-is_test", "The data is for testing", required=False, default=0
  - "-initial_range", "Initial range of users", required=False
- - "-final_range", help="FInal range of users", required=False
+ - "-final_range", help="Final range of users", required=False
+ - "-is_db_v2", help="Is the second database", required=False
  
 #### Running Examples 
 
@@ -20,10 +21,11 @@ This means that you'll be using:
   - 0 is for using Regex or NE and is_test is for using a train data source or test data source. 
  
  
- `python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/test_db/ DQN 0 -is_test=1`
+ `python3 training_script.py ~/project/dospordos/DATA/db_v2_ns/test_db/ DQN 0 -is_test=1 -is_db_v2=1`
  
 This means that you'll be using:
- - the test database db_v1_ns (data source)
+ - the test database db_v2_ns (data source)
+ - is the second database
 
 Depending on the parameters given the data will be stored as DQN_0_db_v1_ns* in the
 DATA directory

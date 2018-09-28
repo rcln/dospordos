@@ -25,8 +25,10 @@ if __name__ == "__main__":
     parser.add_argument("is_RE", help="Use of Regular Expression", default="0")
     parser.add_argument("-is_test", help="The data is for testing", required=False,
                         default=0)
+    parser.add_argument("-is_db_v2", help="Is the second database", required=False,
+                        default=0)
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
-    parser.add_argument("-final_range", help="FInal range of users", required=False, default="-1")
+    parser.add_argument("-final_range", help="Final range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",
                         action="store_true", dest="verbose",
                         help="Verbose mode [Off]")
@@ -45,6 +47,7 @@ if __name__ == "__main__":
     algorithm = args.ALG
     is_RE = args.is_RE
     is_test = args.is_test
+    is_db_v2 = args.is_db_v2
     initial_range = args.initial_range
     final_range = args.final_range
 
@@ -60,9 +63,13 @@ if __name__ == "__main__":
 
     logger.debug('NEW RUN')
 
-    env = Environment(path=path_data, path_weights=name+'_weights.h5')
+    env = Environment(path=path_data, path_weights=name+'_weights.h5', is_db_v2=is_db_v2)
 
-    agent = Agent(env, (28,))
+    # ToDo Note to Pegah: for using the second data base
+    if int(is_db_v2) == 1:
+        agent = Agent(env, (29,))
+    else:
+        agent = Agent(env, (28,))
     # list_users = sorted(list(map(int, os.listdir(env.path))))
     list_users = os.listdir(env.path)
 

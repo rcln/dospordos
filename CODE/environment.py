@@ -19,7 +19,7 @@ from sklearn.externals import joblib
 
 class Environment:
 
-    def __init__(self, path='../DATA/train_db/', path_weights='../DATA/model_w.h5'):
+    def __init__(self, path='../DATA/train_db/', path_weights='../DATA/model_w.h5', is_db_v2=0):
         # self.path = "../DATA/train_db/"
         self.path = path
         self.path_db = "../DATA/fer_db/train.json"
@@ -47,6 +47,7 @@ class Environment:
 
         self.check_university_pa = False
         self.check_date_pa = False
+        self.is_db_v2 = is_db_v2
 
         # tf_vectorizer = CountVectorizer(min_df=10, stop_words='english')
         # tf_vectorizer = TfidfVectorizer(min_df=10, stop_words='english')
@@ -238,10 +239,18 @@ class Environment:
         commonU = len(set_uni_A.intersection(set_uni_B))
         commonA = len(set_ani_A.intersection(set_ani_B))
 
+        # ToDo Note to Pegah, for the second database the one-hot of search engine has increased
+        # utils.int_to_onehot(5, int(self.current_data['engine_search']), True)
+
+        if self.is_db_v2 == 1:
+            vec_engine = utils.int_to_onehot(5, int(self.current_data['engine_search']), True)
+        else:
+            vec_engine = utils.int_to_onehot(4, int(self.current_data['engine_search']), True)
+
         # it defines which query result is taken for this state. We have 7 query types in total.
         state = utils.int_to_onehot(7, self.current_queue) \
                 + [self._normalize_snippet_number(float(self.current_data['number_snippet']))] \
-                + utils.int_to_onehot(4, int(self.current_data['engine_search']), True) \
+                + vec_engine \
                 + [commonU, commonA, common, len(A), len(B), total]
         # We normalize the taken snippet number of query results w.r.t rest of query snippets results
         # PA: I do not know the reason yet.

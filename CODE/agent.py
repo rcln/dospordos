@@ -216,6 +216,8 @@ class EarlyStopByLossVal(Callback):
             if self.verbose > 0:
                 print("Epoch %05d: early stopping THR" % epoch)
             self.model.stop_training = True
+            with open('tmp_record', 'w') as f:
+                f.write("1")
 
 
 # Wrapper of EarlyStopping callback
