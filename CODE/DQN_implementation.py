@@ -9,6 +9,7 @@ import numpy as np
 import agent
 import preprocessing as prep
 import pickle
+import time
 from random import randint
 
 from Baselines import Baselines
@@ -235,8 +236,9 @@ class DQN:
                 # this part is for learning the Q function using gradient descent
                 X_train = []
                 Y_train = []
+                
 
-                tempo = self.get_random_elements(replay_memory, 1000)
+                tempo = self.get_random_elements(replay_memory, 100)
 
                 for sample in tempo:
 
@@ -335,10 +337,9 @@ class DQN:
                 X_train = []
                 Y_train = []
 
-                tempo = self.get_random_elements(replay_memory, 1000)
+                tempo = self.get_random_elements(replay_memory, 100)
 
                 for sample in tempo:
-
                     # if state is terminal
                     if self.env._check_grid() or (
                             sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
@@ -372,7 +373,11 @@ class DQN:
                     Y_train.append(t)
                     # Q(s,a) computed using the neural network
 
+
+
+                 
                 Y_train = np.array(Y_train)
+
 
                 self.agent.network.fit(X_train, Y_train, 1, len(X_train), callbacks=self.callbacks)
                 state = next_state

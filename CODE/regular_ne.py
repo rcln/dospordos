@@ -89,6 +89,7 @@ re.compile("[A-Z][a-z'\-]* [A-Z][a-z'\-]*organisation"),
 re.compile("U[MP]R [0-9]+"),
 re.compile("FRE [0-9]+"),
 ]
+import time
 
 with open("../DATA/JRC-Organizations.normal.txt",'r') as fd:
     words_organizations=[]
@@ -107,9 +108,10 @@ def re_organization(text):
 
 def list_organization(text):
     result=[]
+    text=text.lower()
+
     for w in words_organizations:
-        idx=text.lower().find(w)
-        if idx >= 0:
-            w = text[idx:idx+len(w)]
+        if w in text:
             result.append(w.strip())
+
     return result

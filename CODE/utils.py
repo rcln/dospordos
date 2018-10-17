@@ -460,7 +460,6 @@ class Cleaner:
 
 
 def int_to_onehot(length, number, zero_based=False):
-
     if number < 0:
         return [0] * length
 
@@ -475,6 +474,7 @@ def get_confidence_RE(text):
     return
 
 
+nlp = spacy.load('en_core_web_sm')
 def get_confidence(text):
     #TODO PA: Spacy depends on capital letters, we should find a way to solve this problem, thats the reason that all NEs can't be extracted.
     #TODO PA: sometimes GPE or ORG are empty or they have a very low confidence. This is again depended on the supported texts gathered by the queries.
@@ -485,7 +485,6 @@ def get_confidence(text):
      these name entities with various confidence scores. The function output is (confident score for ORG, confident score for GPE)
     using SPacy library have different
     """
-    nlp = spacy.load('en_core_web_sm')
     ner_person_name = ('', u'PERSON', 0.0)
     ner_org = ('', u'ORG', 0.0) # ORG: Companies, agencies, institutions.
     ner_gpe = ('', u'GPE', 0.0) # GPE: Geopolitical entity, i.e. countries, cities, states.

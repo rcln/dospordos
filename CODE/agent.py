@@ -166,17 +166,17 @@ class Network:
         if callbacks is None:
             self.model.fit(x_train, y_train,  # batch_size=batch_size,
                            epochs=epochs,
-                           verbose=0)  # could be 1
+                           verbose=1)  # could be 1
         else:
             self.model.fit(x_train, y_train,  # batch_size=batch_size,
                            epochs=epochs, callbacks=callbacks,
-                           verbose=0)  # could be 1
+                           verbose=1)  # could be 1
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,
                                  # steps_per_epoch=steps_per_epoch,
                                  # epochs=epochs,
-                                 verbose=0)
+                                 verbose=1)
 
     # Desc: (loss, accuracy)
     def evaluate(self, x_test, y_test):

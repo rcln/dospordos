@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import math as m
+import time
 import numpy as np
 # import spacy
 
@@ -15,6 +16,9 @@ import utils
 from regular_ne import list_organization, re_organization
 from utils import FeatureFilter
 from sklearn.externals import joblib
+import random
+import re
+re_clarify=re.compile("-.*")
 
 
 class Environment:
@@ -92,7 +96,8 @@ class Environment:
                 return 0, True
             # self.queues is a list including several queues such that each one returned back to a set of documents
             # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
-        for file in os.listdir(files):
+        dir_list=os.listdir(files)
+        for file in dir_list:
             with open(files + file, 'r') as f:
                 data_raw = f.read()
             data = json.loads(data_raw)
@@ -106,7 +111,7 @@ class Environment:
         initial_state = self.get_state(is_RE, pa_state=True)
         return initial_state, False
 
-    def step(self, action_tuple, *args, is_RE):
+    def step(self, action_tuple, *args, is_RE=0):
         #TODO PA: what is *args input here? why nothing work here?
         # Todo Answer: It was intended for a further version of the model. Where the actions
         # were capable of receiving arguments. An action would be select an specific queue
@@ -133,7 +138,7 @@ class Environment:
 
         return reward, next_state, done
 
-    def step_pa(self, action_tuple, *args, is_RE):
+    def step_pa(self, action_tuple, *args, is_RE=0):
 
         # action_query(*args)
         # action_current_db()
@@ -221,7 +226,7 @@ class Environment:
         set_uni_B = set()
         set_ani_B = set()
 
-        #print(self.current_name, golden_standard_db, ',', data_cur)
+        print(self.current_name, golden_standard_db, ',', data_cur)
 
         for y1 in golden_standard_db:
             set_uni_A.add(y1[0])
@@ -242,7 +247,7 @@ class Environment:
         # ToDo Note to Pegah, for the second database the one-hot of search engine has increased
         # utils.int_to_onehot(5, int(self.current_data['engine_search']), True)
 
-        if self.is_db_v2 == 1:
+        if self.is_db_v2:
             vec_engine = utils.int_to_onehot(5, int(self.current_data['engine_search']), True)
         else:
             vec_engine = utils.int_to_onehot(4, int(self.current_data['engine_search']), True)
@@ -315,7 +320,14 @@ class Environment:
             data_raw = f.read()
             tmp = json.loads(data_raw)
             grid = tmp['_default']
-        return grid
+            grid_= {}
+            for ii,item in grid.items():
+                if not item['institution']:
+                    continue
+                new_val=re_clarify.sub("",item['institution'])
+                item['institution']=new_val
+                grid_[ii]=item
+        return grid_
 
     def _get_golden_standard_db(self, id_person):
         if not os.path.exists(self.path_db):
@@ -454,6 +466,7 @@ class Environment:
 
     def _fill_info_snippet(self, text, ner_org, ner_gpe):
 
+        
         date = utils.get_date(text, True)
         # location = utils.get_location(text)
         if ner_gpe[2] >= ner_org[2]:
@@ -588,12 +601,9 @@ class Environment:
         return
 
     def is_similar_university(self, given_list, university_name):
-
-        for item in given_list:
-            if item == university_name:
-                #self.university_name_pa.add(item)
-                self.check_university_pa = True
-                return True
+        if university_name in given_list:
+            self.check_university_pa = True
+            return True
 
         return False
 

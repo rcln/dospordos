@@ -22,11 +22,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("training_script")
     parser.add_argument("DB", help="Path to training directory")
     parser.add_argument("ALG", help="Algorithm to execute", default="DQN")
-    parser.add_argument("is_RE", help="Use of Regular Expression", default="0")
+    parser.add_argument("is_RE", help="Use of Regular Expression", default=0)
     parser.add_argument("-is_test", help="The data is for testing", required=False,
                         default=0)
-    parser.add_argument("-is_db_v2", help="Is the second database", required=False,
-                        default=0)
+    parser.add_argument("-is_db_v2", help="Is the second database",
+                        required=False,
+                        action="store_true",
+                        default=False)
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
     parser.add_argument("-final_range", help="Final range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",
@@ -66,7 +68,7 @@ if __name__ == "__main__":
     env = Environment(path=path_data, path_weights=name+'_weights.h5', is_db_v2=is_db_v2)
 
     # ToDo Note to Pegah: for using the second data base
-    if int(is_db_v2) == 1:
+    if is_db_v2:
         agent = Agent(env, (29,))
     else:
         agent = Agent(env, (28,))
@@ -80,7 +82,7 @@ if __name__ == "__main__":
     elif final_range != "-1":
         list_users = list_users[:int(final_range)]
 
-    dqn = DQN(env, agent, list_users, is_RE=int(is_RE), logger=logger, name=name)
+    dqn = DQN(env, agent, list_users, is_RE=bool(is_RE), logger=logger, name=name)
 
     try:
         if is_test == "1":
