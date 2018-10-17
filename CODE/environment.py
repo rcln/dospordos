@@ -323,8 +323,9 @@ class Environment:
             grid_= {}
             for ii,item in grid.items():
                 if not item['institution']:
-                    continue
-                new_val=re_clarify.sub("",item['institution'])
+                    new_val="NA"
+                else:
+                    new_val=re_clarify.sub("",item['institution'])
                 item['institution']=new_val
                 grid_[ii]=item
         return grid_
