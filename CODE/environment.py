@@ -96,13 +96,13 @@ class Environment:
                 return 0, True
             # self.queues is a list including several queues such that each one returned back to a set of documents
             # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
-        dir_list=os.listdir(files)
+        dir_list=os.listdir(files)[:2]
         for file in dir_list:
             with open(files + file, 'r') as f:
                 data_raw = f.read()
             data = json.loads(data_raw)
             q = Queue()
-            for snippet in data[file.replace('.json', '')]:
+            for snippet in data[file.replace('.json', '')][:5]:
                 q.put(snippet)
             self.queues[len(self.queues)] = q
 
@@ -323,7 +323,7 @@ class Environment:
             grid_= {}
             for ii,item in grid.items():
                 if not item['institution']:
-                    new_val="NA"
+                    new_val=None
                 else:
                     new_val=re_clarify.sub("",item['institution'])
                 item['institution']=new_val
