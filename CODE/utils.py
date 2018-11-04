@@ -550,6 +550,7 @@ def get_location(text):
 
 def get_date(text, first=False):
     matches = re.findall(r'\d{4}', text)
+    matches = [y for y in matches if int(y)>2000 and int(y)<2018 ]
     if first and len(matches) > 0:
         return matches[0]
     #elif len(matches) == 0:

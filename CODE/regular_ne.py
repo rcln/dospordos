@@ -91,7 +91,7 @@ re.compile("FRE [0-9]+"),
 ]
 import time
 
-with open("../DATA/JRC-Organizations.normal.txt",'r') as fd:
+with open("../DATA/uninames_final.txt",'r') as fd:
     words_organizations=[]
     for line in fd.readlines():
         words_organizations.append(" "+line.strip().lower()+" ")

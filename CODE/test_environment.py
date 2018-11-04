@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
-from CODE.environment import Environment
-from CODE.agent import Agent
+from environment import Environment
+from agent import Agent
 import tensorflow as tf
 
 """

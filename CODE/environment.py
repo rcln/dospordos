@@ -33,6 +33,7 @@ class Environment:
         # self.path_count_vect = "../DATA/count_vectorizer.pkl"
         # self.path_tfidf_vect = "../DATA/tfidf_vectorizer.pkl"
         self.queues = {}
+        self.prev_state = ""
         self.current_queue = None
         self.current_text = ""
         self.current_name = ""
@@ -69,6 +70,30 @@ class Environment:
     def set_path_files(self, path):
         self.path_db = path
 
+    def get_all_snippets(self):
+
+        snippets=[]
+        for id_person in os.listdir(self.path):
+            files = self.path + str(id_person)+"/"
+
+            if not os.path.exists(files):
+                raise ValueError('path given doesn\'t exits:\n'+files)
+
+            dir_list=os.listdir(files)
+
+            for file in dir_list:
+                with open(files + file, 'r') as f:
+                    data_raw = f.read()
+                data = json.loads(data_raw)
+                for snippet in data[file.replace('.json', '')]:
+                    snippets.append(snippet['title'].lower())
+                    snippets.append(snippet['text'].lower())
+                
+        return snippets
+
+
+
+
     # start new episode
     # there are 4518 person names in train-db
     def reset(self, id_person, is_RE, is_pa=False):
@@ -96,20 +121,37 @@ class Environment:
                 return 0, True
             # self.queues is a list including several queues such that each one returned back to a set of documents
             # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
-        dir_list=os.listdir(files)[:2]
+        dir_list=os.listdir(files)
+        uni_name_gs=self.golden_standard_db[0][0].lower()
+
+        queues = {}
+        POS = False
         for file in dir_list:
             with open(files + file, 'r') as f:
                 data_raw = f.read()
             data = json.loads(data_raw)
             q = Queue()
-            for snippet in data[file.replace('.json', '')][:5]:
+            for snippet in data[file.replace('.json', '')]:
                 q.put(snippet)
-            self.queues[len(self.queues)] = q
+                if not POS:
+                    if uni_name_gs in snippet['text'].lower():
+                        POS = True
+                        print(snippet['text'])
+                    if uni_name_gs in snippet['title'].lower():
+                        POS = True
+                        print(snippet['title'])
+                
+            queues[len(self.queues)] = q
+        self.queues = queues
 
         self.current_data = self.queues[self.current_queue].get()
         # part of the input vector for our NN
         initial_state = self.get_state(is_RE, pa_state=True)
-        return initial_state, False
+
+        if POS:
+            return initial_state, False
+        else:
+            return 0, True
 
     def step(self, action_tuple, *args, is_RE=0):
         #TODO PA: what is *args input here? why nothing work here?
@@ -253,10 +295,12 @@ class Environment:
             vec_engine = utils.int_to_onehot(4, int(self.current_data['engine_search']), True)
 
         # it defines which query result is taken for this state. We have 7 query types in total.
-        state = utils.int_to_onehot(7, self.current_queue) \
-                + [self._normalize_snippet_number(float(self.current_data['number_snippet']))] \
-                + vec_engine \
-                + [commonU, commonA, common, len(A), len(B), total]
+        state = text
+        #state = utils.int_to_onehot(7, self.current_queue) \
+        #        + [self._normalize_snippet_number(float(self.current_data['number_snippet']))] \
+        #        + vec_engine \
+        #        + [commonU, commonA, common, len(A), len(B), total]
+        
         # We normalize the taken snippet number of query results w.r.t rest of query snippets results
         # PA: I do not know the reason yet.
         """ Answer: The number of the current snippet have values between 0 and approximately 40, 
@@ -289,11 +333,11 @@ class Environment:
         # values in memory; just compute them when is necessary and get the desired values
         # get the confidence score for NER with Spacy on GPE (ner_gpe = (GPE: Geopolitical entity, i.e. countries, cities, states)
 
-        for v in location_confident:
-            state.append(v[2])
+        #for v in location_confident:
+        #    state.append(v[2])
 
         # checks if the person name is valid or not.
-        state.append(self._valid_name())
+        #state.append(self._valid_name())
 
         # TODO PA: what is necessity of adding vect_tf?
         # Todo Answer: The status of the environment has information about the current status of the system standard
@@ -303,7 +347,7 @@ class Environment:
 
         # vect_tf = self.tf_vectorizer.transform([text]).toarray()
 
-        state = np.array([state])
+        #state = np.array([state])
         # state = np.concatenate([state, vect_tf], axis=1)
 
         return state
@@ -543,7 +587,7 @@ class Environment:
         for y_ in new_entities[1]:
             self.date_pa.add(y_)
             if y_ in years:
-                accuracy_curr += 0.25
+                accuracy_curr += 0.1
                 #self.date_pa.add(y_)
 
         if set(self.date_pa) == set(years):
@@ -551,26 +595,28 @@ class Environment:
 
         for y__ in previous_entities[1]:
             if y__ in years:
-                accuracy_prev += 0.25
+                accuracy_prev += 0.1
                 #self.date_pa.add(y__)
 
         # if university name is correct
         if self.is_similar_university(un_curr, university_name):
-            accuracy_curr += 0.5
+            accuracy_curr += 10.0
         elif self.how_university(un_curr, university_name):
-            accuracy_curr += 0.2
+            accuracy_curr += 10.0
             #self.university_name_pa = un_curr
 
         #if un_prev == university_name or self.is_similar_university(un_prev, university_name):
         if self.is_similar_university(un_prev, university_name):
-            accuracy_prev += 0.5
+            accuracy_prev += 10.0
         elif self.how_university(un_prev, university_name):
-            accuracy_prev += 0.2
+            accuracy_prev += 10.0
 
         reward = accuracy_curr - accuracy_prev
 
         #add a negative reward to each step
-        reward += -0.1
+        reward -= 0.1
+        #reward += -0.1*len(new_entities[0])
+        #reward += -0.1*len(new_entities[1])
 
         return reward
 
