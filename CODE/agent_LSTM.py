@@ -7,6 +7,8 @@ from keras.layers import Input, Dense, Dropout, LSTM, Embedding, Concatenate
 from keras.utils import plot_model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+import pickle
+import random
 
 
 class Agent:
@@ -123,25 +125,21 @@ class Agent:
 
 
 class Network:
-
-    def __init__(self, env, maxlen=50):
+    def __init__(self, env, maxlen=50,sample_size=300000,num_words=300000):
 
         texts = env.get_all_snippets()
-        self.tokenizer = Tokenizer(filters='!"#$%&()*+,-./:;<=>?@[\]^_`{|}~',oov_token='UNK')
-        
-        self.tokenizer.fit_on_texts(texts)
+        self.tokenizer = Tokenizer(num_words=num_words,filters='!"#$%&()*+,-./:;<=>?@[\]^_`{|}~',oov_token='UNK')
+    
+        self.tokenizer.fit_on_texts(random.sample(texts,300000))
         self.maxlen = maxlen
-        self.voca_size=len(self.tokenizer.word_index)
+        self.voca_size=num_words
         self.voca=self.tokenizer.word_index.keys()
-
 
         #self.tensor_shape = tensor_shape
         self.model = self._create_model(self.maxlen,self.voca_size)
         self.model.compile(loss=keras.losses.mean_squared_error,
                            optimizer=keras.optimizers.adam(),
                            metrics=['accuracy'])
-        # print(self.model.summary())
-
 
     #TODO PA: we can play with the NN model. The used model in the MIT paper is: linear, RELU, linear, RELU, linear
 
@@ -168,12 +166,12 @@ class Network:
     def _create_model(maxlen,voca_size):
         input_ = Input(shape=(maxlen,), dtype='int32')
         action_ = Input(shape=(6,))
-        embeddings_ = Embedding(voca_size, 128)(input_)
-        lstm_ = LSTM(128, dropout=0.2, recurrent_dropout=0.2)(embeddings_)
-        dense_1 = Dense(6)(action_)
+        embeddings_ = Embedding(voca_size, 64)(input_)
+        lstm_ = LSTM(64, dropout=0.2, recurrent_dropout=0.2)(embeddings_)
+        dense_1 = Dense(6)(lstm_)
         concat_ = Concatenate(axis=-1)([lstm_,dense_1])
         dense_2 = Dense(32)(concat_)
-        outputs_ = Dense(1, activation='linear')(dense_1)
+        outputs_ = Dense(1, activation='linear')(dense_2)
         return Model(inputs=[input_,action_], outputs=outputs_)
 
     def pad_sequence(text):
@@ -181,7 +179,6 @@ class Network:
         pad_sequences(x_train, maxlen=self.maxlen)
 
     def fit(self, texts_actions, y_train, epochs, batch_size, callbacks=None):
-
         texts,actions = texts_actions
         x_train = self.tokenizer.texts_to_sequences(texts)
         x_train = pad_sequences(x_train, maxlen=self.maxlen)
@@ -208,9 +205,11 @@ class Network:
 
     def save_weights(self, path):
         self.model.save_weights(filepath=path)
+        pickle.dump(self.tokenizer, open("tokenizer.pickle", "wb"))
 
     def load_weights(self, path):
         self.model.load_weights(filepath=path, by_name=False)
+        self.tokenizer = pickle.load(open("tokenizer.pickle", "rb"))
 
     def save_model(self, path):
         self.model.save(path)
@@ -220,6 +219,7 @@ class Network:
 
     def predict(self, text_action):
         text,action = text_action
+
 
         x_train = self.tokenizer.texts_to_sequences([text])
         x_train = pad_sequences(x_train, maxlen=self.maxlen)

@@ -169,7 +169,6 @@ class DQN:
             replay_memory.append(Sars(state, action_vector, reward, next_state))
         else:
             print("ADDING TO MEMORY...", " reward type", type(reward), " reward", reward)
-            del replay_memory[0]
             replay_memory.append(Sars(state, action_vector, reward, next_state))
         return replay_memory
 
@@ -266,12 +265,13 @@ class DQN:
                     # Q(s,a) computed using Q-learning method
                     Y_train.append(t)
 
+                print("BBBBBB")
                 Y_train = np.array(Y_train)
 
                 targetQN.model.set_weights(mainQN.model.get_weights())
 
                 mainQN.fit(X_train, Y_train, 1, len(X_train), callbacks=self.callbacks)
-                mainQN.save_weights(self.env.path_weights)
+                #mainQN.save_weights(self.env.path_weights)
 
                 state = next_state
                 counter += 1
@@ -299,7 +299,7 @@ class DQN:
         # train episodes
         with open('tmp_record', 'w') as f:
             f.write("0")
-        for us in self.list_users: #[35:36]:
+        for us in self.list_users[e_count:]:
             with open('tmp_record', 'r') as f:
                 if f.readline() == "1":
                     stop_train = True
@@ -329,14 +329,14 @@ class DQN:
                 self.logger.info('Reward:: ' + str(reward) + ", Step:: " + str(counter) + ", Episode:: " + str(e_count))
                 tmp_reward = tmp_reward + reward
 
-                replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
+                replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 100)
 
                 # Desc: Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
                 # this part is for learning the Q function using gradient descent
                 X_train = ([],[])
                 Y_train = []
 
-                tempo = self.get_random_elements(replay_memory, 100)
+                tempo = self.get_random_elements(replay_memory, 20)
 
                 for sample in tempo:
                     # if state is terminal
@@ -371,9 +371,6 @@ class DQN:
                     Y_train.append(t)
                     # Q(s,a) computed using the neural network
 
-
-
-                 
                 Y_train = np.array(Y_train)
 
 
@@ -394,6 +391,7 @@ class DQN:
         return
 
     def testing(self, eps):
+        print(">>>>>>",self.env.path_weights)
         if os.path.exists(self.env.path_weights):
             self.agent.network.load_weights(self.env.path_weights)
             print('LOADING WEIGHTS!')

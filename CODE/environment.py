@@ -88,7 +88,6 @@ class Environment:
                 for snippet in data[file.replace('.json', '')]:
                     snippets.append(snippet['title'].lower())
                     snippets.append(snippet['text'].lower())
-                
         return snippets
 
 
