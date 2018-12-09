@@ -299,7 +299,7 @@ class DQN:
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
         # Epochs
-        e_count = 358
+        e_count = 0
         stop_train = False
         # train episodes
         with open('tmp_record', 'w') as f:
@@ -331,6 +331,7 @@ class DQN:
                 # Observe reward and new state
                 reward, next_state, done = self.env.step_pa(self.agent.actions_to_take(action_vector), action_vector,
                                                             is_RE=self.is_RE)
+                print("<<>>o<<>>",state)
                 self.logger.info('Reward:: ' + str(reward) + ", Step:: " + str(counter) + ", Episode:: " + str(e_count))
                 tmp_reward = tmp_reward + reward
 
@@ -360,7 +361,7 @@ class DQN:
                             target_ar2.append( sample.s_prime[1])
                             target_ar3.append( action_vector[0])
                         target_ar=self.agent.network.predict([target_ar1,target_ar2,target_ar3])
-                        print("Action ",np.argmax(target_ar))
+                        print("Action ",np.argmax(target_ar),sample.s_prime[1])
 
                         if self.bad_franky(target_ar):
                             print("Target_ar that is in training is bad, target_ar", target_ar)

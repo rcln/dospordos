@@ -21,8 +21,15 @@ class Agent:
     def next_snippet(self):
         try:
             if self.env.queues[self.env.current_queue].qsize() == 0:
-                self.env.current_data = {"number_snippet": "1000000", "text": "", "cite": "", "search": "", "title": "",
-                                         "engine_search": "-1", "id_person": ""}
+              while True:
+                    self.change_queue()
+                    if self.env.queues[self.env.current_queue].qsize() != 0:
+                        self.env.que_changed_obligatory = True
+                        break
+                    else:
+                        print("*** all snippents from all queries have been searched ****")
+                        break
+                        #raise NameError('***QUEUE IS EMPTY***')
             else:
                 self.env.current_data = self.env.queues[self.env.current_queue].get(False)
         except KeyError:
@@ -62,7 +69,7 @@ class Agent:
             else:
                 self.env.current_queue = tmp
         else:
-            if queue >= len(self.env.queues):
+            if queue >= self.env.queues.qsize():
                 self.env.current_queue = 0
             else:
                 self.env.current_queue = queue
@@ -82,7 +89,7 @@ class Agent:
     def actions_to_take(self, action_activation_vector):
         num_l = np.nonzero(action_activation_vector)
         num = num_l[0][0]
-        res2=self.next_snippet_pa
+        res2=self.next_snippet
         res1=self.keep_current_db
         if action_activation_vector[-1]:
             res2=self.change_queue
@@ -173,9 +180,9 @@ class Network:
     def _create_model(maxlen,voca_size):
         input_ = Input(shape=(maxlen,), dtype='int32')
         action_ = Input(shape=(6,))
-        state_plus_ = Input(shape=(4,))
+        state_plus_ = Input(shape=(5,))
         embeddings_ = Embedding(voca_size, 64)(input_)
-        lstm_ = Bidirectional(LSTM(32, dropout=0.2, recurrent_dropout=0.2))(embeddings_)
+        lstm_ = Bidirectional(LSTM(64, dropout=0.2, recurrent_dropout=0.2))(embeddings_)
         dense_1 = Dense(32)(lstm_)
         concat_ = Concatenate(axis=-1)([dense_1,state_plus_])
         dense_2 = Dense(32)(concat_)

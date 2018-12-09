@@ -86,8 +86,9 @@ class Environment:
                     data_raw = f.read()
                 data = json.loads(data_raw)
                 for snippet in data[file.replace('.json', '')]:
-                    snippets.append(snippet['title'].lower())
-                    snippets.append(snippet['text'].lower())
+                    if len(snippet['title'].strip())>0 and len(snippet['text'].strip())>0:
+                        snippets.append(snippet['title'].lower())
+                        snippets.append(snippet['text'].lower())
         return snippets
 
 
@@ -131,16 +132,19 @@ class Environment:
             data = json.loads(data_raw)
             q = Queue()
             for snippet in data[file.replace('.json', '')]:
+                if not (snippet['text'] or snippet['title']):
+                    continue
+              
+                if len(snippet['text'].strip())==0 or len(snippet['title'].strip())==0:
+                    continue
                 q.put(snippet)
                 if not POS:
                     if uni_name_gs in snippet['text'].lower():
                         POS = True
-                        print(">>>>>",snippet['text'], file)
                     if uni_name_gs in snippet['title'].lower():
                         POS = True
-                        print(">>>>",snippet['title'], file)
                 
-            queues[len(self.queues)] = q
+            queues[len(queues)] = q
         self.queues = queues
 
         self.current_data = self.queues[self.current_queue].get()
@@ -148,7 +152,6 @@ class Environment:
         initial_state = self.get_state(is_RE, pa_state=True)
 
         if POS:
-            print(">>>>>>>",uni_name_gs)
             return initial_state, False
         else:
             return 0, True
@@ -231,6 +234,8 @@ class Environment:
                 And a huge vector for vect_tf !!
         """
         # state = []
+        
+        print("@@@@@@@@@@@@@@@@@@@",self.current_data,self.current_queue)
         self.current_text = self.current_data['title']+" "+self.current_data['text']
         text = self.current_text
 
@@ -299,7 +304,7 @@ class Environment:
             q=0
         else:
             q=self.current_queue
-        state_plus = [len(self.current_db),len(unis),len(dates),q]
+        state_plus = [len(self.current_db),len(unis),len(dates),q,self.queues[q].qsize()]
         #state = utils.int_to_onehot(7, self.current_queue) \
         #        + [self._normalize_snippet_number(float(self.current_data['number_snippet']))] \
         #        + vec_engine \
