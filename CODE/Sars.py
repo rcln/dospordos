@@ -47,19 +47,25 @@ class Sars:
         # However, the function is deprecated, needs to be updated because the shape of get_random_action_vector
         # changed from (7,)  to (1,7)
 
-        A = np.random.uniform(0.0, 10.0)
-        B = np.random.uniform(0.0, 10.0)
-        s_prime = np.concatenate((self.get_random_action_vector(7),
-                                  np.array([np.random.uniform(0.0, 1.0)]),
-                                  self.get_random_action_vector(4),
-                                  np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0),
-                                            np.random.uniform(0.0, 1.0)]),
-                                  np.array((A, B, A + B)),
-                                  np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
-                                  np.array([np.random.randint(0, 2)])
-                                  , np.zeros(shape=(27386, ))
-                                  ))
-        ll= list([random.choice(voca) for i in range(25)])
+        #A = np.random.uniform(0.0, 10.0)
+        #B = np.random.uniform(0.0, 10.0)
+        #s_prime = np.concatenate((self.get_random_action_vector(7),
+        #                          np.array([np.random.uniform(0.0, 1.0)]),
+        #                          self.get_random_action_vector(4),
+        #                          np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0),
+        #                                    np.random.uniform(0.0, 1.0)]),
+        #                          np.array((A, B, A + B)),
+        #                          np.array([np.random.uniform(0.0, 1.0), np.random.uniform(0.0, 1.0)]),
+        #                          np.array([np.random.randint(0, 2)])
+        #                          , np.zeros(shape=(27386, ))
+        #                          )
+        #
+        s= ([random.choice(voca) for i in
+range(25)],[random.choice(range(10)),random.choice(range(10)),random.choice(range(10)), random.choice(range(5))])
+
+
+        ll= ([random.choice(voca) for i in
+range(25)],[random.choice(range(10)),random.choice(range(10)),random.choice(range(10)), random.choice(range(5))])
 
         return s, a, r, ll
 

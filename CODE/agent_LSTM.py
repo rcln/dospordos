@@ -3,7 +3,7 @@ import numpy as np
 import keras
 from keras.callbacks import Callback
 from keras.models import Model
-from keras.layers import Input, Dense, Dropout, LSTM, Embedding, Concatenate
+from keras.layers import Input, Dense, Dropout, LSTM, Embedding, Concatenate, Bidirectional
 from keras.utils import plot_model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
@@ -80,11 +80,18 @@ class Agent:
         pass
 
     def actions_to_take(self, action_activation_vector):
-        num_l = np.nonzero(action_activation_vector[0])
+        num_l = np.nonzero(action_activation_vector)
         num = num_l[0][0]
-        actions_db = (self.delete_current_db, self.add_current_db, self.keep_current_db)
-        actions_grid = (self.next_snippet, self.change_queue)
-        return actions_grid[int(num/3)], actions_db[num % 3]
+        res2=self.next_snippet_pa
+        res1=self.keep_current_db
+        if action_activation_vector[-1]:
+            res2=self.change_queue
+        elif action_activation_vector[0]:
+            res1=self.delete_current_db
+        elif action_activation_vector[3]:
+            res1=self.add_current_db
+
+        return res1, res2
 
     # ToDo Message to Pegah: I had to comment this just to improve the time execution a little bit. But is the same
     # def actions_to_take_pa(self, action_activation_vector):
@@ -125,12 +132,12 @@ class Agent:
 
 
 class Network:
-    def __init__(self, env, maxlen=50,sample_size=300000,num_words=300000):
+    def __init__(self, env, maxlen=50,sample_size=300000,num_words=100000):
 
         texts = env.get_all_snippets()
         self.tokenizer = Tokenizer(num_words=num_words,filters='!"#$%&()*+,-./:;<=>?@[\]^_`{|}~',oov_token='UNK')
     
-        self.tokenizer.fit_on_texts(random.sample(texts,300000))
+        self.tokenizer.fit_on_texts(random.sample(texts,sample_size))
         self.maxlen = maxlen
         self.voca_size=num_words
         self.voca=self.tokenizer.word_index.keys()
@@ -166,30 +173,33 @@ class Network:
     def _create_model(maxlen,voca_size):
         input_ = Input(shape=(maxlen,), dtype='int32')
         action_ = Input(shape=(6,))
+        state_plus_ = Input(shape=(4,))
         embeddings_ = Embedding(voca_size, 64)(input_)
-        lstm_ = LSTM(64, dropout=0.2, recurrent_dropout=0.2)(embeddings_)
-        dense_1 = Dense(6)(lstm_)
-        concat_ = Concatenate(axis=-1)([lstm_,dense_1])
+        lstm_ = Bidirectional(LSTM(32, dropout=0.2, recurrent_dropout=0.2))(embeddings_)
+        dense_1 = Dense(32)(lstm_)
+        concat_ = Concatenate(axis=-1)([dense_1,state_plus_])
         dense_2 = Dense(32)(concat_)
-        outputs_ = Dense(1, activation='linear')(dense_2)
-        return Model(inputs=[input_,action_], outputs=outputs_)
+        concat_2 = Concatenate(axis=-1)([dense_2,action_])
+        dense_3 = Dense(16)(concat_2)
+        outputs_ = Dense(1, activation='linear')(dense_3)
+        return Model(inputs=[input_,state_plus_,action_], outputs=outputs_)
 
     def pad_sequence(text):
         x_train = self.tokenizer.text_to_sequences([text])
         pad_sequences(x_train, maxlen=self.maxlen)
 
     def fit(self, texts_actions, y_train, epochs, batch_size, callbacks=None):
-        texts,actions = texts_actions
+        texts,state_plus,actions = texts_actions
         x_train = self.tokenizer.texts_to_sequences(texts)
         x_train = pad_sequences(x_train, maxlen=self.maxlen)
 
 
         if callbacks is None:
-            self.model.fit([np.array(x_train),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
+            self.model.fit([np.array(x_train),np.array(state_plus),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
                            epochs=epochs,
                            verbose=1)  # could be 1
         else:
-            self.model.fit([np.array(x_train),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
+            self.model.fit([np.array(x_train),np.array(state_plus),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
                            epochs=epochs, callbacks=None,
                            verbose=1)  # could be 1
 
@@ -218,13 +228,12 @@ class Network:
         keras.models.load_model(path)
 
     def predict(self, text_action):
-        text,action = text_action
+        text,state_plus, action = text_action
 
-
-        x_train = self.tokenizer.texts_to_sequences([text])
+        x_train = self.tokenizer.texts_to_sequences(text)
         x_train = pad_sequences(x_train, maxlen=self.maxlen)
 
-        return self.model.predict([x_train,action])
+        return self.model.predict([np.array(x_train),np.array(state_plus),np.array(action)])
 
 
 class EarlyStopByLossVal(Callback):

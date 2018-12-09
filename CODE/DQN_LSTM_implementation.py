@@ -108,7 +108,7 @@ class DQN:
                     continue
                 for x in range(0, 100):  # TODO PA: why 30 times?. Answer it was for debugging purpose
                     a = Sars.get_random_action_vector_pa(6)
-                    r, s_prime, done = self.env.step_pa(self.agent.actions_to_take_pa(a), a, is_RE=self.is_RE)
+                    r, s_prime, done = self.env.step_pa(self.agent.actions_to_take(a), a, is_RE=self.is_RE)
                     replay_memory_ar.append(Sars(s, a, r,s_prime, random=False))
                     s = s_prime
                 print('gold standard', self.env.current_name, self.env.golden_standard_db)
@@ -127,15 +127,20 @@ class DQN:
         return action_vector
 
     def get_max_action(self, state, network):
-        arg_max = []
+        values1 = []
+        values2 = []
+        values3 = []
+        values = []
         for i in range(6):
             action_vector = self.generate_action(i, 6)
-            in_vector = (state, action_vector)
-            arg_max.append(network.predict(in_vector))
-        if self.bad_franky(arg_max):
+            values1.append(state[0])
+            values2.append(state[1])
+            values3.append(action_vector[0])
+        values=network.predict((values1,values2,values3))
+        if self.bad_franky(values):
             print("The project is in danger :(, out_vector ", arg_max)
         action_vector = [0] * 6
-        action_vector[arg_max.index(max(arg_max))] = 1
+        action_vector[np.argmax(values)] = 1
         return action_vector
 
     def replay_memory(self, size):
@@ -222,7 +227,7 @@ class DQN:
                 # action_vector = self.get_action_with_probability(state, self.agent.network, eps)
 
                 # Observe reward and new state
-                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
+                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take(action_vector), action_vector,
                                                             is_RE=self.is_RE)
 
                 self.logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
@@ -248,7 +253,7 @@ class DQN:
                     else:
                         action_vector = self.get_max_action(sample.s, mainQN)
                         t_vector = np.concatenate((sample.s_prime, np.array([action_vector])), axis=1)
-                        t = sample.r + gamma * targetQN.predict(t_vector)[0][0]
+                        t = sample.r + gamma * targetQN.predict(t_vector)
 
                     if not type(sample.a) is list:
                         tempo = (sample.a).tolist()
@@ -294,7 +299,7 @@ class DQN:
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
         # Epochs
-        e_count = 0
+        e_count = 358
         stop_train = False
         # train episodes
         with open('tmp_record', 'w') as f:
@@ -324,7 +329,7 @@ class DQN:
                 action_vector = self.get_action_with_probability(state, self.agent.network, eps)
 
                 # Observe reward and new state
-                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
+                reward, next_state, done = self.env.step_pa(self.agent.actions_to_take(action_vector), action_vector,
                                                             is_RE=self.is_RE)
                 self.logger.info('Reward:: ' + str(reward) + ", Step:: " + str(counter) + ", Episode:: " + str(e_count))
                 tmp_reward = tmp_reward + reward
@@ -333,7 +338,7 @@ class DQN:
 
                 # Desc: Q[s,a] = Q[s,a] + learning_rate*(reward + discount* max_a'(Q[s',a']) - Q[s,a])
                 # this part is for learning the Q function using gradient descent
-                X_train = ([],[])
+                X_train = ([],[],[])
                 Y_train = []
 
                 tempo = self.get_random_elements(replay_memory, 20)
@@ -346,26 +351,30 @@ class DQN:
                         t = sample.r
                         print(" GETTING REWARD JUST FROM SAMPLE.R  t=", t, "t. shape")
                     else:
-                        target_ar = []
+                        target_ar1 = []
+                        target_ar2 = []
+                        target_ar3 = []
                         for i in range(6):
                             action_vector = self.generate_action(i, 6)
-                            t_vector = (sample.s_prime, action_vector)
-                            target_ar.append(self.agent.network.predict(t_vector))
+                            target_ar1.append( sample.s_prime[0])
+                            target_ar2.append( sample.s_prime[1])
+                            target_ar3.append( action_vector[0])
+                        target_ar=self.agent.network.predict([target_ar1,target_ar2,target_ar3])
+                        print("Action ",np.argmax(target_ar))
 
                         if self.bad_franky(target_ar):
                             print("Target_ar that is in training is bad, target_ar", target_ar)
 
-                        t = sample.r + gamma * max(target_ar)[0][0]
+                        t = sample.r + gamma * np.max(target_ar)
 
                     if not type(sample.a) is list:
                         tempo = (sample.a).tolist()
                     else:
                         tempo = sample.a
 
-                    x_train = (sample.s, tempo)
-
-                    X_train[0].append(x_train[0])
-                    X_train[1].append(x_train[1])
+                    X_train[0].append(sample.s[0])
+                    X_train[1].append(sample.s[1])
+                    X_train[2].append(tempo)
 
                     # Q(s,a) computed using Q-learning method
                     Y_train.append(t)
@@ -427,9 +436,9 @@ class DQN:
                 return counter
 
             """Select an action with an epsilon probability"""
-            action_vector = self.get_action_with_probability(state, self.agent.network, eps)
+            action_vector = self.get_action_with_probability(state,self.agent.network, 0.0)
             # Observe reward and new state
-            reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
+            reward, next_state, done = self.env.step_pa(self.agent.actions_to_take(action_vector), action_vector,
                                                         is_RE=self.is_RE)
 
             reward_list.append((reward+reward_list[-1]))

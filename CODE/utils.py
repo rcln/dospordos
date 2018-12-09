@@ -476,6 +476,7 @@ def get_confidence_RE(text):
 
 nlp = spacy.load('en_core_web_sm')
 def get_confidence(text):
+    return
     #TODO PA: Spacy depends on capital letters, we should find a way to solve this problem, thats the reason that all NEs can't be extracted.
     #TODO PA: sometimes GPE or ORG are empty or they have a very low confidence. This is again depended on the supported texts gathered by the queries.
 

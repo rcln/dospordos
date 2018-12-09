@@ -97,7 +97,16 @@ with open("../DATA/uninames_final.txt",'r') as fd:
         words_organizations.append(" "+line.strip().lower()+" ")
         words_organizations.append(" "+line.strip().lower())
         words_organizations.append(line.strip().lower()+" ")
-    
+
+
+with open("../DATA/gs_instiutions.txt",'r') as fd:
+    words_organizations=[]
+    for line in fd.readlines():
+        words_organizations.append(" "+line.strip().lower()+" ")
+        words_organizations.append(" "+line.strip().lower())
+        words_organizations.append(line.strip().lower()+" ")
+
+
 
 def re_organization(text):
     for r_o in reg_org:
@@ -113,5 +122,7 @@ def list_organization(text):
     for w in words_organizations:
         if w in text:
             result.append(w.strip())
+            print(w.strip())
+            print(text)
 
     return result

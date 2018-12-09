@@ -135,10 +135,10 @@ class Environment:
                 if not POS:
                     if uni_name_gs in snippet['text'].lower():
                         POS = True
-                        print(snippet['text'])
+                        print(">>>>>",snippet['text'], file)
                     if uni_name_gs in snippet['title'].lower():
                         POS = True
-                        print(snippet['title'])
+                        print(">>>>",snippet['title'], file)
                 
             queues[len(self.queues)] = q
         self.queues = queues
@@ -148,6 +148,7 @@ class Environment:
         initial_state = self.get_state(is_RE, pa_state=True)
 
         if POS:
+            print(">>>>>>>",uni_name_gs)
             return initial_state, False
         else:
             return 0, True
@@ -167,9 +168,6 @@ class Environment:
         # action_query(*args)
         # action_current_db()
 
-        action_tuple[0]()
-        action_tuple[1]()
-
         next_state = self.get_state(is_RE)
 
         # Todo Find the optimal reward
@@ -181,8 +179,9 @@ class Environment:
 
     def step_pa(self, action_tuple, *args, is_RE=0):
 
-        # action_query(*args)
-        # action_current_db()
+        action_tuple[0]()
+        action_tuple[1]()
+
 
         previous_entities = self.info_snippet
         next_state = self.get_state(is_RE=is_RE, pa_state=True)
@@ -232,7 +231,8 @@ class Environment:
                 And a huge vector for vect_tf !!
         """
         # state = []
-        text = self.current_text = self.current_data['title']+" "+self.current_data['text']
+        self.current_text = self.current_data['title']+" "+self.current_data['text']
+        text = self.current_text
 
         # text = self.current_text
         self.info_snippet = []
@@ -259,42 +259,47 @@ class Environment:
         data_cur_dic = {'unis': unis, 'dates': dates}
 
         # university name and date coming from goal standards (fernando database)
-        A = set(golden_standard_db)
+        #A = set(golden_standard_db)
         # B includes date and location (ORG and GPE) extracted from the given snippet
-        B = set(data_cur)
-        set_uni_A = set()
-        set_ani_A = set()
-        set_uni_B = set()
-        set_ani_B = set()
+        #B = set(data_cur)
+        #set_uni_A = set()
+        #set_ani_A = set()
+        #set_uni_B = set()
+        #set_ani_B = set()
 
-        print(self.current_name, golden_standard_db, ',', data_cur)
+        print(self.current_name, golden_standard_db, ',', data_cur, self.current_db)
 
-        for y1 in golden_standard_db:
-            set_uni_A.add(y1[0])
-            set_ani_A.add(y1[1])
-            set_ani_A.add(y1[2])
+        #for y1 in golden_standard_db:
+        #    set_uni_A.add(y1[0])
+        #    set_ani_A.add(y1[1])
+        #    set_ani_A.add(y1[2])
 
-        for y2 in data_cur_dic['dates']:
-            set_ani_B.add(y2)
+        #for y2 in data_cur_dic['dates']:
+        #    set_ani_B.add(y2)
 
-        for y3 in data_cur_dic['unis']:
-            set_uni_B.add(y3)
+        #for y3 in data_cur_dic['unis']:
+        #    set_uni_B.add(y3)
 
-        total = len(A.union(B))
-        common = len(A.intersection(B))
-        commonU = len(set_uni_A.intersection(set_uni_B))
-        commonA = len(set_ani_A.intersection(set_ani_B))
+        #total = len(A.union(B))
+        #common = len(A.intersection(B))
+        #commonU = len(set_uni_A.intersection(set_uni_B))
+        #commonA = len(set_ani_A.intersection(set_ani_B))
 
         # ToDo Note to Pegah, for the second database the one-hot of search engine has increased
         # utils.int_to_onehot(5, int(self.current_data['engine_search']), True)
 
-        if self.is_db_v2:
-            vec_engine = utils.int_to_onehot(5, int(self.current_data['engine_search']), True)
-        else:
-            vec_engine = utils.int_to_onehot(4, int(self.current_data['engine_search']), True)
+        #if self.is_db_v2:
+        #    vec_engine = utils.int_to_onehot(5, int(self.current_data['engine_search']), True)
+        #else:
+        #    vec_engine = utils.int_to_onehot(4, int(self.current_data['engine_search']), True)
 
         # it defines which query result is taken for this state. We have 7 query types in total.
         state = text
+        if not self.current_queue:
+            q=0
+        else:
+            q=self.current_queue
+        state_plus = [len(self.current_db),len(unis),len(dates),q]
         #state = utils.int_to_onehot(7, self.current_queue) \
         #        + [self._normalize_snippet_number(float(self.current_data['number_snippet']))] \
         #        + vec_engine \
@@ -349,7 +354,7 @@ class Environment:
         #state = np.array([state])
         # state = np.concatenate([state, vect_tf], axis=1)
 
-        return state
+        return state,state_plus
 
     def _valid_name(self):
         filter = FeatureFilter(self.current_name)
@@ -368,7 +373,7 @@ class Environment:
                 if not item['institution']:
                     new_val=None
                 else:
-                    new_val=re_clarify.sub("",item['institution'])
+                    new_val=re_clarify.sub("",item['institution']).strip()
                 item['institution']=new_val
                 grid_[ii]=item
         return grid_
@@ -527,9 +532,9 @@ class Environment:
         date = utils.get_date(text, False)
         location = []
 
-        ner_org = ners[0] # organisation information (a list)
-        ner_gpe = ners[1] # geographical position information (a list)
-        ner_person_name = ners[2]
+        #ner_org = ners[0] # organisation information (a list)
+        #ner_gpe = ners[1] # geographical position information (a list)
+        #ner_person_name = ners[2]
         #ner_date = ners[3]
 
         """use gazettees from Jorge work"""
@@ -537,20 +542,20 @@ class Environment:
         for item in Gazettee_university:
             location.append(item)
 
-        location.append(str(ner_gpe[0]))
-        location.append(str(ner_org[0]))
+        #location.append(str(ner_gpe[0]))
+        #location.append(str(ner_org[0]))
 
         """use RE check"""
-        if is_RE:
-            filtered_ne = set()
-            for item in location:
-                if re_organization(item.title()) is not None:
-                    filtered_ne.add(item)
+        #if is_RE:
+        #    filtered_ne = set()
+        #    for item in location:
+        #        if re_organization(item.title()) is not None:
+        #            filtered_ne.add(item)
 
-            location = list(filtered_ne)
+        #    location = list(filtered_ne)
 
-        #print("ENTITIES FOUND", location, date, " ... FOR the text... ", text)
-        return [list(set(location)), date, str(ner_person_name[0])] #, str(ner_date[0])
+        print("ENTITIES FOUND", location, date)
+        return [list(set(location)), date, None] #, str(ner_date[0])
 
     def _normalize_snippet_number(self, snippet_number):
         try:
@@ -599,16 +604,16 @@ class Environment:
 
         # if university name is correct
         if self.is_similar_university(un_curr, university_name):
-            accuracy_curr += 10.0
+            accuracy_curr += 1.0
         elif self.how_university(un_curr, university_name):
-            accuracy_curr += 10.0
+            accuracy_curr += 1.0
             #self.university_name_pa = un_curr
 
         #if un_prev == university_name or self.is_similar_university(un_prev, university_name):
         if self.is_similar_university(un_prev, university_name):
-            accuracy_prev += 10.0
+            accuracy_prev += 1.0
         elif self.how_university(un_prev, university_name):
-            accuracy_prev += 10.0
+            accuracy_prev += 1.0
 
         reward = accuracy_curr - accuracy_prev
 
