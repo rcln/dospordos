@@ -299,7 +299,7 @@ class DQN:
         # Desc: loading replayed memory
         replay_memory = self.replay_memory(training_replay_size)
         # Epochs
-        e_count = 0
+        e_count = 1260 
         stop_train = False
         # train episodes
         with open('tmp_record', 'w') as f:
