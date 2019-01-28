@@ -130,6 +130,7 @@ class DQN:
         arg_max = []
         for i in range(6):
             action_vector = self.generate_action(i, 6)
+            print('******************state', type(state), state, ' action_vector', action_vector)
             in_vector = np.concatenate([state, action_vector], axis=1)
             arg_max.append(network.predict(in_vector))
         if self.bad_franky(arg_max):
@@ -159,6 +160,7 @@ class DQN:
             # action_vector = Sars.get_random_action_vector(6)[0]
         else:
             # Desc: a = argmaxQ(s,a)
+            print('++++++state before sending to get_max', state)
             action_vector = self.get_max_action(state, networkQN)
 
         return action_vector
@@ -309,6 +311,7 @@ class DQN:
                 return
             # reset episode with new user and get initial state
             state, err = self.env.reset(us, is_RE=self.is_RE)
+            print ('------------------state output of env_reset', state)
             if err:
                 continue
             done = False

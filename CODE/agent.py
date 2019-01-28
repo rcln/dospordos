@@ -110,6 +110,7 @@ class Agent:
         # return action_activation_vector
 
     def actions_to_take_pa(self, action_activation_vector):
+        print("action activation", action_activation_vector[-1])
         if action_activation_vector[-1]:
             self.change_queue()
         else:

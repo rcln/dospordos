@@ -152,8 +152,10 @@ class Environment:
         initial_state = self.get_state(is_RE, pa_state=True)
 
         if POS:
+            print ('return initial state')
             return initial_state, False
         else:
+            print ('return 0')
             return 0, True
 
     def step(self, action_tuple, *args, is_RE=0):
@@ -182,8 +184,10 @@ class Environment:
 
     def step_pa(self, action_tuple, *args, is_RE=0):
 
-        action_tuple[0]()
-        action_tuple[1]()
+        print("**************", action_tuple)
+
+        # action_tuple[0]()
+        # action_tuple[1]()
 
 
         previous_entities = self.info_snippet
