@@ -69,9 +69,9 @@ if __name__ == "__main__":
 
     # ToDo Note to Pegah: for using the second data base
     if is_db_v2:
-        agent = Agent(env, (29,))
+        agent = Agent(env, (26,))
     else:
-        agent = Agent(env, (28,))
+        agent = Agent(env, (25,))
     # list_users = sorted(list(map(int, os.listdir(env.path))))
     list_users = os.listdir(env.path)
 

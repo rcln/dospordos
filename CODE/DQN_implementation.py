@@ -130,7 +130,9 @@ class DQN:
         arg_max = []
         for i in range(6):
             action_vector = self.generate_action(i, 6)
-            in_vector = np.concatenate([state, action_vector], axis=1)
+            print(state.shape)
+            print(action_vector.shape)
+            in_vector = np.concatenate([np.array(state), np.array(action_vector)], axis=1)
             arg_max.append(network.predict(in_vector))
         if self.bad_franky(arg_max):
             print("The project is in danger :(, out_vector ", arg_max)
@@ -341,15 +343,16 @@ class DQN:
 
                 for sample in tempo:
                     # if state is terminal
-                    if self.env._check_grid() or (
-                            sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
+                    if self.env._check_grid():
+                        #or (
+                        #    sample.s_prime[0, 15] == sample.s_prime[0, 16] == sample.s_prime[0, 17]):
                         t = np.array([sample.r])
                         print(" GETTING REWARD JUST FROM SAMPLE.R  t=", t, "t. shape")
                     else:
                         target_ar = []
                         for i in range(6):
                             action_vector = self.generate_action(i, 6)
-                            t_vector = np.concatenate((sample.s_prime, action_vector), axis=1)
+                            t_vector = np.concatenate((sample.s_prime, np.array(action_vector)), axis=1)
                             target_ar.append(self.agent.network.predict(t_vector))
 
                         if self.bad_franky(target_ar):
