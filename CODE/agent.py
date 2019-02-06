@@ -9,7 +9,7 @@ from keras.utils import plot_model
 
 class Agent:
 
-    def __init__(self, env, shape=(28,)):
+    def __init__(self, env, shape=(26,)):
         self.env = env
         self.network = Network(shape)
 

@@ -14,9 +14,9 @@ from random import randint
 
 from Baselines import Baselines
 from Evaluation import Evaluation
-from environment import Environment
+from environment_LSTM import Environment
 from agent_LSTM import Agent, Network
-from Sars import Sars
+from Sars_LSTM import Sars
 from sklearn.externals import joblib
 
 path_history = "../DATA/history"
@@ -384,7 +384,7 @@ class DQN:
                 Y_train = np.array(Y_train)
 
 
-                self.agent.network.fit(X_train, Y_train, 1, len(X_train), callbacks=self.callbacks)
+                self.agent.network.fit(X_train, Y_train, 100, len(X_train), callbacks=self.callbacks)
                 state = next_state
 
                 counter += 1

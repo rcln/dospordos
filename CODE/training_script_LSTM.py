@@ -6,7 +6,7 @@ import argparse
 import logging
 
 from DQN_LSTM_implementation import DQN
-from environment import Environment
+from environment_LSTM import Environment
 from agent_LSTM import Agent
 
 # ToDo Note to Pegah
