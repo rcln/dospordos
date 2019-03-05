@@ -5,7 +5,7 @@ import sys
 import argparse
 import logging
 
-from DQN_implementation import DQN
+from DQN_implementation import DQN_NN
 from environment import Environment
 from agent import Agent
 
@@ -69,11 +69,12 @@ if __name__ == "__main__":
 
     # ToDo Note to Pegah: for using the second data base
     if is_db_v2:
-        agent = Agent(env, (26,))
-    else:
         agent = Agent(env, (25,))
+    else:
+        agent = Agent(env, (24,))
     # list_users = sorted(list(map(int, os.listdir(env.path))))
     list_users = os.listdir(env.path)
+
 
     if initial_range != "-1" and final_range != "-1":
         list_users = list_users[int(initial_range):int(final_range)]
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     elif final_range != "-1":
         list_users = list_users[:int(final_range)]
 
-    dqn = DQN(env, agent, list_users, is_RE=bool(is_RE), logger=logger, name=name)
+    dqn = DQN_NN(env, agent, list_users, is_RE=bool(is_RE), logger=logger, name=name)
 
     try:
         if is_test == "1":

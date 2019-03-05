@@ -20,33 +20,33 @@ class Agent:
     # grid functions
     def next_snippet(self):
         try:
-            if self.env.queues[self.env.current_queue].qsize() == 0:
+            if self.env.env_core.queues[self.env.env_core.current_queue].qsize() == 0:
               while True:
                     self.change_queue()
-                    if self.env.queues[self.env.current_queue].qsize() != 0:
-                        self.env.que_changed_obligatory = True
+                    if self.env.env_core.queues[self.env.env_core.current_queue].qsize() != 0:
+                        self.env.env_core.que_changed_obligatory = True
                         break
                     else:
                         print("*** all snippents from all queries have been searched ****")
                         break
                         #raise NameError('***QUEUE IS EMPTY***')
             else:
-                self.env.current_data = self.env.queues[self.env.current_queue].get(False)
+                self.env.env_core.current_data = self.env.env_core.queues[self.env.env_core.current_queue].get(False)
         except KeyError:
-            print("ERROR in next_snippet\n current queue: ", self.env.current_queue)
-            print("Queues ", self.env.queues)
-            print("DATA ", self.env.current_data)
+            print("ERROR in next_snippet\n current queue: ", self.env.env_core.current_queue)
+            print("Queues ", self.env.env_core.queues)
+            print("DATA ", self.env.env_core.current_data)
 
     def next_snippet_pa(self):
 
         try:
-            if self.env.queues[self.env.current_queue].qsize() == 0:
+            if self.env.env_core.queues[self.env.env_core.current_queue].qsize() == 0:
                 # TODO PA: I should think, what to do if a queue of a query for a given person_id is empty, should we stop the whole
                 # process or use another query randomly, but this means choose an action as a query obligatory!!
                 while True:
                     self.change_queue()
-                    if self.env.queues[self.env.current_queue].qsize() != 0:
-                        self.env.que_changed_obligatory = True
+                    if self.env.env_core.queues[self.env.env_core.current_queue].qsize() != 0:
+                        self.env.env_core.que_changed_obligatory = True
                         break
                     else:
                         print("*** all snippents from all queries have been searched ****")
@@ -55,40 +55,38 @@ class Agent:
 
             else:
                 # this is equal to poping a snippet from the current query
-                self.env.current_data = self.env.queues[self.env.current_queue].get(False)
+                self.env.env_core.current_data = self.env.env_core.queues[self.env.env_core.current_queue].get(False)
         except KeyError:
-            print("ERROR in next_snippet\n current queue: ", self.env.current_queue)
-            print("Queues ", self.env.queues)
-            print("DATA ", self.env.current_data)
+            print("ERROR in next_snippet\n current queue: ", self.env.env_core.current_queue)
+            print("Queues ", self.env.env_core.queues)
+            print("DATA ", self.env.env_core.current_data)
 
     def change_queue(self, queue=None):
         if queue is None:
-            tmp = self.env.current_queue + 1
-            if tmp >= len(self.env.queues):
-                self.env.current_queue = 0
+            tmp = self.env.env_core.current_queue + 1
+            if tmp >= len(self.env.env_core.queues):
+                self.env.env_core.current_queue = 0
             else:
-                self.env.current_queue = tmp
+                self.env.env_core.current_queue = tmp
         else:
-            if queue >= self.env.queues.qsize():
-                self.env.current_queue = 0
+            if queue >= self.env.env_core.queues.qsize():
+                self.env.env_core.current_queue = 0
             else:
-                self.env.current_queue = queue
+                self.env.env_core.current_queue = queue
 
     # db functions
     def delete_current_db(self, i=None):
-        if len(self.env.current_db) > 0:
-            self.env.current_db.pop()
+        if len(self.env.env_core.current_db) > 0:
+            self.env.env_core.current_db.pop()
 
     def add_current_db(self, i=None):
-        self.env.current_db.append(self.env.info_snippet[0])
+        self.env.env_core.current_db.append(self.env.env_core.info_snippet[0])
 
     @staticmethod
     def keep_current_db():
         pass
 
     def actions_to_take(self, action_activation_vector):
-        num_l = np.nonzero(action_activation_vector)
-        num = num_l[0][0]
         res2=self.next_snippet
         res1=self.keep_current_db
         if action_activation_vector[-1]:
@@ -141,7 +139,7 @@ class Agent:
 class Network:
     def __init__(self, env, maxlen=50,sample_size=300000,num_words=100000):
 
-        texts = env.get_all_snippets()
+        texts = env.env_core.get_all_snippets()
         self.tokenizer = Tokenizer(num_words=num_words,filters='!"#$%&()*+,-./:;<=>?@[\]^_`{|}~',oov_token='UNK')
     
         self.tokenizer.fit_on_texts(random.sample(texts,sample_size))
@@ -179,7 +177,7 @@ class Network:
     @staticmethod
     def _create_model(maxlen,voca_size):
         input_ = Input(shape=(maxlen,), dtype='int32')
-        action_ = Input(shape=(6,))
+        action_ = Input(shape=(5,))
         state_plus_ = Input(shape=(5,))
         embeddings_ = Embedding(voca_size, 64)(input_)
         lstm_ = Bidirectional(LSTM(64, dropout=0.2, recurrent_dropout=0.2))(embeddings_)

@@ -29,13 +29,13 @@ class Agent:
     def next_snippet_pa(self):
 
         try:
-            if self.env.queues[self.env.current_queue].qsize() == 0:
+            if self.env.env_core.queues[self.env.env_core.current_queue].qsize() == 0:
                 # TODO PA: I should think, what to do if a queue of a query for a given person_id is empty, should we stop the whole
                 # process or use another query randomly, but this means choose an action as a query obligatory!!
                 while True:
                     self.change_queue()
-                    if self.env.queues[self.env.current_queue].qsize() != 0:
-                        self.env.que_changed_obligatory = True
+                    if self.env.env_core.queues[self.env.env_core.current_queue].qsize() != 0:
+                        self.env.env_core.que_changed_obligatory = True
                         break
                     else:
                         print("*** all snippents from all queries have been searched ****")
@@ -43,33 +43,33 @@ class Agent:
                         #raise NameError('***QUEUE IS EMPTY***')
 
             else:
-                # this is equal to poping a snippet from the current query
-                self.env.current_data = self.env.queues[self.env.current_queue].get(False)
+                # this is equal to popping a snippet from the current query
+                self.env.env_core.current_data = self.env.env_core.queues[self.env.env_core.current_queue].get(False)
         except KeyError:
-            print("ERROR in next_snippet\n current queue: ", self.env.current_queue)
-            print("Queues ", self.env.queues)
-            print("DATA ", self.env.current_data)
+            print("ERROR in next_snippet\n current queue: ", self.env.env_core.current_queue)
+            print("Queues ", self.env.env_core.queues)
+            print("DATA ", self.env.env_core.current_data)
 
     def change_queue(self, queue=None):
         if queue is None:
-            tmp = self.env.current_queue + 1
-            if tmp >= len(self.env.queues):
-                self.env.current_queue = 0
+            tmp = self.env.env_core.current_queue + 1
+            if tmp >= len(self.env.env_core.queues):
+                self.env.env_core.current_queue = 0
             else:
-                self.env.current_queue = tmp
+                self.env.env_core.current_queue = tmp
         else:
-            if queue >= len(self.env.queues):
-                self.env.current_queue = 0
+            if queue >= len(self.env.env_core.queues):
+                self.env.env_core.current_queue = 0
             else:
-                self.env.current_queue = queue
+                self.env.env_core.current_queue = queue
 
     # db functions
     def delete_current_db(self, i=None):
-        if len(self.env.current_db) > 0:
-            self.env.current_db.pop()
+        if len(self.env.env_core.current_db) > 0:
+            self.env.env_core.current_db.pop()
 
     def add_current_db(self, i=None):
-        self.env.current_db.append(self.env.info_snippet[0])
+        self.env.env_core.current_db.append(self.env.env_core.info_snippet[0])
 
     @staticmethod
     def keep_current_db():
@@ -110,7 +110,7 @@ class Agent:
         # return action_activation_vector
 
     def actions_to_take_pa(self, action_activation_vector):
-        print("action activation", action_activation_vector[-1])
+        print("action activation", action_activation_vector[0])
         if action_activation_vector[-1]:
             self.change_queue()
         else:

@@ -13,8 +13,10 @@ path_entities_memory = "/../DATA/entities_memory.pkl"
 
 class Baselines:
 
-    def __init__(self, env, agent, list_users, is_RE=0):
+    def __init__(self, env, agent, list_users, is_RE=0, is_LSTM = False):
+
         self.env = env
+        self.is_LSTM = is_LSTM
         self.agent = agent
         self.list_users = list_users
         self.is_RE = is_RE
@@ -37,22 +39,24 @@ class Baselines:
         years = []
         names = []
 
-        for key in self.env.queues.keys():
-            while not self.env.queues[key].empty():
+        env_core = self.env.env_core
+
+        for key in env_core.queues.keys():
+            while not env_core.queues[key].empty():
                 """the queue size reduce by 1 after using the get() fuction"""
-                current_data = self.env.queues[key].get()
+                current_data = env_core.queues[key].get()
 
                 text = current_data['title'] + " " + current_data['text']
                 location_confident = utils.get_confidence(text)
 
-                tempo = self.env._fill_info_snippet_pa(text, location_confident, is_RE=self.is_RE)
+                tempo = env_core._fill_info_snippet_pa(text, location_confident, is_RE=self.is_RE)
 
                 universities = universities + [item.lower() for item in tempo[0]]
                 years = years + tempo[1]
                 #names.append(tempo[2].lower())
 
         entities = (universities, years, names)
-        gold_standards = [self.env.current_name, self.env.golden_standard_db]
+        gold_standards = [env_core.current_name, env_core.golden_standard_db]
 
         # print("Saving extracted name entites in memory")
         # joblib.dump((entities, gold_standards), os.getcwd() + self.path)

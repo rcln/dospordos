@@ -5,7 +5,7 @@ import sys
 import argparse
 import logging
 
-from DQN_LSTM_implementation import DQN
+from DQN_LSTM_implementation import DQN_LSTM
 from environment_LSTM import Environment
 from agent_LSTM import Agent
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     elif final_range != "-1":
         list_users = list_users[:int(final_range)]
 
-    dqn = DQN(env, agent, list_users, is_RE=bool(is_RE), logger=logger, name=name)
+    dqn = DQN_LSTM(env, agent, list_users, is_RE=bool(is_RE), logger=logger, name=name)
 
     try:
         if is_test == "1":
