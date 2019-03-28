@@ -57,11 +57,11 @@ def list_to_pickle_vectorizer(path):
     save_object(tf, path + 'tfidf_vectorizer.pkl')
 
 
-if __name__ == "__main__":
-    # List all the folders of train_db
-    print(len(snippets_to_list()))
-    # list_to_pickle_count_vectorizer()
-    # list_to_pickle_tfidf_vectorizer()
-    # list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+# if __name__ == "__main__":
+#     # List all the folders of train_db
+#     print(len(snippets_to_list()))
+#     # list_to_pickle_count_vectorizer()
+#     # list_to_pickle_tfidf_vectorizer()
+#     # list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
 
 

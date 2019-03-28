@@ -161,23 +161,23 @@ class Baselines:
         return ev.total_accuracy()
 
 
-if __name__ == '__main__':
-
-    env = Environment(path='../DATA/db_v1_ns/test_db/', path_weights='test.h5')
-
-    # if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
-    #     print("Training BOW vectors")
-    #     prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
-    #     print("---FIT COMPLETED----")
-
-    agent = Agent(env, (28,))  # + len_vect.shape[1],)) # the comma is very important
-    list_users = sorted(list(map(int, os.listdir(env.path))))
-
-    base = Baselines(env, agent, list_users)
-
-    for user in list_users:
-        entities, gold = base.baseline_agregate_NE(user)
-        print(base.majority_aggregation(entities, gold))
-        print(base.closest_to_gold(entities, gold))
-
-    print(base.filter_with_RE(entities, gold))
+# if __name__ == '__main__':
+#
+#     env = Environment(path='../DATA/db_v1_ns/test_db/', path_weights='test.h5')
+#
+#     # if not os.path.exists(env.path_count_vect) or not os.path.exists(env.path_tfidf_vect):
+#     #     print("Training BOW vectors")
+#     #     prep.list_to_pickle_vectorizer(os.getcwd() + "/../DATA/")
+#     #     print("---FIT COMPLETED----")
+#
+#     agent = Agent(env, (28,))  # + len_vect.shape[1],)) # the comma is very important
+#     list_users = sorted(list(map(int, os.listdir(env.path))))
+#
+#     base = Baselines(env, agent, list_users)
+#
+#     for user in list_users:
+#         entities, gold = base.baseline_agregate_NE(user)
+#         print(base.majority_aggregation(entities, gold))
+#         print(base.closest_to_gold(entities, gold))
+#
+#     print(base.filter_with_RE(entities, gold))

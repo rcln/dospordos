@@ -25,10 +25,11 @@ if __name__ == "__main__":
     parser.add_argument("is_RE", help="Use of Regular Expression", default=0)
     parser.add_argument("-is_test", help="The data is for testing", required=False,
                         default=0)
+
     parser.add_argument("-is_db_v2", help="Is the second database",
                         required=False,
                         action="store_true",
-                        default=False)
+                        default=True)
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
     parser.add_argument("-final_range", help="Final range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",
@@ -65,7 +66,7 @@ if __name__ == "__main__":
 
     logger.debug('NEW RUN')
 
-    env = Environment(path=path_data, path_weights=name+'_weights.h5', is_db_v2=is_db_v2)
+    env = Environment(path=path_data, path_weights="weights_2.584803016334772.h5", is_db_v2=is_db_v2) #path_weights=name+'_weights.h5', is_db_v2=is_db_v2)
 
     # ToDo Note to Pegah: for using the second data base
     if is_db_v2:

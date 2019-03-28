@@ -93,75 +93,75 @@ def prf(tp,fp,fn):
     return pres, reca, fsco
 
 
-if __name__ == '__main__':
-    p = argparse.ArgumentParser("evalie")
-    p.add_argument("GS",
-                   help="Goldstandard slot values")
-    p.add_argument("SYS",
-                   help="System slot values")
-    p.add_argument("-v", "--verbose",
-                   action="store_true", dest="verbose",
-                   help="Verbose mode [Off]")
-
-    args = p.parse_args()
-    if args.verbose:
-        def verbose(*args):
-            for a in args:
-                print(a, end="", sep="")
-            print(style.RESET)
-    GS = read_slots_file(args.GS)
-    SYS = read_slots_file(args.SYS)
-
-    verbose(fc.HEADER, "GS > ", fc.ENDC, "Total docs :", len(GS))
-    verbose(fc.WARNING, "SYS> ", fc.ENDC, "Total docs :", len(SYS))
-
-    verbose(fc.HEADER, "GS > ", fc.ENDC, "Total slot-values :",
-            sum([len(x) for x in GS]))
-    verbose(fc.WARNING, "SYS> ", fc.ENDC, "Total slot-values :",
-            sum([len(x) for x in SYS]))
-
-    tp, TP = 0, 0
-    fp, FP = 0, 0
-    fn, FN = 0, 0
-
-    scores = []
-
-    for gs, sys in zip(GS, SYS):
-        gs_ = list(gs)
-        sys_ = []
-        tp, fp, fn = 0, 0, 0
-
-        for sv_ in sys:
-            flag_tp = False
-            for ii,sv in enumerate(gs_):
-                if sv[0] == sv_[0] and editdistance.eval(sv[1],sv_[1])/len(sv[1]) < 0.2:
-                    tp += 1
-                    TP += 1
-                    flat_tp = True
-                    gs_.append(sv)
-                    del gs_[ii]
-                    break
-            if flag_tp:
-                continue
-            fp += 1
-            FP += 1
-        fn += len(gs_)
-        FN += len(gs_)
-
-        scores.append(prf(tp, fp, fn))
-
-    P, R, F = prf(TP, FP, FN)
-    #print("TP",TP)
-    #print("FP",FP)
-    #print("FN",FN)
-    print("MACRO SCORES")
-    print("Precision:", P)
-    print("Recall:", R)
-    print("F-score:", F)
-    print("MICRO SCORES")
-    print("Precision:", sum([P for P,R,F in scores])/len(scores))
-    print("Recall:", sum([R for P,R,F in scores])/len(scores))
-    print("F-score:", sum([F for P,R,F in scores])/len(scores))
+# if __name__ == '__main__':
+#     p = argparse.ArgumentParser("evalie")
+#     p.add_argument("GS",
+#                    help="Goldstandard slot values")
+#     p.add_argument("SYS",
+#                    help="System slot values")
+#     p.add_argument("-v", "--verbose",
+#                    action="store_true", dest="verbose",
+#                    help="Verbose mode [Off]")
+#
+#     args = p.parse_args()
+#     if args.verbose:
+#         def verbose(*args):
+#             for a in args:
+#                 print(a, end="", sep="")
+#             print(style.RESET)
+#     GS = read_slots_file(args.GS)
+#     SYS = read_slots_file(args.SYS)
+#
+#     verbose(fc.HEADER, "GS > ", fc.ENDC, "Total docs :", len(GS))
+#     verbose(fc.WARNING, "SYS> ", fc.ENDC, "Total docs :", len(SYS))
+#
+#     verbose(fc.HEADER, "GS > ", fc.ENDC, "Total slot-values :",
+#             sum([len(x) for x in GS]))
+#     verbose(fc.WARNING, "SYS> ", fc.ENDC, "Total slot-values :",
+#             sum([len(x) for x in SYS]))
+#
+#     tp, TP = 0, 0
+#     fp, FP = 0, 0
+#     fn, FN = 0, 0
+#
+#     scores = []
+#
+#     for gs, sys in zip(GS, SYS):
+#         gs_ = list(gs)
+#         sys_ = []
+#         tp, fp, fn = 0, 0, 0
+#
+#         for sv_ in sys:
+#             flag_tp = False
+#             for ii,sv in enumerate(gs_):
+#                 if sv[0] == sv_[0] and editdistance.eval(sv[1],sv_[1])/len(sv[1]) < 0.2:
+#                     tp += 1
+#                     TP += 1
+#                     flat_tp = True
+#                     gs_.append(sv)
+#                     del gs_[ii]
+#                     break
+#             if flag_tp:
+#                 continue
+#             fp += 1
+#             FP += 1
+#         fn += len(gs_)
+#         FN += len(gs_)
+#
+#         scores.append(prf(tp, fp, fn))
+#
+#     P, R, F = prf(TP, FP, FN)
+#     #print("TP",TP)
+#     #print("FP",FP)
+#     #print("FN",FN)
+#     print("MACRO SCORES")
+#     print("Precision:", P)
+#     print("Recall:", R)
+#     print("F-score:", F)
+#     print("MICRO SCORES")
+#     print("Precision:", sum([P for P,R,F in scores])/len(scores))
+#     print("Recall:", sum([R for P,R,F in scores])/len(scores))
+#     print("F-score:", sum([F for P,R,F in scores])/len(scores))
 
 
 

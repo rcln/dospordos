@@ -70,7 +70,7 @@ range(25)],[random.choice(range(10)),random.choice(range(10)),random.choice(rang
         return s, a, r, ll
 
 
-if __name__ == "__main__":
-    sars1 = Sars(random= False)
-    print("random action ", sars1.get_random_action_vector_pa(6))
+# if __name__ == "__main__":
+#     sars1 = Sars(random= False)
+#     print("random action ", sars1.get_random_action_vector_pa(6))
 

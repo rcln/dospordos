@@ -28,7 +28,7 @@ if __name__ == "__main__":
     parser.add_argument("-is_db_v2", help="Is the second database",
                         required=False,
                         action="store_true",
-                        default=False)
+                        default=True)
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
     parser.add_argument("-final_range", help="Final range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     logger.debug('NEW RUN')
 
-    env = Environment(path=path_data, path_weights=name+'_weights.h5', is_db_v2=is_db_v2)
+    env = Environment(path=path_data, path_weights=name+'_weights.h5', is_db_v2=is_db_v2)# path_weights= "weights_0.433076947927475.h5", is_db_v2=is_db_v2 )
 
     # ToDo Note to Pegah: for using the second data base
     agent = Agent(env)

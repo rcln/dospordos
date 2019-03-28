@@ -123,7 +123,7 @@ def list_organization(text):
     for w in words_organizations:
         if w in text:
             result.append(w.strip())
-            print(w.strip())
-            print(text)
+            #print(w.strip())
+            #print(text)
 
     return result

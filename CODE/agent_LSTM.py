@@ -200,13 +200,15 @@ class Network:
 
 
         if callbacks is None:
-            self.model.fit([np.array(x_train),np.array(state_plus),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
+            hist = self.model.fit([np.array(x_train),np.array(state_plus),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
                            epochs=epochs,
                            verbose=1)  # could be 1
         else:
-            self.model.fit([np.array(x_train),np.array(state_plus),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
+            hist = self.model.fit([np.array(x_train),np.array(state_plus),np.array(actions)], np.array(y_train),  # batch_size=batch_size,
                            epochs=epochs, callbacks=None,
                            verbose=1)  # could be 1
+
+        return hist.history
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,

@@ -110,7 +110,7 @@ class Agent:
         # return action_activation_vector
 
     def actions_to_take_pa(self, action_activation_vector):
-        print("action activation", action_activation_vector[0])
+        #print("action activation", action_activation_vector[0])
         if action_activation_vector[-1]:
             self.change_queue()
         else:
@@ -165,13 +165,15 @@ class Network:
 
     def fit(self, x_train, y_train, epochs, batch_size, callbacks=None):
         if callbacks is None:
-            self.model.fit(x_train, y_train,  # batch_size=batch_size,
+            hist = self.model.fit(x_train, y_train,  # batch_size=batch_size,
                            epochs=epochs,
                            verbose=1)  # could be 1
         else:
-            self.model.fit(x_train, y_train,  # batch_size=batch_size,
+            hist = self.model.fit(x_train, y_train,  # batch_size=batch_size,
                            epochs=epochs, callbacks=callbacks,
                            verbose=1)  # could be 1
+
+        return hist.history
 
     def fit_generator(self, gen, steps_per_epoch, epochs):
         self.model.fit_generator(generator=gen,

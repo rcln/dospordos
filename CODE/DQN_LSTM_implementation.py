@@ -199,6 +199,9 @@ class DQN_LSTM:
                 self.logger.info('Reward:: ' + str(reward) + "," + str(counter) + "," + str(e_count))
                 tmp_reward = tmp_reward + reward
 
+                print("state, action_vector, reward, next_state")
+                print(state, action_vector, reward, next_state)
+
                 replay_memory = self.refill_memory(replay_memory, state, action_vector, reward, next_state, 1000)
 
                 # Desc: reward + gamma * Q(s', argmax_a'(Q[s',a', w_main]), w_target ) - Q[s,a, w_main])
@@ -349,13 +352,14 @@ class DQN_LSTM:
                     # Q(s,a) computed using the neural network
 
                 Y_train = np.array(Y_train)
-                self.agent.network.fit(X_train, Y_train, 10, len(X_train), callbacks=self.callbacks)
+                hist = self.agent.network.fit(X_train, Y_train, 10, len(X_train), callbacks=self.callbacks)
                 state = next_state
 
                 counter += 1
 
-            # TODO PA: does the weights change during the learning process in the NN automatically?
-            self.agent.network.save_weights(self.env.path_weights)
+                # TODO PA: does the weights change during the learning process in the NN automatically?
+                self.agent.network.save_weights(self.env.path_weights)
+                self.agent.network.save_weights('../DATA/weights_' + str(hist['loss'][-1]) + '.h5')
 
             """get entities by following the optimal policy"""
             print('Gold standards', self.env.env_core.current_name, self.env.env_core.golden_standard_db)

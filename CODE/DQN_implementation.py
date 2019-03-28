@@ -15,6 +15,9 @@ from agent import Agent, Network
 from Sars import Sars
 from sklearn.externals import joblib
 from DQN import DQN
+from keras.callbacks import History
+
+history = History()
 
 load_model = False
 
@@ -347,14 +350,15 @@ class DQN_NN:
                     # Q(s,a) computed using the neural network
 
                 Y_train = np.array(Y_train)
+                hist = self.agent.network.fit(X_train, Y_train, 10, len(X_train), callbacks=self.callbacks)
 
-                self.agent.network.fit(X_train, Y_train, 10, len(X_train), callbacks=self.callbacks)
                 state = next_state
 
                 counter += 1
 
-            # TODO PA: does the wieghts change during the learning process in the NN automatically?
-            self.agent.network.save_weights(self.env.path_weights)
+                # TODO PA: does the weights change during the learning process in the NN automatically?
+                self.agent.network.save_weights(self.env.path_weights)
+                self.agent.network.save_weights('../DATA/weights_' + str(hist['loss'][-1]) + '.h5')
 
             #get entities by following the optimal policy
             print('Gold standards', self.env.env_core.current_name, self.env.env_core.golden_standard_db)
@@ -365,6 +369,7 @@ class DQN_NN:
 
     def testing(self, eps):
         if os.path.exists(self.env.path_weights):
+            print(self.env.path_weights)
             self.agent.network.load_weights(self.env.path_weights)
             print('LOADING WEIGHTS!')
         for us in self.list_users:
@@ -388,12 +393,15 @@ class DQN_NN:
 
         done = False
         counter = 0
+        count_change_query  = 0
         base = Baselines(self.env, self.agent, [], is_RE=self.is_RE)
+
+        queries_total = [self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()]
 
         # epoch
         # if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
         while not done:
-            # for i in range(50):
+        #for i in range(10):
 
             if counter > 1000:
                 print('we use break option')
@@ -404,14 +412,23 @@ class DQN_NN:
             # Observe reward and new state
             reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                         is_RE=self.is_RE)
-            print([self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()])
+            #print([self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()])
             reward_list.append((reward + reward_list[-1]))
             state = next_state
-            self.logger.info(' Test.. Reward:: ' + str(reward) + ", step::" + str(counter) + ", user::" + str(us)+
-                                 ", action::" + str(action_vector))
+
+            if action_vector[-1] == 1:
+                count_change_query += 1
+
+            queries = [self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()]
+            self.logger.info(  ' Test.. Reward:: ' + str(reward) + ", step::" + str(counter) + ", user::" + str(us)+
+                               ", action::" + str(action_vector) + ", action activation::" + str(action_vector[-1])+
+                ", Queries::" + str(queries))
             counter += 1
             eval = Evaluation(self.env.env_core.golden_standard_db, self.env.env_core.university_name_pa, self.env.env_core.date_pa)
             self.accuracy_matrix.append(eval.total_accuracy())
+
+            tot_result = self.env.env_core.university_name_pa, self.env.env_core.date_pa
+            total_prec =  eval.total_accuracy()
 
         measuring_results = eval.get_measuring_results()
         measure_results_list.append(measuring_results)
@@ -423,6 +440,15 @@ class DQN_NN:
         self.base_ma_list.append(base.majority_aggregation(entities, gold))
         self.base_ctg_list.append(base.closest_to_gold(entities, gold))
         print("Done with user: ", str(us))
+        print('final queries: ', queries)
+        print('number of changed queries:', count_change_query )
+        print('number of used snippets:', 1.0 - sum(queries)/ sum(queries_total) )
+
+        print('our method precision', total_prec)
+        print('our results', tot_result)
+
+        print(self.reward_matrix)
+
         return counter
 
 
