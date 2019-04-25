@@ -99,7 +99,7 @@ class Baselines:
         year_repetition = {x: tempo[1].count(x) for x in tempo[1]}
 
         max_uni, max_repeated = self.get_max_university(university_repetition)
-        print("year_repetition: ", year_repetition)
+        #print("year_repetition: ", year_repetition)
         tempo = self.get_max_years(year_repetition)
         if tempo is None:
             years = []
@@ -122,7 +122,7 @@ class Baselines:
         uni = golds[0][0].lower()
         years = [str(golds[0][1]), str(golds[0][2])]
         eval = Evaluation(golds, uni, years)
-        print("####>>>>",golds,uni,years)
+        #print("####>>>>",golds,uni,years)
 
         common_year = set()
         common_university = set()
@@ -136,10 +136,10 @@ class Baselines:
                 common_university.add(u_)
             elif eval.how_university(u_, uni):
                 common_university.add(u_)
-        print("####>>>>",common_university,common_year)
+        #print("####>>>>",common_university,common_year)
 
         ev = Evaluation(golds, list(common_university), list(common_year))
-        print("####>>>>",ev.total_accuracy())
+        #print("####>>>>",ev.total_accuracy())
 
         return ev.total_accuracy()
 

@@ -47,6 +47,15 @@ class DQN_LSTM:
         self.reward_matrix = dqnn.reward_matrix
         self.accuracy_matrix = dqnn.accuracy_matrix
         self.measure_results_matrix = dqnn.measure_results_matrix
+
+        "new measurements added by Pegah"
+        self.used_users = dqnn.used_users
+        self.final_queries = dqnn.final_queries
+        self.num_changed_queries = dqnn.num_changed_queries
+        self.percentage_used_snippets = dqnn.percentage_used_snippets
+        self.trajectories_results = dqnn.trajectories_results
+        self.gold_standards = dqnn.gold_standards
+
         self.base_ma_list = dqnn.base_ma_list
         self.base_ctg_list = dqnn.base_ctg_list
 
@@ -270,11 +279,15 @@ class DQN_LSTM:
         # Epochs
         #e_count = 1260
         e_count = 0
+
+        user_counter = 0
         stop_train = False
+
         # train episodes
         with open('tmp_record', 'w') as f:
             f.write("0")
         for us in self.list_users[e_count:]:
+            user_counter += 1
             with open('tmp_record', 'r') as f:
                 if f.readline() == "1":
                     stop_train = True
@@ -359,31 +372,49 @@ class DQN_LSTM:
 
                 # TODO PA: does the weights change during the learning process in the NN automatically?
                 self.agent.network.save_weights(self.env.path_weights)
-                self.agent.network.save_weights('../DATA/weights_' + str(hist['loss'][-1]) + '.h5')
+                #self.agent.network.save_weights('../DATA/weights_' + str(hist['loss'][-1]) + '.h5')
 
-            """get entities by following the optimal policy"""
-            print('Gold standards', self.env.env_core.current_name, self.env.env_core.golden_standard_db)
-            print('Extracted entities', self.env.env_core.university_name_pa, self.env.env_core.date_pa)
+            # """get entities by following the optimal policy"""
+            # print('Gold standards', self.env.env_core.current_name, self.env.env_core.golden_standard_db)
+            # print('Extracted entities', self.env.env_core.university_name_pa, self.env.env_core.date_pa)
 
             e_count = e_count + 1
+            if user_counter%10 == 0:
+                self.agent.network.save_weights('../DATA/weights_' + str(hist['loss'][-1]) + '_' + str(user_counter) + '.h5')
 
         return
 
-    def testing(self, eps):
+    def testing(self, eps, iteration_test):
+
         print(">>>>>>",self.env.path_weights)
-        if os.path.exists(self.env.path_weights):
-            self.agent.network.load_weights(self.env.path_weights)
-            print('LOADING WEIGHTS!')
-        for us in self.list_users:
-            self.get_best_entities_with_optimal_policy(eps=eps, us=us)
-        pickle.dump(self.measure_results_matrix, open('../DATA/'+self.name+'_mrm.pkl', 'wb'))
-        pickle.dump(self.reward_matrix, open('../DATA/'+self.name+'_rm.pkl', 'wb'))
-        pickle.dump(self.base_ctg_list, open('../DATA/'+self.name+'_ctg.pkl', 'wb'))
-        pickle.dump(self.base_ma_list, open('../DATA/'+self.name+'_ma.pkl', 'wb'))
-        pickle.dump(self.accuracy_matrix, open('../DATA/'+self.name+'_acc.pkl', 'wb'))
+        for k in range(iteration_test):
+            if os.path.exists(self.env.path_weights):
+                self.agent.network.load_weights(self.env.path_weights)
+                print('LOADING WEIGHTS!')
+            for us in self.list_users:
+                self.get_best_entities_with_optimal_policy(eps=eps, us=us)
+
+            "each element of this vector represents Pu, Ru, Fu, Py, Ry, Fy respectively"
+            pickle.dump(self.measure_results_matrix, open('../DATA/' + self.name + '_mrm'  + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.reward_matrix, open('../DATA/' + self.name + '_rm' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.base_ctg_list, open('../DATA/' + self.name + '_ctg' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.base_ma_list, open('../DATA/'+self.name+'_ma' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.accuracy_matrix, open('../DATA/'+self.name+'_acc' + str(k) + '.pkl', 'wb'))
+
+            "new added parameters by Pegah"
+            pickle.dump(self.used_users, open('../DATA/' + self.name + '_uu_'  + str(k) +  '.pkl', 'wb'))
+            pickle.dump(self.final_queries, open('../DATA/' + self.name + '_queries_'  + str(k) +  '.pkl', 'wb'))
+            pickle.dump(self.num_changed_queries, open('../DATA/' + self.name + '_nc_queries_'  + str(k) +  '.pkl', 'wb'))
+            pickle.dump(self.percentage_used_snippets,
+                    open('../DATA/' + self.name + '_per_snippets_'  + str(k) +  '.pkl', 'wb'))
+            pickle.dump(self.trajectories_results, open('../DATA/' + self.name + '_trajectories_'  + str(k) +  '.pkl', 'wb'))
+            pickle.dump(self.gold_standards, open('../DATA/' + self.name + '_gold_standards_'  + str(k) +  '.pkl', 'wb'))
+
+        pass
 
     def get_best_entities_with_optimal_policy(self, eps, us):
         reward_list = [0]
+        accuracy_list = []
         measure_results_list = []
 
         # initial state
@@ -394,7 +425,10 @@ class DQN_LSTM:
 
         done = False
         counter = 0
+        count_change_query = 0
         base = Baselines(self.env, self.agent, [], is_RE=self.is_RE, is_LSTM = True)
+
+        queries_total = [self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()]
 
         # epoch
         # if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
@@ -416,23 +450,51 @@ class DQN_LSTM:
 
             reward_list.append((reward+reward_list[-1]))
             state = next_state
-            self.logger.info(' Test.. Reward:: ' + str(reward) + ", step::" + str(counter) + ", user::" + str(us)+
-                             ", action" + str(action_vector))
+
+            if action_vector[-1] == 1:
+                count_change_query += 1
+
+            queries = [self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()]
+            #self.logger.info(' Test.. Reward:: ' + str(reward) + ", step::" + str(counter) + ", user::" + str(us)+
+            #                 ", action" + str(action_vector)+ ", action activation::" + str(action_vector[-1])+
+            #    ", Queries::" + str(queries))
+
             counter += 1
             eval = Evaluation(self.env.env_core.golden_standard_db, self.env.env_core.university_name_pa, self.env.env_core.date_pa)
             self.accuracy_matrix.append(eval.total_accuracy())
+            accuracy_list.append(eval.total_accuracy())
+
+        tot_result = self.env.env_core.university_name_pa, self.env.env_core.date_pa
+        total_prec = eval.total_accuracy()
+        self.accuracy_matrix.append(accuracy_list)
 
         measuring_results = eval.get_measuring_results()
         measure_results_list.append(measuring_results)
 
-        self.reward_matrix.append(reward_list[1:])
+        self.reward_matrix.append(reward_list)
         self.measure_results_matrix.append(measure_results_list)
         entities, gold = base.baseline_agregate_NE(us)
 
         self.base_ma_list.append(base.majority_aggregation(entities, gold))
         self.base_ctg_list.append(base.closest_to_gold(entities, gold))
 
+        self.used_users.append(str(us))
+        self.final_queries.append(queries)
+        self.num_changed_queries.append(count_change_query)
+        self.percentage_used_snippets.append((1.0 - sum(queries)/ sum(queries_total)))
+        self.trajectories_results.append(tot_result)
+        self.gold_standards.append(gold)
+
         print("Done with user: ", str(us))
+        print('final queries: ', queries)
+        print('number of changed queries:', count_change_query )
+        print('number of used snippets:', 1.0 - sum(queries)/ sum(queries_total) )
+
+        print('our method precision', total_prec)
+        print('our results', tot_result)
+
+        print(self.reward_matrix)
+
         return counter
 
 

@@ -62,6 +62,7 @@ class Environment_core:
             dir_list=os.listdir(files)
 
             for file in dir_list:
+                #print("file ::", file)
                 with open(files + file, 'r') as f:
                     data_raw = f.read()
                 data = json.loads(data_raw)
@@ -69,6 +70,7 @@ class Environment_core:
                     if len(snippet['title'].strip())>0 and len(snippet['text'].strip())>0:
                         snippets.append(snippet['title'].lower())
                         snippets.append(snippet['text'].lower())
+
         return snippets
 
     def _get_golden_standard_db(self, id_person):

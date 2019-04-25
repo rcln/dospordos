@@ -135,10 +135,10 @@ class Evaluation:
             FP += 1
         FN += len(gs_)
 
-        print(self.university_names, self.years)
+        #print(self.university_names, self.years)
         Py, Ry, Fy = self._prf(TP, FP, FN)
 
-        print('****************Pu, Ru, Fu, Py, Ry, Fy', Pu, Ru, Fu, Py, Ry, Fy)
+        #print('****************Pu, Ru, Fu, Py, Ry, Fy', Pu, Ru, Fu, Py, Ry, Fy)
 
         return Pu, Ru, Fu, Py, Ry, Fy
 

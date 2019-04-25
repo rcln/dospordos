@@ -160,7 +160,7 @@ class Environment:
         #set_uni_B = set()
         #set_ani_B = set()
 
-        print(self.env_core.current_name, golden_standard_db, ',', data_cur, self.env_core.current_db)
+        #print(self.env_core.current_name, golden_standard_db, ',', data_cur, self.env_core.current_db)
 
         #for y1 in golden_standard_db:
         #    set_uni_A.add(y1[0])

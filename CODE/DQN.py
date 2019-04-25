@@ -29,8 +29,18 @@ class DQN:
         self.reward_matrix = []
         self.accuracy_matrix = []
         self.measure_results_matrix = []
+
+        "new added measures by Pegah"
+        self.used_users = []
+        self.final_queries = []
+        self.num_changed_queries = []
+        self.percentage_used_snippets = []
+        self.trajectories_results = []
+        self.gold_standards = []
+
         self.base_ma_list = []
         self.base_ctg_list = []
+
 
         self.action_size = 5
 

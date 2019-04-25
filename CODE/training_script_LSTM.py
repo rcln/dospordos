@@ -25,10 +25,14 @@ if __name__ == "__main__":
     parser.add_argument("is_RE", help="Use of Regular Expression", default=0)
     parser.add_argument("-is_test", help="The data is for testing", required=False,
                         default=0)
+    parser.add_argument("-iteration_test", help="Number of iterations for test", required=False,default=1)
+    parser.add_argument("-given_weight", help="given weight to the NN", required=False,
+                        default='')
+
     parser.add_argument("-is_db_v2", help="Is the second database",
                         required=False,
                         action="store_true",
-                        default=True)
+                        default=False)
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
     parser.add_argument("-final_range", help="Final range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",
@@ -49,6 +53,10 @@ if __name__ == "__main__":
     algorithm = args.ALG
     is_RE = args.is_RE
     is_test = args.is_test
+
+    iteration_test = args.iteration_test
+    given_weight = args.given_weight
+
     is_db_v2 = args.is_db_v2
     initial_range = args.initial_range
     final_range = args.final_range
@@ -65,7 +73,11 @@ if __name__ == "__main__":
 
     logger.debug('NEW RUN')
 
-    env = Environment(path=path_data, path_weights=name+'_weights.h5', is_db_v2=is_db_v2)# path_weights= "weights_0.433076947927475.h5", is_db_v2=is_db_v2 )
+    if given_weight != '' and is_test:
+        env = Environment(path=path_data, path_weights= '../DATA/'+ given_weight, is_db_v2=is_db_v2)
+        name = given_weight[:-3]
+    else:
+        env = Environment(path=path_data, path_weights=name+'_weights.h5', is_db_v2=is_db_v2)
 
     # ToDo Note to Pegah: for using the second data base
     agent = Agent(env)
@@ -83,7 +95,7 @@ if __name__ == "__main__":
 
     try:
         if is_test == "1":
-            dqn.testing(eps=0.1)
+            dqn.testing(eps=0.1, iteration_test = int(iteration_test))
         elif algorithm.upper() == "DQN":
             dqn.deep_QN(gamma=0.95, eps=0.1, training_replay_size=2000)
         elif algorithm.upper() == "DDQN":

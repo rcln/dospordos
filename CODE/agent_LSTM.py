@@ -141,7 +141,10 @@ class Network:
 
         texts = env.env_core.get_all_snippets()
         self.tokenizer = Tokenizer(num_words=num_words,filters='!"#$%&()*+,-./:;<=>?@[\]^_`{|}~',oov_token='UNK')
-    
+
+        if len(texts) < sample_size:
+            sample_size = 50000 #int(len(texts)/2)
+
         self.tokenizer.fit_on_texts(random.sample(texts,sample_size))
         self.maxlen = maxlen
         self.voca_size=num_words
@@ -175,7 +178,7 @@ class Network:
     """
 
     @staticmethod
-    def _create_model(maxlen,voca_size):
+    def _create_model(maxlen, voca_size):
         input_ = Input(shape=(maxlen,), dtype='int32')
         action_ = Input(shape=(5,))
         state_plus_ = Input(shape=(5,))
