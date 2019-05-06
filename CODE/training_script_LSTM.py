@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser.add_argument("-is_db_v2", help="Is the second database",
                         required=False,
                         action="store_true",
-                        default=False)
+                        default=True)
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
     parser.add_argument("-final_range", help="Final range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from statistics import mean
 
-name = "DQN_1_db_v2_s_new"
+name = "DQN_0_db_v2_s_new"
 num_iteration = 5
 
 measure_results_matrix = []
@@ -22,6 +22,7 @@ trajectories = []
 
 "because we have 5 iterations"
 for k in range(num_iteration):
+    print(k)
 
     measure_results_matrix.append(pickle.load( open( "../DATA/" + name + "_mrm_" + str(k) + ".pkl", "rb" ) ))
     reward_matrix.append(pickle.load( open( "../DATA/" + name + "_rm_" + str(k) + ".pkl", "rb")))

@@ -392,14 +392,15 @@ class DQN_LSTM:
                 self.agent.network.load_weights(self.env.path_weights)
                 print('LOADING WEIGHTS!')
             for us in self.list_users:
+                print('user', us)
                 self.get_best_entities_with_optimal_policy(eps=eps, us=us)
 
             "each element of this vector represents Pu, Ru, Fu, Py, Ry, Fy respectively"
-            pickle.dump(self.measure_results_matrix, open('../DATA/' + self.name + '_mrm'  + str(k) + '.pkl', 'wb'))
-            pickle.dump(self.reward_matrix, open('../DATA/' + self.name + '_rm' + str(k) + '.pkl', 'wb'))
-            pickle.dump(self.base_ctg_list, open('../DATA/' + self.name + '_ctg' + str(k) + '.pkl', 'wb'))
-            pickle.dump(self.base_ma_list, open('../DATA/'+self.name+'_ma' + str(k) + '.pkl', 'wb'))
-            pickle.dump(self.accuracy_matrix, open('../DATA/'+self.name+'_acc' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.measure_results_matrix, open('../DATA/' + self.name + '_mrm_'  + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.reward_matrix, open('../DATA/' + self.name + '_rm_' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.base_ctg_list, open('../DATA/' + self.name + '_ctg_' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.base_ma_list, open('../DATA/'+self.name+'_ma_' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.accuracy_matrix, open('../DATA/'+self.name+'_acc_' + str(k) + '.pkl', 'wb'))
 
             "new added parameters by Pegah"
             pickle.dump(self.used_users, open('../DATA/' + self.name + '_uu_'  + str(k) +  '.pkl', 'wb'))
@@ -446,7 +447,7 @@ class DQN_LSTM:
             reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                         is_RE=self.is_RE)
 
-            print([self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()])
+            #print([self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()])
 
             reward_list.append((reward+reward_list[-1]))
             state = next_state
@@ -461,7 +462,7 @@ class DQN_LSTM:
 
             counter += 1
             eval = Evaluation(self.env.env_core.golden_standard_db, self.env.env_core.university_name_pa, self.env.env_core.date_pa)
-            self.accuracy_matrix.append(eval.total_accuracy())
+            #self.accuracy_matrix.append(eval.total_accuracy())
             accuracy_list.append(eval.total_accuracy())
 
         tot_result = self.env.env_core.university_name_pa, self.env.env_core.date_pa
@@ -485,15 +486,13 @@ class DQN_LSTM:
         self.trajectories_results.append(tot_result)
         self.gold_standards.append(gold)
 
-        print("Done with user: ", str(us))
-        print('final queries: ', queries)
-        print('number of changed queries:', count_change_query )
-        print('number of used snippets:', 1.0 - sum(queries)/ sum(queries_total) )
-
-        print('our method precision', total_prec)
-        print('our results', tot_result)
-
-        print(self.reward_matrix)
+        # print("Done with user: ", str(us))
+        # print('final queries: ', queries)
+        # print('number of changed queries:', count_change_query )
+        # print('number of used snippets:', 1.0 - sum(queries)/ sum(queries_total) )
+        #
+        # print('our method precision', total_prec)
+        # print('our results', tot_result)
 
         return counter
 

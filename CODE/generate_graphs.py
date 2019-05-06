@@ -66,24 +66,24 @@ for k in range(num_iteration):
     reward_matrix_0_v2_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
     reward_matrix_1_v2_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
     reward_matrix_0_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    reward_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
 
     reward_matrix_0_v1_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
     reward_matrix_1_v1_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
     reward_matrix_0_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    reward_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
 
 
 
     accuracy_matrix_0_v2_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
     accuracy_matrix_1_v2_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
     accuracy_matrix_0_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    accuracy_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
 
     accuracy_matrix_0_v1_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
     accuracy_matrix_1_v1_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
     accuracy_matrix_0_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    accuracy_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
 
 
 
@@ -196,7 +196,6 @@ ave_year_ave_1_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_a
 
 
 #plt.plot(range(len(ave_university_ave_0_v2_ns)), ave_university_ave_0_v2_ns, label = 'university + DQN + db_v2_ns')
-
 #plt.plot(range(len(ave_year_ave_0_v2_ns )), ave_year_ave_0_v2_ns , label = 'year + DQN + db_v2_ns')
 plt.plot(range(len(ave_university_ave_1_v2_ns)), ave_university_ave_1_v2_ns, label = 'university + DQN + RE + db_v2_ns')
 #plt.plot(range(len(ave_year_ave_1_v2_ns )), ave_year_ave_1_v2_ns , label = 'year + DQN + RE + db_v2_ns')

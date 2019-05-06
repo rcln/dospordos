@@ -459,7 +459,7 @@ class DQN_NN:
             counter += 1
 
             eval = Evaluation(self.env.env_core.golden_standard_db, self.env.env_core.university_name_pa, self.env.env_core.date_pa)
-            self.accuracy_matrix.append(eval.total_accuracy())
+            #self.accuracy_matrix.append(eval.total_accuracy())
             accuracy_list.append(eval.total_accuracy())
 
         tot_result = self.env.env_core.university_name_pa, self.env.env_core.date_pa
