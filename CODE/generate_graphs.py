@@ -12,9 +12,17 @@ def average_reward(_matrix):
         summ = 0
 
         for item in _matrix:
-            if len(item) > iter:
-                counter += 1
+            if len(item) <= iter:
+                summ += item[-1]
+            else:
                 summ += item[iter]
+
+            counter += 1
+
+        # for item in _matrix:
+        #     if len(item) > iter:
+        #         counter += 1
+        #         summ += item[iter]
 
         average_.append(summ/counter)
 
@@ -29,9 +37,16 @@ def average_accuracy(_matrix):
         counter = (0, 0)
         summ = (0,0)
 
+        # for item in _matrix:
+        #     if len(item) > iter:
+        #         counter = tuple(map(operator.add, counter, (1, 1)))
+        #         summ = tuple(map(operator.add, summ, item[iter]))
+
         for item in _matrix:
-            if len(item) > iter:
-                counter = tuple(map(operator.add, counter, (1, 1)))
+            counter = tuple(map(operator.add, counter, (1, 1)))
+            if len(item) <= iter:
+                summ = tuple(map(operator.add, summ, item[-1]))
+            else:
                 summ = tuple(map(operator.add, summ, item[iter]))
 
         average_uni.append(summ[0]/counter[0])
@@ -61,49 +76,106 @@ accuracy_matrix_1_v1_ns = []
 accuracy_matrix_0_v1_s = []
 accuracy_matrix_1_v1_s = []
 
+#********************************
+
+reward_matrix_0_v2_ns_normal = []
+reward_matrix_1_v2_ns_normal  = []
+reward_matrix_0_v2_s_normal  = []
+reward_matrix_1_v2_s_normal  = []
+
+reward_matrix_0_v1_ns_normal  = []
+reward_matrix_1_v1_ns_normal  = []
+reward_matrix_0_v1_s_normal  = []
+reward_matrix_1_v1_s_normal  = []
+
+
+accuracy_matrix_0_v2_ns_normal  = []
+accuracy_matrix_1_v2_ns_normal  = []
+accuracy_matrix_0_v2_s_normal  = []
+accuracy_matrix_1_v2_s_normal  = []
+
+accuracy_matrix_0_v1_ns_normal  = []
+accuracy_matrix_1_v1_ns_normal  = []
+accuracy_matrix_0_v1_s_normal  = []
+accuracy_matrix_1_v1_s_normal  = []
+
 num_iteration = 5
 for k in range(num_iteration):
     reward_matrix_0_v2_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_1_v2_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_0_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v2_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_0_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
 
     reward_matrix_0_v1_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_1_v1_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_0_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
-    reward_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v1_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_0_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
 
 
 
     accuracy_matrix_0_v2_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_1_v2_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_0_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v2_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_0_v2_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v2_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
 
     accuracy_matrix_0_v1_ns.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_1_v1_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_0_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
-    accuracy_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v1_ns.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_0_v1_s.append(pickle.load(open("../DATA/" + "DQN_0_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v1_s.append(pickle.load(open("../DATA/" + "DQN_1_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+
+    #**************************************
+
+    reward_matrix_0_v2_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v2_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v2_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v2_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_0_v2_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v2_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v2_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+
+    reward_matrix_0_v1_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v1_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v1_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v1_ns_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_0_v1_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+    #reward_matrix_1_v1_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v1_s_new" + "_rm_" + str(k) + ".pkl", "rb")))
+
+
+
+    accuracy_matrix_0_v2_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v2_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v2_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v2_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_0_v2_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v2_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v2_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+
+    accuracy_matrix_0_v1_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v1_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v1_ns_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v1_ns_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_0_v1_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_0_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
+    #accuracy_matrix_1_v1_s_normal.append(pickle.load(open("../DATA/normal/" + "DQN_1_db_v1_s_new" + "_acc_" + str(k) + ".pkl", "rb")))
 
 
 
 average_reward_aver_0_v2_ns =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v2_ns[t]) for t in range(num_iteration)] )]
-average_reward_aver_1_v2_ns =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v2_ns[t]) for t in range(num_iteration)] )]
-average_reward_aver_0_v2_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v2_s[t]) for t in range(num_iteration)] )]
-average_reward_aver_1_v2_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v2_s[t]) for t in range(num_iteration)] )]
+#average_reward_aver_1_v2_ns =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v2_ns[t]) for t in range(num_iteration)] )]
+#average_reward_aver_0_v2_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v2_s[t]) for t in range(num_iteration)] )]
+#average_reward_aver_1_v2_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v2_s[t]) for t in range(num_iteration)] )]
 average_reward_aver_0_v1_ns =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v1_ns[t]) for t in range(num_iteration)] )]
-average_reward_aver_1_v1_ns =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v1_ns[t]) for t in range(num_iteration)] )]
-average_reward_aver_0_v1_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v1_s[t]) for t in range(num_iteration)] )]
-average_reward_aver_1_v1_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v1_s[t]) for t in range(num_iteration)] )]
+#average_reward_aver_1_v1_ns =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v1_ns[t]) for t in range(num_iteration)] )]
+#average_reward_aver_0_v1_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v1_s[t]) for t in range(num_iteration)] )]
+#average_reward_aver_1_v1_s =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v1_s[t]) for t in range(num_iteration)] )]
 
-#plt.plot(range(len(average_reward_aver_0_v2_ns)), average_reward_aver_0_v2_ns, label = 'DQN + db_v2_ns')
-plt.plot(range(len(average_reward_aver_1_v2_ns)), average_reward_aver_1_v2_ns, label = 'DQN + RE + db_v2_ns')
-plt.plot(range(len(average_reward_aver_0_v2_s)), average_reward_aver_0_v2_s, label = 'DQN + db_v2_s')
-plt.plot(range(len(average_reward_aver_1_v2_s )), average_reward_aver_1_v2_s , label = 'DQN + RE + db_v2_s')
-plt.plot(range(len(average_reward_aver_0_v1_ns )), average_reward_aver_0_v1_ns , label = 'DQN + db_v1_ns')
-plt.plot(range(len(average_reward_aver_1_v1_ns )), average_reward_aver_1_v1_ns , label = 'DQN + RE + db_v1_ns')
-plt.plot(range(len(average_reward_aver_0_v1_s)), average_reward_aver_0_v1_s, label = 'DQN + db_v1_s')
-plt.plot(range(len(average_reward_aver_1_v1_s)), average_reward_aver_1_v1_s, label = 'DQN + RE + db_v1_s')
+#*****************************
+average_reward_aver_0_v2_ns_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v2_ns_normal[t]) for t in range(num_iteration)] )]
+# average_reward_aver_1_v2_ns_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v2_ns_normal[t]) for t in range(num_iteration)] )]
+# average_reward_aver_0_v2_s_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v2_s_normal[t]) for t in range(num_iteration)] )]
+# average_reward_aver_1_v2_s_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v2_s_normal[t]) for t in range(num_iteration)] )]
+average_reward_aver_0_v1_ns_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v1_ns_normal[t]) for t in range(num_iteration)] )]
+#average_reward_aver_1_v1_ns_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v1_ns_normal[t]) for t in range(num_iteration)] )]
+#average_reward_aver_0_v1_s_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_0_v1_s_normal[t]) for t in range(num_iteration)] )]
+#average_reward_aver_1_v1_s_normal =  [sum(col) / float(len(col)) for col in zip(*[average_reward(reward_matrix_1_v1_s_normal[t]) for t in range(num_iteration)] )]
+
+plt.plot(range(len(average_reward_aver_0_v2_ns)), average_reward_aver_0_v2_ns, label = 'DQN + db_v2')
+#plt.plot(range(len(average_reward_aver_1_v2_ns)), average_reward_aver_1_v2_ns, label = 'DQN + RE + db_v2_ns')
+#plt.plot(range(len(average_reward_aver_0_v2_s)), average_reward_aver_0_v2_s, label = 'DQN + db_v2_s')
+#plt.plot(range(len(average_reward_aver_1_v2_s )), average_reward_aver_1_v2_s , label = 'DQN + RE + db_v2_s')
+plt.plot(range(len(average_reward_aver_0_v1_ns )), average_reward_aver_0_v1_ns , label = 'DQN + db_v1')
+#plt.plot(range(len(average_reward_aver_1_v1_ns )), average_reward_aver_1_v1_ns , label = 'DQN + RE + db_v1_ns')
+#plt.plot(range(len(average_reward_aver_0_v1_s)), average_reward_aver_0_v1_s, label = 'DQN + db_v1_s')
+#plt.plot(range(len(average_reward_aver_1_v1_s)), average_reward_aver_1_v1_s, label = 'DQN + RE + db_v1_s')
 
 plt.legend()
 plt.xlabel('epochs')
@@ -136,98 +208,212 @@ _ave_year_ave_0_v1_s = []
 _ave_university_ave_1_v1_s = []
 _ave_year_ave_1_v1_s = []
 
+#**********************
+
+_ave_university_ave_0_v2_ns_normal = []
+_ave_year_ave_0_v2_ns_normal  = []
+
+_ave_university_ave_1_v2_ns_normal  = []
+_ave_year_ave_1_v2_ns_normal  = []
+
+_ave_university_ave_0_v2_s_normal  = []
+_ave_year_ave_0_v2_s_normal  = []
+
+_ave_university_ave_1_v2_s_normal  = []
+_ave_year_ave_1_v2_s_normal  = []
+
+_ave_university_ave_0_v1_ns_normal  = []
+_ave_year_ave_0_v1_ns_normal  = []
+
+_ave_university_ave_1_v1_ns_normal  = []
+_ave_year_ave_1_v1_ns_normal  = []
+
+_ave_university_ave_0_v1_s_normal  = []
+_ave_year_ave_0_v1_s_normal  = []
+
+_ave_university_ave_1_v1_s_normal  = []
+_ave_year_ave_1_v1_s_normal  = []
+
 for i in range(num_iteration):
     tempo = average_accuracy(accuracy_matrix_0_v2_ns[i])
     _ave_university_ave_0_v2_ns.append(tempo[0])
     _ave_year_ave_0_v2_ns.append(tempo[1])
 
-    tempo = average_accuracy(accuracy_matrix_1_v2_ns[i])
-    _ave_university_ave_1_v2_ns.append(tempo[0])
-    _ave_year_ave_1_v2_ns.append(tempo[1])
-
-    tempo = average_accuracy(accuracy_matrix_0_v2_s[i])
-    _ave_university_ave_0_v2_s.append(tempo[0])
-    _ave_year_ave_0_v2_s.append(tempo[1])
-
-    tempo = average_accuracy(accuracy_matrix_1_v2_s[i])
-    _ave_university_ave_1_v2_s.append(tempo[0])
-    _ave_year_ave_1_v2_s.append(tempo[1])
+    # tempo = average_accuracy(accuracy_matrix_1_v2_ns[i])
+    # _ave_university_ave_1_v2_ns.append(tempo[0])
+    # _ave_year_ave_1_v2_ns.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_0_v2_s[i])
+    # _ave_university_ave_0_v2_s.append(tempo[0])
+    # _ave_year_ave_0_v2_s.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_1_v2_s[i])
+    # _ave_university_ave_1_v2_s.append(tempo[0])
+    # _ave_year_ave_1_v2_s.append(tempo[1])
 
     tempo = average_accuracy(accuracy_matrix_0_v1_ns[i])
     _ave_university_ave_0_v1_ns.append(tempo[0])
     _ave_year_ave_0_v1_ns.append(tempo[1])
 
-    tempo = average_accuracy(accuracy_matrix_1_v1_ns[i])
-    _ave_university_ave_1_v1_ns.append(tempo[0])
-    _ave_year_ave_1_v1_ns.append(tempo[1])
+    # tempo = average_accuracy(accuracy_matrix_1_v1_ns[i])
+    # _ave_university_ave_1_v1_ns.append(tempo[0])
+    # _ave_year_ave_1_v1_ns.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_0_v1_s[i])
+    # _ave_university_ave_0_v1_s.append(tempo[0])
+    # _ave_year_ave_0_v1_s.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_1_v1_s[i])
+    # _ave_university_ave_1_v1_s.append(tempo[0])
+    # _ave_year_ave_1_v1_s.append(tempo[1])
 
-    tempo = average_accuracy(accuracy_matrix_0_v1_s[i])
-    _ave_university_ave_0_v1_s.append(tempo[0])
-    _ave_year_ave_0_v1_s.append(tempo[1])
+    #**************************************
 
-    tempo = average_accuracy(accuracy_matrix_1_v1_s[i])
-    _ave_university_ave_1_v1_s.append(tempo[0])
-    _ave_year_ave_1_v1_s.append(tempo[1])
+    tempo = average_accuracy(accuracy_matrix_0_v2_ns_normal[i])
+    _ave_university_ave_0_v2_ns_normal.append(tempo[0])
+    _ave_year_ave_0_v2_ns_normal.append(tempo[1])
+
+    # tempo = average_accuracy(accuracy_matrix_1_v2_ns_normal[i])
+    # _ave_university_ave_1_v2_ns_normal.append(tempo[0])
+    # _ave_year_ave_1_v2_ns_normal.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_0_v2_s_normal[i])
+    # _ave_university_ave_0_v2_s_normal.append(tempo[0])
+    # _ave_year_ave_0_v2_s_normal.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_1_v2_s_normal[i])
+    # _ave_university_ave_1_v2_s_normal.append(tempo[0])
+    # _ave_year_ave_1_v2_s_normal.append(tempo[1])
+
+    tempo = average_accuracy(accuracy_matrix_0_v1_ns_normal[i])
+    _ave_university_ave_0_v1_ns_normal.append(tempo[0])
+    _ave_year_ave_0_v1_ns_normal.append(tempo[1])
+
+    # tempo = average_accuracy(accuracy_matrix_1_v1_ns_normal[i])
+    # _ave_university_ave_1_v1_ns_normal.append(tempo[0])
+    # _ave_year_ave_1_v1_ns_normal.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_0_v1_s_normal[i])
+    # _ave_university_ave_0_v1_s_normal.append(tempo[0])
+    # _ave_year_ave_0_v1_s_normal.append(tempo[1])
+    #
+    # tempo = average_accuracy(accuracy_matrix_1_v1_s_normal[i])
+    # _ave_university_ave_1_v1_s_normal.append(tempo[0])
+    # _ave_year_ave_1_v1_s_normal.append(tempo[1])
 
 
 ave_university_ave_0_v2_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v2_ns  )]
 ave_year_ave_0_v2_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v2_ns  )]
 
-ave_university_ave_1_v2_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v2_ns  )]
-ave_year_ave_1_v2_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v2_ns  )]
-
-ave_university_ave_0_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v2_s  )]
-ave_year_ave_0_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v2_s  )]
-
-ave_university_ave_1_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v2_s  )]
-ave_year_ave_1_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v2_s  )]
+# ave_university_ave_1_v2_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v2_ns  )]
+# ave_year_ave_1_v2_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v2_ns  )]
+#
+# ave_university_ave_0_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v2_s  )]
+# ave_year_ave_0_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v2_s  )]
+#
+# ave_university_ave_1_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v2_s  )]
+# ave_year_ave_1_v2_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v2_s  )]
 
 ave_university_ave_0_v1_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v1_ns  )]
 ave_year_ave_0_v1_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v1_ns  )]
 
-ave_university_ave_1_v1_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v1_ns  )]
-ave_year_ave_1_v1_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v1_ns  )]
+# ave_university_ave_1_v1_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v1_ns  )]
+# ave_year_ave_1_v1_ns   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v1_ns  )]
+#
+# ave_university_ave_0_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v1_s  )]
+# ave_year_ave_0_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v1_s  )]
+#
+# ave_university_ave_1_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v1_s  )]
+# ave_year_ave_1_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v1_s  )]
 
-ave_university_ave_0_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v1_s  )]
-ave_year_ave_0_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v1_s  )]
+#************************************
+ave_university_ave_0_v2_ns_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v2_ns_normal  )]
+ave_year_ave_0_v2_ns_normal  =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v2_ns_normal  )]
 
-ave_university_ave_1_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v1_s  )]
-ave_year_ave_1_v1_s   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v1_s  )]
+# ave_university_ave_1_v2_ns_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v2_ns_normal  )]
+# ave_year_ave_1_v2_ns_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v2_ns_normal  )]
+#
+# ave_university_ave_0_v2_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v2_s_normal  )]
+# ave_year_ave_0_v2_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v2_s_normal  )]
+#
+# ave_university_ave_1_v2_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v2_s_normal  )]
+# ave_year_ave_1_v2_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v2_s_normal  )]
 
+ave_university_ave_0_v1_ns_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v1_ns_normal  )]
+ave_year_ave_0_v1_ns_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v1_ns_normal  )]
 
-#plt.plot(range(len(ave_university_ave_0_v2_ns)), ave_university_ave_0_v2_ns, label = 'university + DQN + db_v2_ns')
+# ave_university_ave_1_v1_ns_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v1_ns_normal  )]
+# ave_year_ave_1_v1_ns_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v1_ns_normal  )]
+#
+# ave_university_ave_0_v1_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_0_v1_s_normal  )]
+# ave_year_ave_0_v1_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_0_v1_s_normal  )]
+#
+# ave_university_ave_1_v1_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_university_ave_1_v1_s_normal  )]
+# ave_year_ave_1_v1_s_normal   =  [sum(col) / float(len(col)) for col in zip(*_ave_year_ave_1_v1_s_normal  )]
+
+#plt.plot(range(len(ave_university_ave_0_v2_ns)), ave_university_ave_0_v2_ns, label = 'DQN LSTM + institution', linestyle= 'dashed')
 #plt.plot(range(len(ave_year_ave_0_v2_ns )), ave_year_ave_0_v2_ns , label = 'year + DQN + db_v2_ns')
-plt.plot(range(len(ave_university_ave_1_v2_ns)), ave_university_ave_1_v2_ns, label = 'university + DQN + RE + db_v2_ns')
+#plt.plot(range(len(ave_university_ave_1_v2_ns)), ave_university_ave_1_v2_ns, label = 'university + DQN + RE + db_v2_ns')
 #plt.plot(range(len(ave_year_ave_1_v2_ns )), ave_year_ave_1_v2_ns , label = 'year + DQN + RE + db_v2_ns')
-plt.plot(range(len(ave_university_ave_0_v2_s)), ave_university_ave_0_v2_s, label = 'university + db_v2_s')
+#plt.plot(range(len(ave_university_ave_0_v2_s)), ave_university_ave_0_v2_s, label = 'university + db_v2_s')
 #plt.plot(range(len(ave_year_ave_0_v2_s )), ave_year_ave_0_v2_s , label = 'year + db_v2_s')
-plt.plot(range(len(ave_university_ave_1_v2_s)), ave_university_ave_1_v2_s, label = 'university + DQN + RE + db_v2_s')
+#plt.plot(range(len(ave_university_ave_1_v2_s)), ave_university_ave_1_v2_s, label = 'university + DQN + RE + db_v2_s')
 #plt.plot(range(len(ave_year_ave_1_v2_s )), ave_year_ave_1_v2_s , label = 'year + DQN + RE + db_v2_s')
 
-plt.plot(range(len(ave_university_ave_0_v1_ns)), ave_university_ave_0_v1_ns, label = 'university + DQN + db_v1_ns')
+plt.plot(range(len(ave_university_ave_0_v1_ns)), ave_university_ave_0_v1_ns, label = 'DQN LSTM + institution', linestyle = 'dashed')
 #plt.plot(range(len(ave_year_ave_0_v1_ns )), ave_year_ave_0_v1_ns , label = 'year + DQN + db_v1_ns')
-plt.plot(range(len(ave_university_ave_1_v1_ns)), ave_university_ave_1_v1_ns, label = 'university + DQN + RE + db_v1_ns')
+#plt.plot(range(len(ave_university_ave_1_v1_ns)), ave_university_ave_1_v1_ns, label = 'university + DQN + RE + db_v1_ns')
 #plt.plot(range(len(ave_year_ave_1_v1_ns )), ave_year_ave_1_v1_ns , label = 'year + DQN + RE + db_v1_ns')
-plt.plot(range(len(ave_university_ave_0_v1_s)), ave_university_ave_0_v1_s, label = 'university + db_v1_s')
+#plt.plot(range(len(ave_university_ave_0_v1_s)), ave_university_ave_0_v1_s, label = 'university + db_v1_s')
 #plt.plot(range(len(ave_year_ave_0_v1_s )), ave_year_ave_0_v1_s , label = 'year + db_v1_s')
-plt.plot(range(len(ave_university_ave_1_v1_s)), ave_university_ave_1_v1_s, label = 'university + DQN + RE + db_v1_s')
+#plt.plot(range(len(ave_university_ave_1_v1_s)), ave_university_ave_1_v1_s, label = 'university + DQN + RE + db_v1_s')
 #plt.plot(range(len(ave_year_ave_1_v1_s )), ave_year_ave_1_v1_s , label = 'university + DQN + RE + db_v1_s')
 
-plt.legend()
-plt.xlabel('epochs')
-plt.ylabel('accuracy')
-plt.show()
+#*********************************************
+
+#plt.plot(range(len(ave_university_ave_0_v2_ns_normal)), ave_university_ave_0_v2_ns_normal, label = 'DQN + institution', linestyle = 'dotted')
+#plt.plot(range(len(ave_year_ave_0_v2_ns_normal )), ave_year_ave_0_v2_ns_normal , label = 'year + DQN + db_v2_ns')
+#plt.plot(range(len(ave_university_ave_1_v2_ns_normal)), ave_university_ave_1_v2_ns_normal, label = 'university + DQN + RE + db_v2_ns')
+#plt.plot(range(len(ave_year_ave_1_v2_ns_normal )), ave_year_ave_1_v2_ns_normal , label = 'year + DQN + RE + db_v2_ns')
+#plt.plot(range(len(ave_university_ave_0_v2_s_normal)), ave_university_ave_0_v2_s_normal, label = 'university + db_v2_s')
+#plt.plot(range(len(ave_year_ave_0_v2_s_normal )), ave_year_ave_0_v2_s_normal , label = 'year + db_v2_s')
+#plt.plot(range(len(ave_university_ave_1_v2_s_normal)), ave_university_ave_1_v2_s_normal, label = 'university + DQN + RE + db_v2_s')
+#plt.plot(range(len(ave_year_ave_1_v2_s_normal )), ave_year_ave_1_v2_s_normal , label = 'year + DQN + RE + db_v2_s')
+
+plt.plot(range(len(ave_university_ave_0_v1_ns_normal)), ave_university_ave_0_v1_ns_normal, label = 'DQN + institution', linestyle= 'dotted')
+#plt.plot(range(len(ave_year_ave_0_v1_ns_normal )), ave_year_ave_0_v1_ns_normal , label = 'DQN LSTM + years', linestyle= 'dotted')
+#plt.plot(range(len(ave_university_ave_1_v1_ns_normal)), ave_university_ave_1_v1_ns_normal, label = 'university + DQN + RE + db_v1_ns')
+#plt.plot(range(len(ave_year_ave_1_v1_ns_normal )), ave_year_ave_1_v1_ns_normal , label = 'year + DQN + RE + db_v1_ns')
+#plt.plot(range(len(ave_university_ave_0_v1_s_normal)), ave_university_ave_0_v1_s_normal, label = 'university + db_v1_s')
+#plt.plot(range(len(ave_year_ave_0_v1_s_normal )), ave_year_ave_0_v1_s_normal , label = 'year + db_v1_s')
+#plt.plot(range(len(ave_university_ave_1_v1_s_normal)), ave_university_ave_1_v1_s_normal, label = 'university + DQN + RE + db_v1_s')
+#plt.plot(range(len(ave_year_ave_1_v1_s_normal )), ave_year_ave_1_v1_s_normal , label = 'university + DQN + RE + db_v1_s')
+
+# plt.legend()
+# plt.xlabel('epochs')
+# plt.ylabel('accuracy')
+# plt.show()
 
 
 
-#plt.plot(range(len(ave_year_ave_0_v2_ns )), ave_year_ave_0_v2_ns , label = 'year + DQN + db_v2_ns')
-plt.plot(range(len(ave_year_ave_1_v2_ns )), ave_year_ave_1_v2_ns , label = 'year + DQN + RE + db_v2_ns')
-plt.plot(range(len(ave_year_ave_0_v2_s )), ave_year_ave_0_v2_s , label = 'year + db_v2_s')
-plt.plot(range(len(ave_year_ave_1_v2_s )), ave_year_ave_1_v2_s , label = 'year + DQN + RE + db_v2_s')
-plt.plot(range(len(ave_year_ave_0_v1_ns )), ave_year_ave_0_v1_ns , label = 'year + DQN + db_v1_ns')
-plt.plot(range(len(ave_year_ave_1_v1_ns )), ave_year_ave_1_v1_ns , label = 'year + DQN + RE + db_v1_ns')
-plt.plot(range(len(ave_year_ave_0_v1_s )), ave_year_ave_0_v1_s , label = 'year + db_v1_s')
-plt.plot(range(len(ave_year_ave_1_v1_s )), ave_year_ave_1_v1_s , label = 'year + DQN + RE + db_v1_s')
+#plt.plot(range(len(ave_year_ave_0_v2_ns )), ave_year_ave_0_v2_ns , label = 'DQN LSTM + year', linestyle = 'dashdot')
+#plt.plot(range(len(ave_year_ave_1_v2_ns )), ave_year_ave_1_v2_ns , label = 'year + DQN + RE + db_v2_ns')
+#plt.plot(range(len(ave_year_ave_0_v2_s )), ave_year_ave_0_v2_s , label = 'year + db_v2_s')
+#plt.plot(range(len(ave_year_ave_1_v2_s )), ave_year_ave_1_v2_s , label = 'year + DQN + RE + db_v2_s')
+plt.plot(range(len(ave_year_ave_0_v1_ns )), ave_year_ave_0_v1_ns , label = 'DQN LSTM + years', linestyle = 'dashdot')
+#plt.plot(range(len(ave_year_ave_1_v1_ns )), ave_year_ave_1_v1_ns , label = 'year + DQN + RE + db_v1_ns')
+#plt.plot(range(len(ave_year_ave_0_v1_s )), ave_year_ave_0_v1_s , label = 'year + db_v1_s')
+#plt.plot(range(len(ave_year_ave_1_v1_s )), ave_year_ave_1_v1_s , label = 'year + DQN + RE + db_v1_s')
+
+#*************************************
+#plt.plot(range(len(ave_year_ave_0_v2_ns_normal )), ave_year_ave_0_v2_ns_normal , label = 'DQN + years', linestyle = 'solid')
+#plt.plot(range(len(ave_year_ave_1_v2_ns_normal )), ave_year_ave_1_v2_ns_normal , label = 'year + DQN + RE + db_v2_ns')
+#plt.plot(range(len(ave_year_ave_0_v2_s_normal )), ave_year_ave_0_v2_s_normal , label = 'year + db_v2_s')
+#plt.plot(range(len(ave_year_ave_1_v2_s_normal )), ave_year_ave_1_v2_s_normal , label = 'year + DQN + RE + db_v2_s')
+plt.plot(range(len(ave_year_ave_0_v1_ns_normal )), ave_year_ave_0_v1_ns_normal , label = 'DQN + years')
+#plt.plot(range(len(ave_year_ave_1_v1_ns_normal )), ave_year_ave_1_v1_ns_normal , label = 'year + DQN + RE + db_v1_ns')
+#plt.plot(range(len(ave_year_ave_0_v1_s_normal )), ave_year_ave_0_v1_s_normal , label = 'year + db_v1_s')
+#plt.plot(range(len(ave_year_ave_1_v1_s_normal )), ave_year_ave_1_v1_s_normal , label = 'year + DQN + RE + db_v1_s')
 
 plt.legend()
 plt.xlabel('epochs')

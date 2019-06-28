@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import operator
+import random
+
 import utils
 from Evaluation import Evaluation
 from environment import Environment
@@ -22,10 +24,26 @@ class Baselines:
         self.is_RE = is_RE
         self.path = "../DATA/"
 
-    def baseline_agregate_NE(self, user_id):
+    def get_entities_randomly(self, us):
+        state, err = self.env.reset(us, is_RE=self.is_RE)
+        queues = self.env.env_core.queues
+        queue_len = len(queues)
+        ques_indexes = [i for i in range(queue_len)]
+        while len(ques_indexes)>0:
+            index = random.choice(ques_indexes)
+            ques_indexes.remove(index)
+            print(index, self.env.env_core.queues[index])
 
-        entities = None
-        gold_standards = None
+            current_data = self.env.env_core.queues[index].get()
+            text = current_data['title'] + " " + current_data['text']
+
+            break
+
+        pass
+
+    def baseline_agregate_NE(self, user_id, is_random = False):
+
+        snippets_vs_error = ([],[],[])
 
         # for user_id in self.list_users:
 
@@ -33,36 +51,72 @@ class Baselines:
         state, err = self.env.reset(user_id, 0, is_pa=True)
 
         if err:
-            return 0, 0
+            return (0,0)
 
-        universities = []
-        years = []
+        universities_years = []
+        #years = []
         names = []
 
         env_core = self.env.env_core
+        queue_len = len(env_core.queues.keys())
+        ques_indexes = [i for i in range(queue_len)]
 
-        for key in env_core.queues.keys():
+        if is_random:
+            random.shuffle(ques_indexes)
+
+        queries_total = [self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()]
+        extracted_uni = set()
+        extracted_years = set()
+
+        for key in ques_indexes:
             while not env_core.queues[key].empty():
-                """the queue size reduce by 1 after using the get() fuction"""
+                """the queue size reduce by 1 after using the get() function"""
                 current_data = env_core.queues[key].get()
+
+                queries = [self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()]
 
                 text = current_data['title'] + " " + current_data['text']
                 location_confident = utils.get_confidence(text)
 
-                tempo = env_core._fill_info_snippet_pa(text, location_confident, is_RE=self.is_RE)
+                randy = random.randint(0,5)
+                a = []
+                if randy > 0:
+                    a = a + [0]*(randy)
+                a = a + [1]
+                a = a + [0]*(6-randy)
 
-                universities = universities + [item.lower() for item in tempo[0]]
-                years = years + tempo[1]
+                tempo = env_core._fill_info_snippet_pa(action= a, text = text,
+                                                       ners= location_confident, is_RE=self.is_RE)
+
+                _uni = [item.lower() for item in tempo[0]]
+                _years = tempo[1]
+
+                if _uni!= [] or _years!= []:
+                    universities_years = universities_years + [(_uni,_years)]
+                #years = years + _years
+
+                for item in _uni:
+                    extracted_uni.add(item)
+
+                for y_ in _years:
+                    extracted_years.add(y_)
                 #names.append(tempo[2].lower())
 
-        entities = (universities, years, names)
+                eval = Evaluation(self.env.env_core.golden_standard_db, extracted_uni, extracted_years)
+                snippets_vs_error[0].append(sum(queries_total)-sum(queries))
+                snippets_vs_error[1].append(eval.total_accuracy())
+                snippets_vs_error[2].append(eval.get_measuring_results())
+
+        entities = universities_years
         gold_standards = [env_core.current_name, env_core.golden_standard_db]
 
         # print("Saving extracted name entites in memory")
         # joblib.dump((entities, gold_standards), os.getcwd() + self.path)
         # print("Saved memory")
 
-        return entities, gold_standards
+        #print('*****************')
+        #print(entities, snippets_vs_error, gold_standards)
+        return entities, snippets_vs_error, gold_standards
 
     def get_max_university(self, uni_dic):
 
@@ -101,6 +155,7 @@ class Baselines:
         max_uni, max_repeated = self.get_max_university(university_repetition)
         #print("year_repetition: ", year_repetition)
         tempo = self.get_max_years(year_repetition)
+
         if tempo is None:
             years = []
         else:

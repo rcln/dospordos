@@ -57,7 +57,7 @@ class NameParser:
         self.tagger = nltk.RegexpTagger(self.regexp_tagger_list)
 
     def parse(self, name):
-        tokens = self.tokenizer.tokenize(name)
+        tokens = self.tokenizer.tokenize(str(name))
         tag_tokens = self.tagger.tag(tokens)
         terminals = ''
         for ts in tag_tokens:
@@ -66,6 +66,10 @@ class NameParser:
         grammar = nltk.CFG.fromstring(grammar_rules)
         parser = nltk.ChartParser(grammar)
         return parser.parse(tokens)
+
+    def name_extractor(self, text):
+        tokens = self.tokenizer.tokenize(str(text))
+        return tokens
 
 
 class FeatureFilter:
@@ -87,7 +91,7 @@ class NominalFilter:
     def __init__(self, name):
         name = Cleaner.remove_accent(Cleaner(), name)
         name = Cleaner.clean_reserved_xml(name)
-        self.tree = NameParser.parse(NameParser(), name)
+        self.tree = NameParser.parse(NameParser(), name.title())
         self.list_regex = self._name_variations()
         self.dic_vect = {'L': 0, 'C': 1, 'E': 2, 'X': 3, 'V': 4}
 
@@ -389,11 +393,9 @@ class NominalFilter:
         return variations
 
     def filter(self, snippet):
-
         # replace all alpahbets with accent from the snippet with without accent alphabet versions
         snippet = Cleaner.remove_accent(Cleaner(), snippet)
         snippet = Cleaner.clean_reserved_xml(snippet)
-
         vector = np.zeros(self.list_regex.__len__())
 
         for item in self.list_regex.items():
@@ -459,6 +461,19 @@ class Cleaner:
         return r
 
 
+class person_extractors:
+    def __init__(self, text):
+        self.text = text
+
+    def get_person_names(self):
+
+        text = Cleaner.remove_accent(Cleaner(), self.text)
+        text = Cleaner.clean_reserved_xml(text)
+        exact = NameParser()
+        extracted_person_names = exact.name_extractor(text)
+
+        return extracted_person_names
+
 def int_to_onehot(length, number, zero_based=False):
     if number < 0:
         return [0] * length
@@ -469,10 +484,8 @@ def int_to_onehot(length, number, zero_based=False):
     l.__setitem__(number, 1)
     return l
 
-
 def get_confidence_RE(text):
     return
-
 
 nlp = spacy.load('en_core_web_sm')
 def get_confidence(text):
@@ -519,7 +532,6 @@ def get_confidence(text):
 
     return ner_org, ner_gpe, ner_person_name#, ner_date
 
-
 #there is no need to use get_location.
 def get_location(text):
     nlp = spacy.load('en_core_web_sm')
@@ -559,10 +571,8 @@ def get_date(text, first=False):
     else:
         return matches
 
-
 def step(x):
     return 1 * (x > 0)
-
 
 def edit_distance(a, b):
     dist = []
@@ -582,11 +592,9 @@ def edit_distance(a, b):
 
     return dist
 
-
 # TODO PA: what types of the distances this function compute?
 def _edit_distance(str1, str2):
     return editdistance.eval(str1, str2)
-
 
 def len_content(a):
     num_content = 0
@@ -596,5 +604,11 @@ def len_content(a):
     return num_content
 
 # if __name__ == '__main__':
-#     text = "Oscar Avila Akerberg 3 september 2023"
-#     print(get_date(text))
+#     text = "Oscar Avèla de Akerberg 3 september 2023 and his wife Adriana Lopez de Alba Gomez is a nice woman and Jorge Garcia de Flores is a nice guy"
+#     text = Cleaner.remove_accent(Cleaner(), text)
+#     text = Cleaner.clean_reserved_xml(text)
+#     exact = NameParser()
+#     t = exact.name_extractor(text)
+#
+#     print(t)
+

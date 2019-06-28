@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 # import h5py
+import json
 import os
 import sys
 import logging
+import pandas
 
 import numpy as np
 import agent
 import pickle
+import random
 from random import randint
 
 from Baselines import Baselines
@@ -60,6 +63,9 @@ class DQN_NN:
         self.percentage_used_snippets = dqnn.percentage_used_snippets
         self.trajectories_results = dqnn.trajectories_results
         self.gold_standards = dqnn.gold_standards
+
+        self.snippets_vs_error = []
+
 
         self.base_ma_list = dqnn.base_ma_list
         self.base_ctg_list = dqnn.base_ctg_list
@@ -176,7 +182,7 @@ class DQN_NN:
 
         with open('tmp_record', 'w') as f:
             f.write("0")
-        for us in self.list_users:  # [35:36]:
+        for us in self.list_users:
 
             with open('tmp_record', 'r') as f:
                 if f.readline() == "1":
@@ -385,7 +391,42 @@ class DQN_NN:
                 self.agent.network.save_weights('../DATA/weights_' + str(hist['loss'][-1]) + '_' + str(user_counter) + '.h5')
         return
 
-    def testing(self, eps, iteration_test):
+    def testing_baselines(self, iteration_test, traj_matrix = None):
+        if traj_matrix is not None:
+            self.list_users = traj_matrix[:, 1]
+            print(self.list_users)
+
+        for k in range(iteration_test):
+            for us in self.list_users:
+                print('user', us)
+                base = Baselines(self.env, self.agent, [], is_RE=self.is_RE)
+                tempo = base.baseline_agregate_NE(user_id=us, is_random=True)
+                if tempo != (0,0):
+                    entities, snippets_vs_error, gold_standards = base.baseline_agregate_NE(user_id=us, is_random=True)
+
+                    self.base_ctg_list.append(snippets_vs_error)
+
+                    unis = []
+                    years = []
+                    for item in entities:
+                        unis = unis + item[0]
+                        years = years + item[1]
+                    entities_input = (unis, years)
+
+                    self.base_ma_list.append(base.majority_aggregation(entities_input, gold_standards))
+                else:
+                    pass
+
+            pickle.dump(self.base_ctg_list, open('../DATA/' + self.name + '_ctg_' + str(k) + '.pkl', 'wb'))
+            pickle.dump(self.base_ma_list, open('../DATA/' + self.name + '_ma_' + str(k) + '.pkl', 'wb'))
+
+        pass
+
+    def testing(self, eps, iteration_test, traj_matrix = None):
+
+        if traj_matrix is not None:
+            self.list_users = traj_matrix[:, 1]
+
         for k in range(iteration_test):
             if os.path.exists(self.env.path_weights):
                 print(self.env.path_weights)
@@ -395,11 +436,10 @@ class DQN_NN:
                 print('user', us)
                 self.get_best_entities_with_optimal_policy(eps=eps, us=us)
 
+            print('****real****')
             "each element of this vector represents Pu, Ru, Fu, Py, Ry, Fy respectively"
             pickle.dump(self.measure_results_matrix, open('../DATA/' + self.name + '_mrm_' + str(k) + '.pkl', 'wb'))
             pickle.dump(self.reward_matrix, open('../DATA/' + self.name + '_rm_' + str(k) + '.pkl', 'wb'))
-            pickle.dump(self.base_ctg_list, open('../DATA/' + self.name + '_ctg_' + str(k) + '.pkl', 'wb'))
-            pickle.dump(self.base_ma_list, open('../DATA/' + self.name + '_ma_' + str(k) + '.pkl', 'wb'))
             pickle.dump(self.accuracy_matrix, open('../DATA/' + self.name + '_acc_' + str(k) + '.pkl', 'wb'))
 
             "new added parameters by Pegah"
@@ -410,12 +450,16 @@ class DQN_NN:
             pickle.dump(self.trajectories_results, open('../DATA/' + self.name + '_trajectories_' + str(k) + '.pkl', 'wb'))
             pickle.dump(self.gold_standards, open('../DATA/' + self.name + '_gold_standards_' + str(k) + '.pkl', 'wb'))
 
+            pickle.dump(self.snippets_vs_error, open('../DATA/' + self.name + '_snippets_vs_error_' + str(k) + '.pkl', 'wb'))
+
         pass
 
     def get_best_entities_with_optimal_policy(self, eps, us):
         reward_list = [0]
         accuracy_list = []
         measure_results_list = []
+        snippets_vs_precision = ([],[],[])
+        tot_result = []
 
         # initial state
         state, err = self.env.reset(us, is_RE=self.is_RE)
@@ -426,21 +470,24 @@ class DQN_NN:
         done = False
         counter = 0
         count_change_query = 0
-        base = Baselines(self.env, self.agent, [], is_RE=self.is_RE)
+        #base = Baselines(self.env, self.agent, [], is_RE=self.is_RE)
 
         queries_total = [self.env.env_core.queues[k].qsize() for k in self.env.env_core.queues.keys()]
+        percentage_snippets = 1.0
 
         # epoch
         # if you want to observe reward accumulation or accuracy for the test set, it should be in each itetation of the following loop.
         while not done:
-        #for i in range(10):
+        #while percentage_snippets > 0.001:
 
-            if counter > 1000:
+            if counter > 500:
                 print('we use break option')
-                return counter
+                break
+                #return counter
 
             """Select an action with an epsilon probability"""
             action_vector = self.get_action_with_probability(state, self.agent.network, eps)
+            #print(action_vector)
             # Observe reward and new state
             reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
                                                         is_RE=self.is_RE)
@@ -462,7 +509,16 @@ class DQN_NN:
             #self.accuracy_matrix.append(eval.total_accuracy())
             accuracy_list.append(eval.total_accuracy())
 
-        tot_result = self.env.env_core.university_name_pa, self.env.env_core.date_pa
+            percentage_snippets = 1.0-(sum(queries)/sum(queries_total))
+
+            sumi_ = sum(queries_total)-sum(queries)
+            snippets_vs_precision[0].append(sumi_)
+            snippets_vs_precision[1].append(eval.total_accuracy())
+            snippets_vs_precision[2].append(eval.get_measuring_results())
+
+            entities = self.env.env_core.info_snippet[0][0:-1]
+            if entities != [[], []]:
+                tot_result.append(entities)
         #total_prec = eval.total_accuracy()
 
         self.accuracy_matrix.append(accuracy_list)
@@ -472,17 +528,16 @@ class DQN_NN:
 
         self.reward_matrix.append(reward_list)
         self.measure_results_matrix.append(measure_results_list)
-        entities, gold = base.baseline_agregate_NE(us)
 
-        self.base_ma_list.append(base.majority_aggregation(entities, gold))
-        self.base_ctg_list.append(base.closest_to_gold(entities, gold))
 
         self.used_users.append(str(us))
         self.final_queries.append(queries)
         self.num_changed_queries.append(count_change_query)
-        self.percentage_used_snippets.append((1.0 - sum(queries)/ sum(queries_total)))
+        #self.percentage_used_snippets.append((1.0 - sum(queries)/ sum(queries_total)))
+        self.percentage_used_snippets.append(sum(queries_total) - sum(queries))
         self.trajectories_results.append(tot_result)
-        self.gold_standards.append(gold)
+        self.snippets_vs_error.append(snippets_vs_precision)
+        #self.gold_standards.append(gold)
 
         # print("Done with user: ", str(us))
         # print('final queries: ', queries)
@@ -490,12 +545,72 @@ class DQN_NN:
         # print('number of used snippets:', 1.0 - sum(queries)/ sum(queries_total) )
         #
         # print('our method precision', total_prec)
-        # print('our results', tot_result)
+
+        #print('uni', self.env.env_core.university_name_pa)
+        #print('years', self.env.env_core.date_pa)
+        print("*********our result*******")
+        print(self.trajectories_results)
+        #print('our results', self.accuracy_matrix)
+        #print(self.snippets_vs_error)
         #
         # print(self.reward_matrix)
 
+
+        print(self.env.env_core.golden_standard_db, self.env.env_core.current_name)
         return counter
 
+    def users_for_trajectory(self, size):
+
+        db_v2_test_users = os.listdir("../DATA/db_v2_ns_new/test_db")
+
+        user_counter = 0
+        get_user = []
+
+        random.shuffle(self.list_users)
+
+        for us in self.list_users:
+            if user_counter >= size:
+                break
+            else:
+                if us in db_v2_test_users:
+                    state, err = self.env.reset(us, is_RE=False)
+                    if not err:
+                        user_counter += 1
+                        get_user.append(us)
+
+        data_output = {}
+
+        data_output['number'] = []
+        data_output['name'] = []
+        data_output['institution'] = []
+        data_output['year_start'] = []
+        data_output['year_finish'] = []
+        data_output['subarea'] = []
+        data_output['gender'] = []
+        data_output['degree'] = []
+        data_output['country'] = []
+        data_output['area'] = []
+        data_output['program'] = []
+        data_output['birth_country'] = []
+        data_output['birthdate'] = []
+        data_output['sni'] = []
+
+
+        with open('../DATA/fer_db/train.json') as json_file:
+            data = json.load(json_file)
+            users = data['_default']
+            for u in users:
+                if u in get_user:
+                    data_output['number'].append(u)
+                    for attr in ['name', 'institution', 'year_start', 'year_finish', 'subarea',
+                                 'gender','degree', 'country', 'area', 'program', 'birth_country', 'birthdate', 'sni']:
+                        data_output[attr].append(data['_default'][u][attr])
+
+        with open('../DATA/fer_db/correct/test_traj.json', 'w') as outfile:
+            json.dump(data_output, outfile)
+
+        pandas.read_json("../DATA/fer_db/correct/test_traj.json").to_excel("../DATA/fer_db/correct/test_traj.xlsx")
+        pass
 
 if __name__ == "__main__":
     # ToDo Pegah: Please check the file training_script.py to run DQN

@@ -12,11 +12,20 @@ from random import randint
 
 from Baselines import Baselines
 from Evaluation import Evaluation
-from environment_LSTM import Environment
+import environment_LSTM
 from agent_LSTM import Agent, Network
 from Sars_LSTM import Sars
 from sklearn.externals import joblib
 from DQN import DQN
+
+
+# ToDo Note to Pegah
+# From the terminal run this script. Selecting the folder with the data, the algorithm and is_RE
+# Example:
+# > python3 training_script_LSTM.py ~/project/dospordos/DATA/db_v1_ns/train_db/ DQN 0
+# It will run the algorithm DQN with is_RE=0 and the data is in that path
+# If the directory is for testing
+# > python3 training_script_LSTM.py ~/project/dospordos/DATA/db_v1_ns/test_db/ -is_test=1
 
 load_model = False
 
@@ -384,7 +393,10 @@ class DQN_LSTM:
 
         return
 
-    def testing(self, eps, iteration_test):
+    def testing(self, eps, iteration_test, traj_matrix = None):
+
+        if traj_matrix is not None:
+            self.list_users = traj_matrix[:, 1]
 
         print(">>>>>>",self.env.path_weights)
         for k in range(iteration_test):
@@ -417,6 +429,7 @@ class DQN_LSTM:
         reward_list = [0]
         accuracy_list = []
         measure_results_list = []
+        tot_result = []
 
         # initial state
         state, err = self.env.reset(us, is_RE=self.is_RE)
@@ -441,7 +454,7 @@ class DQN_LSTM:
                 break
                 #return counter
 
-            #Select an action with an epsilon probability
+            """Select an action with an epsilon probability"""
             action_vector = self.get_action_with_probability(state,self.agent.network, eps)
             # Observe reward and new state
             reward, next_state, done = self.env.step_pa(self.agent.actions_to_take_pa(action_vector), action_vector,
@@ -465,8 +478,10 @@ class DQN_LSTM:
             #self.accuracy_matrix.append(eval.total_accuracy())
             accuracy_list.append(eval.total_accuracy())
 
-        tot_result = self.env.env_core.university_name_pa, self.env.env_core.date_pa
-        total_prec = eval.total_accuracy()
+            entities = self.env.env_core.info_snippet[0][0:-1]
+            if entities != [[], []]:
+                tot_result.append(entities)
+
         self.accuracy_matrix.append(accuracy_list)
 
         measuring_results = eval.get_measuring_results()
@@ -474,17 +489,15 @@ class DQN_LSTM:
 
         self.reward_matrix.append(reward_list)
         self.measure_results_matrix.append(measure_results_list)
-        entities, gold = base.baseline_agregate_NE(us)
 
-        self.base_ma_list.append(base.majority_aggregation(entities, gold))
-        self.base_ctg_list.append(base.closest_to_gold(entities, gold))
 
         self.used_users.append(str(us))
         self.final_queries.append(queries)
         self.num_changed_queries.append(count_change_query)
-        self.percentage_used_snippets.append((1.0 - sum(queries)/ sum(queries_total)))
+        #self.percentage_used_snippets.append((1.0 - sum(queries)/ sum(queries_total)))
+        self.percentage_used_snippets.append(sum(queries_total) - sum(queries))
         self.trajectories_results.append(tot_result)
-        self.gold_standards.append(gold)
+        #self.gold_standards.append(gold)
 
         # print("Done with user: ", str(us))
         # print('final queries: ', queries)
@@ -492,8 +505,18 @@ class DQN_LSTM:
         # print('number of used snippets:', 1.0 - sum(queries)/ sum(queries_total) )
         #
         # print('our method precision', total_prec)
-        # print('our results', tot_result)
 
+        #print('uni', self.env.env_core.university_name_pa)
+        #print('years', self.env.env_core.date_pa)
+        print("*********our result*******")
+        print(self.trajectories_results)
+        #print('our results', self.accuracy_matrix)
+        #print(self.snippets_vs_error)
+        #
+        # print(self.reward_matrix)
+
+
+        print(self.env.env_core.golden_standard_db, self.env.env_core.current_name)
         return counter
 
 

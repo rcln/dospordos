@@ -8,6 +8,8 @@ import logging
 from DQN_implementation import DQN_NN
 from environment import Environment
 from agent import Agent
+import pandas as pd
+import numpy as np
 
 # ToDo Note to Pegah
 # From the terminal run this script. Selecting the folder with the data, the algorithm and is_RE
@@ -17,6 +19,8 @@ from agent import Agent
 # If the directory is for testing
 # > python3 training_script.py ~/project/dospordos/DATA/db_v1_ns/test_db/ -is_test=1
 
+df = pd.read_excel('/home/pegah/Documents/research/IIMAS/dospordos/DATA/fer_db/test_traj.xlsx')
+info_test_traj = np.asarray(df.values)
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("training_script")
@@ -26,14 +30,18 @@ if __name__ == "__main__":
     parser.add_argument("-is_test", help="The data is for testing", required=False,
                         default=0)
     parser.add_argument("-iteration_test", help="number of iterations for test", required=False,default=1)
-
     parser.add_argument("-given_weight", help="given weight to the NN", required=False,
                         default='')
 
+
+    parser.add_argument("-is_baseline", help="Is it the baseline for the test",
+                        required=False,
+                        default=0)
+
     parser.add_argument("-is_db_v2", help="Is the second database",
                         required=False,
-                        action="store_true",
-                        default=False)
+                        default= False)
+
     parser.add_argument("-initial_range", help="Initial range of users", required=False, default="-1")
     parser.add_argument("-final_range", help="Final range of users", required=False, default="-1")
     parser.add_argument("-v", "--verbose",
@@ -60,6 +68,7 @@ if __name__ == "__main__":
     given_weight = args.given_weight
 
     is_db_v2 = args.is_db_v2
+    is_baseline = args.is_baseline
     initial_range = args.initial_range
     final_range = args.final_range
 
@@ -83,9 +92,9 @@ if __name__ == "__main__":
         env = Environment(path=path_data, path_weights= name+'_weights.h5', is_db_v2=is_db_v2) #path_weights='../DATA/weights_0.2956216549873352_350.h5', is_db_v2=is_db_v2) #
     # ToDo Note to Pegah: for using the second data base
     if is_db_v2:
-        agent = Agent(env, (25,))
+        agent = Agent(env, (25,)) # 27
     else:
-        agent = Agent(env, (24,))
+        agent = Agent(env, (24,)) # 26
     # list_users = sorted(list(map(int, os.listdir(env.path))))
     list_users = os.listdir(env.path)
 
@@ -101,9 +110,13 @@ if __name__ == "__main__":
 
     try:
         if is_test == "1":
-            dqn.testing(eps=0.1, iteration_test = int(iteration_test))
+            if is_baseline:
+                dqn.testing_baselines(iteration_test = int(iteration_test), traj_matrix= info_test_traj)
+            else:
+                dqn.testing(eps=0.1, iteration_test = int(iteration_test),traj_matrix= info_test_traj)
+
         elif algorithm.upper() == "DQN":
-            dqn.deep_QN(gamma=0.95, eps=0.1, training_replay_size=2000)
+            dqn.deep_QN(gamma=0.95, eps=0.1, training_replay_size= 50)#0000) #2000)
         elif algorithm.upper() == "DDQN":
             dqn.DoubleDQN(gamma=0.95, eps=0.1, training_replay_size=2000, is_db_v2= is_db_v2)
 
@@ -113,3 +126,6 @@ if __name__ == "__main__":
         agent.network.save_weights(env.path_weights)
         print("Weights saved")
         sys.exit(0)
+
+    # just for selecting 100 users from the source
+    # dqn.users_for_trajectory(size=100)

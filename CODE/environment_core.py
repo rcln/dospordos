@@ -4,11 +4,13 @@ import os
 import sys
 import math as m
 import numpy as np
+import spacy
+from queue import Queue
 
-from utils import FeatureFilter
 import utils
 from regular_ne import list_organization, re_organization
 
+nlp = spacy.load('en')
 re_clarify=re.compile("-.*")
 
 class Environment_core:
@@ -129,7 +131,7 @@ class Environment_core:
         return queries
 
     def _valid_name(self):
-        filter = FeatureFilter(self.current_name)
+        filter = utils.FeatureFilter(self.current_name)
         if filter.has_nominal(self.current_text):
             return 1
         else:
@@ -245,7 +247,7 @@ class Environment_core:
         # if the taken action is query
         if action[-1] == 1:
             reward = -10.0 #-1.0
-        #if the taken action is conciling the extrcated entities
+        #if the taken action is conceiling the extracted entities
         else:
             reward = reward + self.get_accuracy(new_entities[0], previous_entities[0], golden_standard_db_)
             if self.que_changed_obligatory:
@@ -255,18 +257,12 @@ class Environment_core:
         return reward
 
     def get_accuracy(self, new_entities, previous_entities, golden_standards):
-
         # TODO PA: this function should be more optimised
-
         accuracy_prev = 0.0
         accuracy_curr = 0.0
 
         years = [str(golden_standards[1]), str(golden_standards[2])]
-
         university_name = str(golden_standards[0].lower())
-
-        # un_curr = str(new_entities[0].lower())
-        # un_prev = str(previous_entities[0].lower())
 
         un_curr = [str(i).lower() for i in new_entities[0]]
         for item in un_curr:
@@ -274,41 +270,47 @@ class Environment_core:
         un_prev = [str(i).lower() for i in previous_entities[0]]
 
         # if year is correct
-        for y_ in new_entities[1]:
+        for y_ in new_entities[1] :
             self.date_pa.add(y_)
             if y_ in years:
-                accuracy_curr += 0.1 #10.0
-                #self.date_pa.add(y_)
+                accuracy_curr += 0.1  # 10.0
+                # self.date_pa.add(y_)
 
         if set(self.date_pa) == set(years):
             self.check_date_pa = True
 
         for y__ in previous_entities[1]:
             if y__ in years:
-                accuracy_prev += 0.1#10.0
-                #self.date_pa.add(y__)
+                accuracy_prev += 0.1  # 10.0
+                # self.date_pa.add(y__)
 
         # if university name is correct
         if self.is_similar_university(un_curr, university_name):
-            accuracy_curr += 1.0 #100.0
+            accuracy_curr += 1.0  # 100.0
         elif self.how_university(un_curr, university_name):
-            accuracy_curr += 1.0 #100.0
-            #self.university_name_pa = un_curr
+            accuracy_curr += 1.0  # 100.0
+            # self.university_name_pa = un_curr
 
-        #if un_prev == university_name or self.is_similar_university(un_prev, university_name):
         if self.is_similar_university(un_prev, university_name):
-            accuracy_prev += 1.0 #100.0
+            accuracy_prev += 1.0  # 100.0
         elif self.how_university(un_prev, university_name):
-            accuracy_prev += 1.0 #100.0
+            accuracy_prev += 1.0  # 100.0
+
+        # if the extracted perso name is correct
+        if self.is_similar_name(new_entities[2], self.current_name):
+            accuracy_curr += 1.0
+        if self.is_similar_name(previous_entities[2], self.current_name):
+            accuracy_curr += 1.0
 
         reward = accuracy_curr - accuracy_prev
 
-        #add a negative reward to each step
+        # add a negative reward to each step
         reward -= 0.1
-        #reward += -0.1*len(new_entities[0])
-        #reward += -0.1*len(new_entities[1])
+        # reward += -0.1*len(new_entities[0])
+        # reward += -0.1*len(new_entities[1])
 
         return reward
+
 
     # TODO PA: Spacy depends on capital letters, we should find a way to solve this problem, thats the reason that all NEs can't be extracted.
     def how_university(self, given_list, univrsity_name):
@@ -333,6 +335,18 @@ class Environment_core:
 
         return False
 
+    def is_similar_name(self, given_name, gold):
+        #TODO: It should be modified after checking with Jorge.
+        golds = gold.title()
+
+        for item in given_name:
+            golds = golds.replace(item, '')
+
+        if all([i for i in golds]):
+            return True
+
+        return False
+
     def is_similar_university(self, given_list, university_name):
         if university_name in given_list:
             self.check_university_pa = True
@@ -348,8 +362,6 @@ class Environment_core:
             return 1 - (snippet_number / div)
         except KeyError:
             print("ERROR in next_snippet\n current queue: ", self.current_queue)
-            print("Queues ", self.queues)
-            print("DATA ", self.current_data)
 
     def _fill_info_snippet(self, text, ner_org, ner_gpe):
 
@@ -365,6 +377,54 @@ class Environment_core:
 
     def _fill_info_snippet_pa(self, text, ners, is_RE):
 
+        # it returns a list of dates
+        date = utils.get_date(text, False)
+        location = []
+
+        "extract person names from the text"
+        p_e = utils.person_extractors(text)
+        persons_names = p_e.get_person_names()
+
+        # ner_org = ners[0] # organisation information (a list)
+        # ner_gpe = ners[1] # geographical position information (a list)
+        # ner_person_name = ners[2]
+        # ner_date = ners[3]
+
+        """use gazettees from Jorge work"""
+        Gazettee_university = list(set(list_organization(text)))
+        for item in Gazettee_university:
+            location.append(item)
+
+        # location.append(str(ner_gpe[0]))
+        # location.append(str(ner_org[0]))
+
+        """use RE check"""
+        # if is_RE:
+        #    filtered_ne = set()
+        #    for item in location:
+        #        if re_organization(item.title()) is not None:
+        #            filtered_ne.add(item)
+
+        #    location = list(filtered_ne)
+
+        return [list(set(location)), date, persons_names]  # , str(ner_date[0])
+
+    def _fill_info_snippet_pa_new_idea(self, action, text, ners, is_RE):
+
+        sent_uni = []
+        sent_year = []
+        sent_person = []
+
+
+        #actions[x, x, x, x, x, x, x]
+        # if [1, x, x, x, x, x, x] -> keep uni
+        # if [x, 1, x, x, x, x, x] -> NO uni
+        # if [x, x, 1, x, x, x, x] -> keep years
+        # if [x, x, x, 1, x, x, x] -> NO years
+        # if [x, x, x, x, 1, x, x] -> Keep both
+        # if [x, x, x, x, x, 1, x] -> NOne
+        # if [x, x, x, x, x, x, 1] -> change query
+
         #it returns a list of dates
         date = utils.get_date(text, False)
         location = []
@@ -379,6 +439,9 @@ class Environment_core:
         for item in Gazettee_university:
             location.append(item)
 
+        doc = nlp(text)
+        people = [ee for ee in doc.ents if ee.label_ == 'PERSON']
+
         #location.append(str(ner_gpe[0]))
         #location.append(str(ner_org[0]))
 
@@ -391,4 +454,94 @@ class Environment_core:
 
         #    location = list(filtered_ne)
 
-        return [list(set(location)), date, None] #, str(ner_date[0])
+        "if uni is selected in action"
+        if action is None:
+            sent_uni = list(set(location))
+            sent_year = date
+        else:
+            if action[0]:
+                sent_uni = list(set(location))
+            "if years are selected in action"
+            if action[2]:
+                sent_year = date
+            if action[4]:
+                sent_uni = list(set(location))
+                sent_year = date
+
+        sent_person = list(set(people))
+
+        return [sent_uni, sent_year, sent_person]
+
+    def pre_reset(self, id_person, is_RE, is_pa=False):
+        self.person_id = id_person
+        self.university_name_pa = set()
+        self.date_pa = set()
+        self.que_changed_obligatory = False
+        self.check_university_pa = False
+        self.check_date_pa = False
+
+        files = self.path + str(id_person)+"/"
+
+        if not os.path.exists(files):
+            raise ValueError('path given doesn\'t exits:\n'+files)
+
+        self.queues.clear()
+        self.current_db.clear()
+        self.current_queue = 0
+        self._get_golden_standard_db(id_person)
+
+        self.reward_prev = 0
+
+        for t in self.golden_standard_db:
+            if None in t:
+                print("RESET...", self.golden_standard_db)
+                POS = False
+                return POS
+                #return 0, True
+
+            # self.queues is a list including several queues such that each one returned back to a set of documents
+            # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
+        dir_list=os.listdir(files)
+        uni_name_gs=self.golden_standard_db[0][0].lower()
+
+        queues = {}
+        POS = False
+
+        for file in dir_list:
+            with open(files + file, 'r') as f:
+                data_raw = f.read()
+            data = json.loads(data_raw)
+            q = Queue()
+
+            for snippet in data[file.replace('.json', '')]:
+                if not (snippet['text'] or snippet['title']):
+                    continue
+
+                if len(snippet['text'].strip())==0 or len(snippet['title'].strip())==0:
+                    continue
+                q.put(snippet)
+                if not POS:
+                    if uni_name_gs in snippet['text'].lower():
+                        POS = True
+                    if uni_name_gs in snippet['title'].lower():
+                        POS = True
+            queues[len(queues)] = q
+        self.queues = queues
+        self.current_data = self.queues[self.current_queue].get()
+
+        # # part of the input vector for our NN
+        # initial_state = self.get_state(is_RE, pa_state=True)
+        #
+        # if POS:
+        #     return initial_state, False
+        # else:
+        #     return 0, True
+
+        return POS
+
+    def step_core(self, *args):
+        previous_entities = self.info_snippet
+        reward = self._get_reward_pa(previous_entities, *args)
+        done = self._check_grid() or self._is_finished_pa()
+
+        return reward, done

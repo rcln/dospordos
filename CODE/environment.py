@@ -20,65 +20,70 @@ class Environment:
     # start new episode
     # there are 4518 person names in train-db
     def reset(self, id_person, is_RE, is_pa=False):
-        self.env_core.person_id = id_person
-        self.env_core.university_name_pa = set()
-        self.env_core.date_pa = set()
-        self.env_core.que_changed_obligatory = False
-        self.env_core.check_university_pa = False
-        self.env_core.check_date_pa = False
+        # self.env_core.person_id = id_person
+        # self.env_core.university_name_pa = set()
+        # self.env_core.date_pa = set()
+        # self.env_core.que_changed_obligatory = False
+        # self.env_core.check_university_pa = False
+        # self.env_core.check_date_pa = False
+        #
+        # files = self.env_core.path + str(id_person)+"/"
+        #
+        # if not os.path.exists(files):
+        #     raise ValueError('path given doesn\'t exits:\n'+files)
+        #
+        # self.env_core.queues.clear()
+        # self.env_core.current_db.clear()
+        # self.env_core.current_queue = 0
+        # self.env_core._get_golden_standard_db(id_person)
+        # self.env_core.reward_prev = 0
+        #
+        # for t in self.env_core.golden_standard_db:
+        #     if None in t:
+        #         print("RESET...", self.env_core.golden_standard_db)
+        #         return 0, True
+        #     # self.queues is a list including several queues such that each one returned back to a set of documents
+        #     # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
+        # dir_list = os.listdir(files)
+        # uni_name_gs = self.env_core.golden_standard_db[0][0].lower()
+        #
+        # queues = {}
+        # POS = False
+        #
+        # for file in dir_list:
+        #     with open(files + file, 'r') as f:
+        #         data_raw = f.read()
+        #     data = json.loads(data_raw)
+        #     q = Queue()
+        #
+        #     for snippet in data[file.replace('.json', '')]:
+        #         if not (snippet['text'] or snippet['title']):
+        #             continue
+        #
+        #         if len(snippet['text'].strip()) == 0 or len(snippet['title'].strip()) == 0:
+        #             continue
+        #         q.put(snippet)
+        #         if not POS:
+        #             if uni_name_gs in snippet['text'].lower():
+        #                 POS = True
+        #             if uni_name_gs in snippet['title'].lower():
+        #                 POS = True
+        #     queues[len(queues)] = q
+        # self.env_core.queues = queues
+        #
+        # self.env_core.current_data = self.env_core.queues[self.env_core.current_queue].get()
 
-        files = self.env_core.path + str(id_person)+"/"
 
-        if not os.path.exists(files):
-            raise ValueError('path given doesn\'t exits:\n'+files)
-
-        self.env_core.queues.clear()
-        self.env_core.current_db.clear()
-        self.env_core.current_queue = 0
-        self.env_core._get_golden_standard_db(id_person)
-        self.env_core.reward_prev = 0
-
-        for t in self.env_core.golden_standard_db:
-            if None in t:
-                print("RESET...", self.env_core.golden_standard_db)
-                return 0, True
-            # self.queues is a list including several queues such that each one returned back to a set of documents
-            # extracted by a query. In total self.queues for each id_person has 7 elements (equal to 7 queries)
-        dir_list = os.listdir(files)
-        uni_name_gs = self.env_core.golden_standard_db[0][0].lower()
-
-        queues = {}
-        POS = False
-
-        for file in dir_list:
-            with open(files + file, 'r') as f:
-                data_raw = f.read()
-            data = json.loads(data_raw)
-            q = Queue()
-
-            for snippet in data[file.replace('.json', '')]:
-                if not (snippet['text'] or snippet['title']):
-                    continue
-
-                if len(snippet['text'].strip()) == 0 or len(snippet['title'].strip()) == 0:
-                    continue
-                q.put(snippet)
-                if not POS:
-                    if uni_name_gs in snippet['text'].lower():
-                        POS = True
-                    if uni_name_gs in snippet['title'].lower():
-                        POS = True
-            queues[len(queues)] = q
-        self.env_core.queues = queues
-
-        self.env_core.current_data = self.env_core.queues[self.env_core.current_queue].get()
-        # part of the input vector for our NN
-        initial_state = self.get_state(is_RE, pa_state=True)
+        POS = self.env_core.pre_reset(id_person, is_RE, is_pa)
 
         if POS:
+            # part of the input vector for our NN
+            initial_state = self.get_state(is_RE, pa_state=True, action=None)
             return initial_state, False
         else:
             return 0, True
+
+        #return initial_state, False
 
     def step(self, action_tuple, *args, is_RE=0):
         #TODO PA: what is *args input here? why nothing work here?
@@ -112,15 +117,19 @@ class Environment:
         # action_query(*args)
         # action_current_db()
 
-        previous_entities = self.env_core.info_snippet
-        next_state = self.get_state(is_RE=is_RE, pa_state=True)
-        reward = self.env_core._get_reward_pa(previous_entities, *args)
+        action = args[0]
+        next_state = self.get_state(is_RE, True, action)
 
-        done = self.env_core._check_grid() or self.env_core._is_finished_pa()
+        # previous_entities = self.env_core.info_snippet
+        # reward = self.env_core._get_reward_pa(previous_entities, *args)
+        # done = self.env_core._check_grid() or self.env_core._is_finished_pa()
 
+        (reward, done) = self.env_core.step_core(*args)
+
+        #return reward, next_state, done
         return reward, next_state, done
 
-    def get_state(self, is_RE, pa_state=False):
+    def get_state(self, is_RE, pa_state, action):
 
         # TODO PA: states are the vectors of size 27407, which is a high dimension vector, which the state size is 22 and the rest (27386) are related to vect_tf
 
@@ -145,7 +154,7 @@ class Environment:
                 And a huge vector for vect_tf !!
         """
         # state = []
-        text = self.current_text = self.env_core.current_data['title']+" "+self.env_core.current_data['text']
+        text = self.env_core.current_text = self.env_core.current_data['title']+" "+self.env_core.current_data['text']
 
         # text = self.current_text
         self.info_snippet = []

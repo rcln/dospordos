@@ -42,7 +42,7 @@ class DQN:
         self.base_ctg_list = []
 
 
-        self.action_size = 5
+        self.action_size = 5 #7
 
         # self.callbacks = [agent.EarlyStopByLossVal()]
         # ToDo: Note to Pegah, another callback with it can be stopped if there's no improvement with a min_delta .
